@@ -1,0 +1,172 @@
+UniVerse Platform - Comprehensive Feature List & File Map
+=========================================================
+
+This document catalogues every implemented feature in the UniVerse platform and maps it to its source code location.
+
+---------------------------------------------------------
+
+1. Core Social & Community Engine
+Primary Page: src/pages/Feed.tsx
+Route: /feed
+
+[Feature]                   [Description]                                                                 [Component/File Location]
+Dual-Feed System            Toggle between "Campus" (Local) and "Universe" (Global) feeds.                src/components/feed/FeedToggle.tsx
+Rich Post Composer          Create posts with bold/italic text, links, and emojis.                        src/components/feed/SharePostBox.tsx
+Media Upload                Drag-and-drop support for images and videos with preview.                     src/components/feed/SharePostBox.tsx
+Post Cards                  Detailed view of user posts with rich interaction options.                    src/components/feed/PostCard.tsx
+Reactions                   Quantitative reactions (Like, Celebrate, Insightful).                         src/components/feed/PostCard.tsx
+Threaded Comments           Nested conversation threads under posts.                                      src/components/feed/PostCard.tsx
+User Hover Cards            Quick profile preview when hovering over author names.                        src/components/feed/PostCard.tsx
+
+---------------------------------------------------------
+
+2. Academic AI & Support
+Primary Page: src/pages/Academic.tsx
+Route: /academic
+
+[Feature]                   [Description]                                                                 [Component/File Location]
+AI Chatbot Interface        Streaming text response with typing effect.                                   src/components/academic/ChatInterface.tsx
+Syntax Highlighting         Code block formatting for programming queries.                                src/components/academic/ChatInterface.tsx
+Context Selector            Switch between "General Help", "Code", "Writing", etc.                        src/components/academic/ContextSelector.tsx
+Resource Library            Grid view of uploaded study materials and notes.                              src/components/academic/ResourceGrid.tsx
+Resource Upload             Modal/Form to upload PDFs with metadata tags.                                 src/components/academic/ResourceUpload.tsx
+
+---------------------------------------------------------
+
+3. Career Development Intelligence
+Primary Page: src/pages/Career.tsx
+Route: /career
+
+[Feature]                   [Description]                                                                 [Component/File Location]
+Resume Analysis             Visual dashboard scoring resume on multiple metrics.                          src/components/career/AnalysisDashboard.tsx
+Resume Uploader             Interface to upload and parse PDF resumes.                                    src/components/career/ResumeUploader.tsx
+Market Trends               "Market Pulse" widget showing trending industry keywords.                     src/pages/Career.tsx (Inline)
+
+---------------------------------------------------------
+
+4. Event Management
+Primary Page: src/pages/EventsPage.tsx
+Route: /events
+
+[Feature]                   [Description]                                                                 [Component/File Location]
+Event Exploration           Filterable grid of campus events (Sports, Workshops, etc.).                   src/components/events/EventGrid.tsx
+Event Creation              Modal to create new events with details and images.                           src/components/events/EventCreationModal.tsx
+RSVP System                 Interactive button managing "Going", "Waitlist", "Full" states.               src/components/events/RSVPButton.tsx
+
+---------------------------------------------------------
+
+5. Wellness & Utilities
+Primary Page (Wellness): src/pages/Wellness.tsx
+Route: /wellness
+Primary Page (Travel): src/pages/Travel.tsx
+Route: /travel
+
+[Feature]                   [Description]                                                                 [Component/File Location]
+Mood Tracking               Slider interface to log daily emotional state.                                src/components/wellness/MoodSelector.tsx
+Wellness Trends             Chart visualizing mood history over the week/month.                           src/components/wellness/TrendChart.tsx
+Wellness Insights           Contextual advice cards based on user data.                                   src/components/wellness/InsightCard.tsx
+Ride Finding                Map interface to find carpool/cab-share opportunities.                        src/components/travel/RideFinder.tsx
+Ride Listings               Cards displaying driver info, route, and available seats.                     src/components/travel/RideCard.tsx
+Cost Calculator             Logic to split fares based on distance/riders.                                src/components/travel/RideCard.tsx
+
+---------------------------------------------------------
+
+6. Communication
+Primary Page: src/pages/Messages.tsx
+Route: /messages
+
+[Feature]                   [Description]                                                                 [Component/File Location]
+Conversation List           Searchable sidebar of active chat threads.                                    src/components/messages/ConversationList.tsx
+Chat Interface              Real-time message window with typing indicators.                              src/components/messages/ChatWindow.tsx
+Online Status               Visual indicators for user availability.                                      src/components/messages/ConversationList.tsx
+
+---------------------------------------------------------
+
+7. Anonymous Forums
+Primary Page: src/pages/Forums.tsx
+Route: /forums
+
+[Feature]                   [Description]                                                                 [Component/File Location]
+Forum Categories            Grid of discussion topics (Academics, Social, etc.).                          src/components/forums/ForumCategoryGrid.tsx
+Anonymous Posting           Post composer with "Incognito" toggle.                                        src/components/forums/AnonymousPostComposer.tsx
+Discussion Threads          List of threads with upvoting and commenting.                                 src/components/forums/ThreadList.tsx
+
+---------------------------------------------------------
+
+8. Faculty-Student Research Hub
+Primary Page: src/pages/Research.tsx
+Route: /research
+
+[Feature]                   [Description]                                                                 [Component/File Location]
+Project Discovery           Searchable list of research opportunities.                                    src/pages/Research.tsx
+Project Cards               Detailed view of projects, required skills, and professors.                   src/components/research/ProjectCard.tsx
+Application Status          Tabs for "Open", "Ongoing", and "Applied" projects.                           src/pages/Research.tsx
+
+---------------------------------------------------------
+
+9. Campus News
+Primary Page: src/pages/News.tsx
+Route: /news
+
+[Feature]                   [Description]                                                                 [Component/File Location]
+Featured Story              Large hero banner for top headline.                                           src/components/news/NewsHero.tsx
+News Categories             Filter bar for news types (Sports, Admin, etc.).                              src/components/news/NewsCategoryList.tsx
+Article Grid                Responsive grid of news article cards.                                        src/components/news/NewsCard.tsx
+Newsletter                  Subscription input for weekly email digest.                                   src/pages/News.tsx (Inline)
+
+---------------------------------------------------------
+
+10. Platform Updates
+Primary Page: src/pages/Updates.tsx
+Route: /updates
+
+[Feature]                   [Description]                                                                 [Component/File Location]
+Version Timeline            Vertical history of platform releases.                                        src/components/updates/ReleaseTimeline.tsx
+Feedback Widget             Form to submit bug reports or feature requests.                               src/components/updates/FeedbackWidget.tsx
+
+---------------------------------------------------------
+
+11. Settings & Preferences
+Primary Page: src/pages/Settings.tsx
+Route: /settings
+
+[Feature]                   [Description]                                                                 [Component/File Location]
+Profile Management          Edit name, avatar, bio, and social links.                                     src/components/settings/ProfileSettings.tsx
+Appearance                  Theme (Light/Dark) and UI scaling controls.                                   src/components/settings/AppearanceSettings.tsx
+Notification Control        Granular toggles for email and push alerts.                                   src/components/settings/NotificationSettings.tsx
+Privacy Control             Visibility settings for Travel, Career, and Profile.                          src/components/settings/PrivacySettings.tsx
+Integrations                Connect external accounts (GitHub, LinkedIn, Google).                         src/components/settings/IntegrationsSettings.tsx
+Accessibility               High contrast, reduced motion, and text scaling.                              src/components/settings/AccessibilitySettings.tsx
+
+---------------------------------------------------------
+
+Layout & Navigation
+Global Layout: src/layout/DashboardLayout.tsx
+Sidebar Navigation: src/components/layout/Sidebar.tsx
+Entry Point: src/App.tsx (Route definitions)
+
+---------------------------------------------------------
+
+12. Student Marketplace & Utilities (Planned)
+Primary Pages: src/pages/Marketplace.tsx, src/pages/Utilities.tsx
+
+[Feature]                   [Description]                                                                 [Component/File Location]
+Campus Marketplace          Buy/sell used textbooks, furniture, and electronics.                          src/components/marketplace/ProductGrid.tsx
+Lost & Found                Board with image uploads for lost items.                                      src/components/marketplace/LostFound.tsx
+Roommate Finder             Profiles with compatibility tags.                                             src/components/marketplace/RoommateFinder.tsx
+Bus Tracker                 Real-time campus shuttle locations.                                           src/components/utilities/BusTracker.tsx
+Campus Map                  Interactive map of buildings and spots.                                       src/components/utilities/CampusMap.tsx
+Discount Hub                Exclusive student deals list.                                                 src/components/utilities/DiscountHub.tsx
+
+---------------------------------------------------------
+
+13. Functional Enhancements (Planned)
+Locations: Various Modules
+
+[Feature]                   [Description]                                                                 [Component/File Location]
+GPA Calculator              Calculate current GPA and set targets.                                        src/components/academic/GPACalculator.tsx
+Focus Timer                 Pomodoro timer with "Do Not Disturb" mode.                                    src/components/academic/FocusTimer.tsx
+AI Flashcards               Generate study cards from notes.                                              src/components/academic/FlashcardGenerator.tsx
+Mock Interviewer            AI interview simulator.                                                       src/components/career/MockInterviewer.tsx
+Alumni Directory            Browse alumni by company/year.                                                src/components/career/AlumniDirectory.tsx
+Club Profiles               Dedicated pages for student orgs.                                             src/components/events/ClubProfile.tsx

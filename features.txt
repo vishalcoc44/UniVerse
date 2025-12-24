@@ -1,0 +1,114 @@
+Based on the "Major Project Phase-I Report" (UniVerse), here is the complete list of features explicitly mentioned in the document, organized by module:
+
+1. Social & Community Features
+
+Dual-Feed System: Two distinct social timelines—a "Campus Feed" for intra-university posts (DSU specific) and a "Universe Feed" for inter-university networking.
+
+
+
+
+Rich Media Posts: Ability to share text, photos, and emojis.
+
+
+Anonymous Forums: Course-wise discussion boards where students can ask sensitive questions anonymously to reduce social pressure.
+
+
+
+
+Faculty-Student Research Hub: A dedicated space for collaboration on research projects and project management between students and faculty.
+
+
+
+2. Academic Support (AI & Resources)
+
+AI Academic Chatbot: A "RAG" (Retrieval-Augmented Generation) assistant powered by OpenAI and Gemini APIs for instant doubt resolution.
+
+
+
+Context-Aware Answers: The AI provides multi-model responses and context-aware help (e.g., explaining backpropagation).
+
+
+
+Virtual Study Groups: Tools to create or find study groups.
+
+
+Crowdsourced Knowledge Base: A repository for sharing notes and question banks, organized by course.
+
+
+
+Mentorship Matching: Uses vector embeddings (pgvector) to semantically match students with mentors or resources based on their profiles.
+
+
+3. Career Development
+
+AI Resume Analyzer: A tool that uses NLP and ATS parsing to analyze uploaded CVs/Resumes.
+
+
+
+
+
+Resume Scoring: Generates an overall score (e.g., 85/100) for the resume.
+
+
+Detailed Feedback: Provides actionable insights on content, keywords, formatting, and design.
+
+
+
+
+ATS Compatibility Check: Specifically checks if the resume is readable by Applicant Tracking Systems.
+
+
+Suggested Improvements: Lists specific fixes, such as "Condense to one page" or "Add metrics to project".
+
+
+4. Event Management
+
+Complete Event Lifecycle: Tools for creating events and tracking RSVPs.
+
+
+Event Discovery: Users can browse workshops, hackathons, and wellness seminars.
+
+
+
+
+AI Recommendations: Smart suggestions for events based on user interests and course registrations.
+
+5. Mental Wellness
+
+Daily Mood Logger: A tracker to log daily moods and habits.
+
+
+
+
+Weekly Trends: Visual graphs showing mood trends over the week.
+
+
+AI Wellness Insights: Personalized, non-diagnostic insights based on logs (e.g., "Higher stress levels before deadlines").
+
+
+
+Suggested Activities: AI-recommended actions for stress relief, like "Try a 5-minute meditation".
+
+6. Campus Utilities
+
+Cab-Pooling & Travel: A coordination tool to optimize resource sharing for commuting or event travel.
+
+
+7. Technical & System Features
+
+University Email Verification: Registration is restricted to users with valid university emails to ensure security and exclusivity.
+
+
+
+Progressive Web App (PWA): The main platform is a responsive web app installable on devices.
+
+
+
+Native Mobile Wrappers: Optional React Native/Capacitor wrappers to provide a native app experience on iOS/Android.
+
+
+
+Real-time Updates: Instant notifications for feeds and interactions using Supabase Realtime.
+
+
+Vector Search: Utilizes pgvector for semantic search capabilities across the platform.

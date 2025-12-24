@@ -1,0 +1,103 @@
+1. Frontend (Client-Side)
+
+Framework: Next.js 14 (App Router) for a server-rendered, high-performance Progressive Web App (PWA).
+
+
+
+Language: TypeScript/JavaScript (implied by Next.js/React context).
+
+
+Library: React 18 for building the user interface components.
+
+
+Styling: Tailwind CSS for consistent, responsive, and utility-first styling.
+
+
+
+State Management: Zustand for managing global state efficiently.
+
+
+
+Mobile Wrappers: React Native with Capacitor (or Excalidraw tools mentioned) to wrap the web app into native Android/iOS apps.
+
+
+2. Backend (Server & API)
+
+Infrastructure: Serverless architecture utilizing Vercel for frontend and edge function deployment.
+
+
+
+Service Layer: NestJS (or Express) for handling specialized API routes and background tasks.
+
+
+
+
+
+Async Processing: BullMQ for managing heavy background job queues (e.g., resume parsing, AI report generation).
+
+
+3. Database & Storage
+
+Primary Database: PostgreSQL hosted on Supabase.
+
+
+
+
+
+ORM: Prisma for type-safe database access and management.
+
+
+Vector Database: pgvector extension for PostgreSQL to store and query vector embeddings for semantic matching (mentorship, recommendations).
+
+
+
+
+File Storage: Supabase Storage for managing user uploads like resumes and notes.
+
+
+4. Authentication & Realtime
+
+Auth Provider: Supabase Auth for handling user sign-ups, logins, and university email verification.
+
+
+
+Realtime Engine: Supabase Realtime for instant updates on feeds, notifications, and chat.
+
+
+
+Security: Row-Level Security (RLS) in PostgreSQL to enforce strict data access controls.
+
+5. Artificial Intelligence (AI/ML)
+
+LLM Orchestration: LangChain for managing interactions between the application and AI models.
+
+
+
+Models:
+
+
+OpenAI GPT-4o mini for high-accuracy reasoning.
+
+
+
+Google Gemini API for context-aware processing.
+
+
+Specific Use Cases:
+
+
+Resume Analysis: NLP + ATS parsing logic.
+
+
+Recommendations: Embeddings + pgvector for matching.
+
+6. Deployment & DevOps
+
+Frontend Deployment: Vercel.
+
+
+
+Backend/DB Hosting: Supabase (with potential scaling to AWS/Render mentioned).
+
+
+Methodology: Agile Scrum with two-week sprints.
