@@ -2,7 +2,7 @@
 
 **UniVerse** is a comprehensive, AI-powered digital campus platform designed to unify the student experience. It serves as a central hub for social interaction, academic support, career development, and campus utilities, bridging the gap between students, faculty, and university resources.
 
-![UniVerse Dashboard](public/placeholder.svg) 
+![UniVerse Logo](public/universe_logo.svg) 
 *(Add a screenshot of your dashboard here)*
 
 ## 🚀 Key Features
