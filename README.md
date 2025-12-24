@@ -1,73 +1,79 @@
-# Welcome to your Lovable project
+# UniVerse 🎓
 
-## Project info
+**UniVerse** is a comprehensive, AI-powered digital campus platform designed to unify the student experience. It serves as a central hub for social interaction, academic support, career development, and campus utilities, bridging the gap between students, faculty, and university resources.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+![UniVerse Dashboard](public/placeholder.svg) 
+*(Add a screenshot of your dashboard here)*
 
-## How can I edit this code?
+## 🚀 Key Features
 
-There are several ways of editing your application.
+### 🌐 Core Social & Community
+*   **Dual-Feed System:** Toggle between "Campus" (Local) and "Universe" (Global) feeds.
+*   **Rich Posts:** Share text, images, and videos with rich text formatting.
+*   **Interactive Community:** Likes, reactions, threaded comments, and user profiles.
+*   **Anonymous Forums:** Safe spaces for open discussions on sensitive topics.
 
-**Use Lovable**
+### 🧠 Academic AI & Support
+*   **AI Chatbot:** Context-aware academic assistant for coding, writing, and general queries.
+*   **Resource Library:** Crowdsourced study materials and notes repository.
+*   **Smart Tools:** GPA Calculator, Focus Timer (Pomodoro), and AI Flashcard generator.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### 💼 Career Intelligence
+*   **Resume AI:** Instant detailed scoring and feedback on resumes.
+*   **Mock Interviewer:** AI-simulated interview practice.
+*   **Alumni Network:** Connect with graduates for mentorship.
+*   **Market Pulse:** Real-time industry trends and keyword analysis.
 
-Changes made via Lovable will be committed automatically to this repo.
+### 🏟️ Campus Life & Utilities
+*   **Events Hub:** Discover and RSVP to workshops, sports, and cultural events.
+*   **Clubs & Societies:** dedicated portal for student organizations to recruit and manage events.
+*   **Marketplace:** Buy/Sell used textbooks, furniture, and find roommates.
+*   **Cab Pooling:** Find ride-sharing opportunities for safe travel.
+*   **Wellness Center:** Mood tracking and mental health insights.
+*   **Utilities:** Live Bus Tracker, Campus Map, and Student Discount Hub.
 
-**Use your preferred IDE**
+## 🛠️ Tech Stack
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+**Frontend:**
+*   **Framework:** React 18 (Vite)
+*   **Language:** TypeScript
+*   **Styling:** Tailwind CSS, Shadcn UI
+*   **State Management:** TanStack Query (React Query)
+*   **Navigation:** React Router DOM
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+**Backend (Planned/Integrated):**
+*   **Database:** PostgreSQL (Supabase)
+*   **Auth:** Supabase Auth
+*   **Realtime:** Supabase Realtime
+*   **AI:** OpenAI GPT-4o / Google Gemini API integration
 
-Follow these steps:
+## 📦 Getting Started
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/vishalcoc44/UniVerse.git
+    cd UniVerse
+    ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+4.  **Open your browser:**
+    Navigate to `http://localhost:8080` to view the application.
 
-**Edit a file directly in GitHub**
+## 🤝 Contributing
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+We welcome contributions! Please fork the repository and submit a pull request for any features or bug fixes.
 
-**Use GitHub Codespaces**
+## 📄 License
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+This project is licensed under the MIT License.
