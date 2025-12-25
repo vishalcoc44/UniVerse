@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -12,11 +13,78 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ImagePlus, Plus } from "lucide-react";
+import { ImagePlus, Plus, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
-export function SellModal() {
+interface SellModalProps {
+	onListingCreated?: () => void;
+}
+
+export function SellModal({ onListingCreated }: SellModalProps) {
+	const [open, setOpen] = useState(false);
+	const [loading, setLoading] = useState(false);
+	const [formData, setFormData] = useState({
+		title: "",
+		price: "",
+		category: "", // Currently this field isn't in schema, schema has 'type'. We'll put category in description or ignore for now.
+		description: "",
+	});
+
+	const handleChange = (field: string, value: string) => {
+		setFormData(prev => ({ ...prev, [field]: value }));
+	};
+
+	const handleSubmit = async () => {
+		if (!formData.title || !formData.price || !formData.description) {
+			toast.error("Please fill in all required fields.");
+			return;
+		}
+
+		setLoading(true);
+		try {
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user) {
+				toast.error("Please log in to list an item.");
+				return;
+			}
+
+			// Fetch user's universityId
+			const { data: profile } = await supabase
+				.from('Profile')
+				.select('universityId')
+				.eq('id', user.id)
+				.single();
+
+			const { error } = await supabase.from('MarketplaceListing').insert({
+				title: formData.title,
+				price: parseFloat(formData.price),
+				description: `${formData.category ? `[${formData.category}] ` : ''}${formData.description}`,
+				type: 'SELL',
+				scope: 'CAMPUS',
+				universityId: profile?.universityId,
+				sellerId: user.id,
+				status: 'ACTIVE'
+			});
+
+			if (error) throw error;
+
+			toast.success("Listing created successfully!");
+			setOpen(false);
+			setFormData({ title: "", price: "", category: "", description: "" });
+			if (onListingCreated) onListingCreated();
+
+		} catch (error) {
+			console.error("Error creating listing:", error);
+			toast.error("Failed to create listing.");
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	return (
-		<Dialog>
+		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
 				<Button className="gap-2">
 					<Plus className="h-4 w-4" />
@@ -33,16 +101,27 @@ export function SellModal() {
 				<div className="grid gap-4 py-4">
 					<div className="grid gap-2">
 						<Label htmlFor="title">Title</Label>
-						<Input id="title" placeholder="e.g., Calculus Textbook (8th Ed)" />
+						<Input
+							id="title"
+							placeholder="e.g., Calculus Textbook (8th Ed)"
+							value={formData.title}
+							onChange={(e) => handleChange('title', e.target.value)}
+						/>
 					</div>
 					<div className="grid grid-cols-2 gap-4">
 						<div className="grid gap-2">
 							<Label htmlFor="price">Price ($)</Label>
-							<Input id="price" type="number" placeholder="0.00" />
+							<Input
+								id="price"
+								type="number"
+								placeholder="0.00"
+								value={formData.price}
+								onChange={(e) => handleChange('price', e.target.value)}
+							/>
 						</div>
 						<div className="grid gap-2">
 							<Label>Category</Label>
-							<Select>
+							<Select onValueChange={(val) => handleChange('category', val)}>
 								<SelectTrigger>
 									<SelectValue placeholder="Select" />
 								</SelectTrigger>
@@ -58,7 +137,12 @@ export function SellModal() {
 					</div>
 					<div className="grid gap-2">
 						<Label htmlFor="description">Description</Label>
-						<Textarea id="description" placeholder="Describe condition, pickup location, etc." />
+						<Textarea
+							id="description"
+							placeholder="Describe condition, pickup location, etc."
+							value={formData.description}
+							onChange={(e) => handleChange('description', e.target.value)}
+						/>
 					</div>
 
 					<div className="grid gap-2">
@@ -67,13 +151,15 @@ export function SellModal() {
 							<div className="h-10 w-10 text-muted-foreground mb-2 flex items-center justify-center bg-muted rounded-full">
 								<ImagePlus className="h-5 w-5" />
 							</div>
-							<p className="text-sm text-muted-foreground">Click to upload images</p>
-							<p className="text-xs text-muted-foreground/70 mt-1">PNG, JPG up to 5MB</p>
+							<p className="text-sm text-muted-foreground">Click to upload images (Not implemented)</p>
 						</div>
 					</div>
 				</div>
 				<DialogFooter>
-					<Button type="submit" className="w-full">Post Listing</Button>
+					<Button type="submit" className="w-full" onClick={handleSubmit} disabled={loading}>
+						{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+						Post Listing
+					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

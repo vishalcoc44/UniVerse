@@ -1,10 +1,12 @@
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MoreVertical, Phone, Send, Smile, Paperclip, Video } from "lucide-react";
+import { MoreVertical, Phone, Send, Smile, Paperclip, Video, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface Message {
 	id: string;
@@ -20,26 +22,97 @@ interface ChatWindowProps {
 		avatar: string;
 		online?: boolean;
 	};
+	currentUserId: string;
 }
 
-export function ChatWindow({ chat }: ChatWindowProps) {
-	const [messages, setMessages] = useState<Message[]>([
-		{ id: "1", text: "Hey! Are you coming to the Hackathon?", sender: "them", timestamp: "10:30 AM" },
-		{ id: "2", text: "Yeah, definitely! I'm just finalizing my team.", sender: "me", timestamp: "10:32 AM" },
-		{ id: "3", text: "Awesome, let me know if you need an extra backend dev.", sender: "them", timestamp: "10:33 AM" },
-	]);
+export function ChatWindow({ chat, currentUserId }: ChatWindowProps) {
+	const [messages, setMessages] = useState<Message[]>([]);
 	const [inputValue, setInputValue] = useState("");
+	const [loading, setLoading] = useState(true);
+	const scrollRef = useRef<HTMLDivElement>(null);
 
-	const handleSend = () => {
+	useEffect(() => {
+		const fetchMessages = async () => {
+			setLoading(true);
+			const { data, error } = await supabase
+				.from('Message')
+				.select('*')
+				.eq('conversationId', chat.id)
+				.order('createdAt', { ascending: true });
+
+			if (data) {
+				setMessages(data.map((m: any) => ({
+					id: m.id,
+					text: m.content,
+					sender: m.senderId === currentUserId ? "me" : "them",
+					timestamp: new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+				})));
+			}
+			setLoading(false);
+			scrollToBottom();
+		};
+
+		fetchMessages();
+
+		// Subscribe to new messages
+		const channel = supabase
+			.channel(`chat:${chat.id}`)
+			.on('postgres_changes', {
+				event: 'INSERT',
+				schema: 'public',
+				table: 'Message',
+				filter: `conversationId=eq.${chat.id}`
+			}, (payload) => {
+				const newMessage = payload.new as any;
+				setMessages((prev) => [...prev, {
+					id: newMessage.id,
+					text: newMessage.content,
+					sender: newMessage.senderId === currentUserId ? "me" : "them",
+					timestamp: new Date(newMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+				}]);
+				scrollToBottom();
+			})
+			.subscribe();
+
+		return () => {
+			supabase.removeChannel(channel);
+		};
+	}, [chat.id, currentUserId]);
+
+	const scrollToBottom = () => {
+		setTimeout(() => {
+			if (scrollRef.current) {
+				scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+			}
+		}, 100);
+	};
+
+	const handleSend = async () => {
 		if (!inputValue.trim()) return;
-		const newMessage: Message = {
-			id: Date.now().toString(),
+
+		// Optimistic update
+		const tempId = Date.now().toString();
+		const tempMsg: Message = {
+			id: tempId,
 			text: inputValue,
 			sender: "me",
 			timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 		};
-		setMessages([...messages, newMessage]);
+		setMessages([...messages, tempMsg]);
 		setInputValue("");
+		scrollToBottom();
+
+		// Send to DB
+		const { error } = await supabase.from('Message').insert({
+			conversationId: chat.id,
+			senderId: currentUserId,
+			content: tempMsg.text
+		});
+
+		if (error) {
+			console.error("Error sending message:", error);
+			// Could show error state here or revert optimistic update
+		}
 	};
 
 	return (
@@ -68,27 +141,32 @@ export function ChatWindow({ chat }: ChatWindowProps) {
 
 			{/* Messages Area */}
 			<ScrollArea className="flex-1 p-4">
-				<div className="space-y-4">
-					{messages.map((msg) => (
-						<div
-							key={msg.id}
-							className={cn(
-								"flex w-max max-w-[75%] flex-col gap-1 rounded-2xl px-4 py-2 text-sm shadow-sm",
-								msg.sender === "me"
-									? "ml-auto bg-primary text-primary-foreground rounded-tr-sm"
-									: "bg-muted text-foreground rounded-tl-sm"
-							)}
-						>
-							<p>{msg.text}</p>
-							<span className={cn(
-								"text-[10px] self-end opacity-70",
-								msg.sender === "me" ? "text-primary-foreground" : "text-muted-foreground"
-							)}>
-								{msg.timestamp}
-							</span>
-						</div>
-					))}
-				</div>
+				{loading ? (
+					<div className="flex justify-center mt-10"><Loader2 className="animate-spin text-muted-foreground" /></div>
+				) : (
+					<div className="space-y-4">
+						{messages.map((msg) => (
+							<div
+								key={msg.id}
+								className={cn(
+									"flex w-max max-w-[75%] flex-col gap-1 rounded-2xl px-4 py-2 text-sm shadow-sm",
+									msg.sender === "me"
+										? "ml-auto bg-primary text-primary-foreground rounded-tr-sm"
+										: "bg-muted text-foreground rounded-tl-sm"
+								)}
+							>
+								<p>{msg.text}</p>
+								<span className={cn(
+									"text-[10px] self-end opacity-70",
+									msg.sender === "me" ? "text-primary-foreground" : "text-muted-foreground"
+								)}>
+									{msg.timestamp}
+								</span>
+							</div>
+						))}
+						<div ref={scrollRef} />
+					</div>
+				)}
 			</ScrollArea>
 
 			{/* Input Area */}
@@ -111,6 +189,7 @@ export function ChatWindow({ chat }: ChatWindowProps) {
 						size="icon"
 						className="rounded-full h-8 w-8 bg-primary text-primary-foreground hover:bg-primary/90 transition-transform active:scale-95"
 						onClick={handleSend}
+						disabled={!inputValue.trim()}
 					>
 						<Send className="h-4 w-4" />
 					</Button>

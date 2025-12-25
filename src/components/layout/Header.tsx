@@ -1,7 +1,9 @@
-import { Bell, MessageSquare, Search, Command } from "lucide-react";
+import { Bell, MessageSquare, Search, Command, Home, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/lib/supabase";
 
 interface HeaderProps {
   title: string;
@@ -10,6 +12,7 @@ interface HeaderProps {
 }
 
 export function Header({ title, subtitle, breadcrumb }: HeaderProps) {
+  const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="flex items-center justify-between h-16 px-6">
@@ -31,6 +34,13 @@ export function Header({ title, subtitle, breadcrumb }: HeaderProps) {
 
         {/* Right: Search & Actions */}
         <div className="flex items-center gap-3">
+          {/* Home Button */}
+          <Link to="/">
+            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
+              <Home className="h-5 w-5" />
+            </Button>
+          </Link>
+
           {/* Search */}
           <div className="relative hidden md:block">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -57,6 +67,20 @@ export function Header({ title, subtitle, breadcrumb }: HeaderProps) {
             <Badge className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center text-[10px] px-1">
               3
             </Badge>
+          </Button>
+
+          {/* Logout */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 text-muted-foreground hover:text-destructive"
+            onClick={async () => {
+              await supabase.auth.signOut();
+              navigate("/auth");
+            }}
+            title="Log Out"
+          >
+            <LogOut className="h-5 w-5" />
           </Button>
         </div>
       </div>

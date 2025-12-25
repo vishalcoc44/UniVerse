@@ -5,8 +5,11 @@ import { InsightCard } from "@/components/wellness/InsightCard";
 import { Card } from "@/components/ui/card";
 import { Flame, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 const Wellness = () => {
+    const [refreshKey, setRefreshKey] = useState(0);
+
     return (
         <DashboardLayout
             title="Mental Wellness"
@@ -16,7 +19,7 @@ const Wellness = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Interaction Area */}
                 <div className="lg:col-span-2 space-y-6">
-                    <MoodSelector />
+                    <MoodSelector onLogComplete={() => setRefreshKey(prev => prev + 1)} />
                     <InsightCard />
                 </div>
 
@@ -33,7 +36,7 @@ const Wellness = () => {
                     </Card>
 
                     <div className="h-[250px]">
-                        <TrendChart />
+                        <TrendChart refreshKey={refreshKey} />
                     </div>
 
                     <Card className="p-4 bg-red-500/5 border-red-500/20">

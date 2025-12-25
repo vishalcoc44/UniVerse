@@ -1,8 +1,8 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter } from "lucide-react";
+import { Search } from "lucide-react";
 import { ClubCard } from "./ClubCard";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const mockClubs = [
 	{
@@ -56,15 +56,59 @@ const mockClubs = [
 	},
 ];
 
-export function ClubGrid() {
+import { useUserUniversity } from "@/hooks/useUserUniversity";
+import { supabase } from "@/lib/supabase";
+
+export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }) {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [activeFilter, setActiveFilter] = useState("All");
+	const [clubs, setClubs] = useState<any[]>([]);
+	const [loading, setLoading] = useState(true);
+	const { universityId, loading: uniLoading } = useUserUniversity();
 
-	const filteredClubs = mockClubs.filter(club => {
-		const matchesSearch = club.name.toLowerCase().includes(searchTerm.toLowerCase());
-		const matchesFilter = activeFilter === "All" || club.category === activeFilter;
-		return matchesSearch && matchesFilter;
-	});
+	useEffect(() => {
+		if (uniLoading) return;
+
+		const fetchClubs = async () => {
+			setLoading(true);
+			let query = supabase
+				.from('Club')
+				.select('*')
+				.eq('status', 'ACTIVE'); // Assuming status exists or just fetch all
+
+			if (scope === 'campus') {
+				if (universityId) {
+					query = query.eq('scope', 'CAMPUS').eq('universityId', universityId);
+				} else {
+					// Not logged in or no uni, maybe show nothing or just public?
+					query = query.eq('scope', 'CAMPUS'); // This might return empty if no uniId matched, or we need to handle it.
+				}
+			} else {
+				query = query.eq('scope', 'UNIVERSE');
+			}
+
+			if (activeFilter !== "All") {
+				// Schema has 'category' string? Yes.
+				// We might need to map filter names to exact DB values if they differ. 
+				// Schema says category is String.
+				query = query.eq('category', activeFilter);
+			}
+
+			if (searchTerm) {
+				query = query.ilike('name', `%${searchTerm}%`);
+			}
+
+			const { data, error } = await query;
+			if (error) {
+				console.error("Error fetching clubs:", error);
+			} else {
+				setClubs(data || []);
+			}
+			setLoading(false);
+		};
+
+		fetchClubs();
+	}, [scope, universityId, uniLoading, activeFilter, searchTerm]);
 
 	return (
 		<div className="space-y-6">
@@ -79,7 +123,7 @@ export function ClubGrid() {
 						onChange={(e) => setSearchTerm(e.target.value)}
 					/>
 				</div>
-				<div className="flex gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 hide-scrollbar">
+				<div className="flex gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 no-scrollbar">
 					{["All", "Tech", "Arts", "Sports", "Social", "Academic"].map((filter) => (
 						<Button
 							key={filter}
@@ -91,18 +135,21 @@ export function ClubGrid() {
 							{filter}
 						</Button>
 					))}
-					<Button variant="ghost" size="icon" className="shrink-0">
-						<Filter className="h-4 w-4" />
-					</Button>
 				</div>
 			</div>
 
 			{/* Grid */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-				{filteredClubs.map((club) => (
-					<ClubCard key={club.id} {...club} />
-				))}
-			</div>
+			{loading ? (
+				<div className="text-center p-12">Loading clubs...</div>
+			) : clubs.length === 0 ? (
+				<div className="text-center p-12 text-muted-foreground">No clubs found in this scope.</div>
+			) : (
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+					{clubs.map((club) => (
+						<ClubCard key={club.id} {...club} />
+					))}
+				</div>
+			)}
 		</div>
 	);
 }

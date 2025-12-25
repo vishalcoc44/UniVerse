@@ -6,8 +6,11 @@ import { AlumniDirectory } from "@/components/career/tools/AlumniDirectory";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { FileText, Users, Mic } from "lucide-react";
+import { useState } from "react";
 
 const Career = () => {
+	const [refreshKey, setRefreshKey] = useState(0);
+
 	return (
 		<DashboardLayout
 			title="Career Hub"
@@ -36,7 +39,7 @@ const Career = () => {
 							<div className="space-y-6">
 								<section>
 									<h3 className="text-lg font-semibold mb-4 text-foreground/80">Upload & Analyze</h3>
-									<ResumeUploader onUploadComplete={() => { }} />
+									<ResumeUploader onUploadComplete={() => setRefreshKey(prev => prev + 1)} />
 								</section>
 
 								{/* Market Pulse Widget (Inline) */}
@@ -60,7 +63,7 @@ const Career = () => {
 
 							<div>
 								<h3 className="text-lg font-semibold mb-4 text-foreground/80">Analysis Report</h3>
-								<AnalysisDashboard />
+								<AnalysisDashboard key={refreshKey} />
 							</div>
 						</div>
 					</TabsContent>

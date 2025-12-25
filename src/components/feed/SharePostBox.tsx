@@ -1,3 +1,4 @@
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -5,10 +6,52 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Image, Smile, Video, Globe, MapPin, Send } from "lucide-react";
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
-export function SharePostBox() {
+export function SharePostBox({ onPostCreated }: { onPostCreated?: () => void }) {
   const [content, setContent] = useState("");
   const [feedType, setFeedType] = useState("campus");
+  const [isPosting, setIsPosting] = useState(false);
+
+  const handlePost = async () => {
+    if (!content.trim()) return;
+
+    setIsPosting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        console.error("User not logged in");
+        // Ideally show error toast
+        return;
+      }
+
+      // Fetch user's universityId
+      const { data: profile } = await supabase
+        .from('Profile')
+        .select('universityId')
+        .eq('id', user.id)
+        .single();
+
+      const { error } = await supabase.from('Post').insert({
+        content,
+        scope: feedType === 'campus' ? 'CAMPUS' : 'UNIVERSE',
+        universityId: feedType === 'campus' ? profile?.universityId : null, // Only link to uni if campus scope? Or always? Schema allows always. Best to always link if known.
+        authorId: user.id,
+        type: 'TEXT'
+      });
+
+      if (error) throw error;
+
+      setContent("");
+      if (onPostCreated) onPostCreated();
+
+    } catch (error) {
+      console.error("Error creating post:", error);
+    } finally {
+      setIsPosting(false);
+    }
+  };
 
   return (
     <Card className="p-4 mb-6 shadow-card border-none bg-card/50 backdrop-blur-sm">
@@ -62,9 +105,10 @@ export function SharePostBox() {
               <Button
                 size="sm"
                 className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-4"
-                disabled={!content.trim()}
+                disabled={!content.trim() || isPosting}
+                onClick={handlePost}
               >
-                Post <Send className="h-3.5 w-3.5" />
+                {isPosting ? 'Posting...' : 'Post'} <Send className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>

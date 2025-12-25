@@ -21,10 +21,10 @@ interface PostCardProps {
     shares: number;
   };
   tags?: string[];
-  feedType?: "campus" | "universe";
+  scope?: "campus" | "universe";
 }
 
-export function PostCard({ author, content, image, timestamp, stats, tags, feedType = "campus" }: PostCardProps) {
+export function PostCard({ author, content, image, timestamp, stats, tags, scope = "campus" }: PostCardProps) {
   return (
     <Card className="p-0 overflow-hidden shadow-card border-none bg-card/40 backdrop-blur-sm mb-4 hover:bg-card/60 transition-colors">
       <div className="p-4 pb-2 flex gap-3">

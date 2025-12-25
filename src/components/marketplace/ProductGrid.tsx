@@ -1,79 +1,81 @@
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter } from "lucide-react";
-import { ProductCard, Product } from "./ProductCard";
+import { Search, Filter, Loader2 } from "lucide-react";
+import { ProductCard } from "./ProductCard";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
-const mockProducts: Product[] = [
-	{
-		id: "1",
-		title: "Calculus: Early Transcendentals (8th Ed)",
-		price: 45,
-		image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=2000&auto=format&fit=crop",
-		category: "Textbooks",
-		condition: "Good",
-		seller: { name: "David Kim", avatar: "https://i.pravatar.cc/150?u=d", verified: true },
-		postedAt: "2h ago"
-	},
-	{
-		id: "2",
-		title: "IKEA Desk Lamp - Black",
-		price: 15,
-		image: "https://images.unsplash.com/photo-1534073828943-f801091a7d58?q=80&w=2000&auto=format&fit=crop",
-		category: "Furniture",
-		condition: "Like New",
-		seller: { name: "Sarah Jenkins", avatar: "https://i.pravatar.cc/150?u=s", verified: true },
-		postedAt: "5h ago"
-	},
-	{
-		id: "3",
-		title: "Graphing Calculator TI-84 Plus",
-		price: 80,
-		image: "https://images.unsplash.com/photo-1585338107529-13afc5f02586?q=80&w=2000&auto=format&fit=crop",
-		category: "Electronics",
-		condition: "Good",
-		seller: { name: "Mike Chen", avatar: "https://i.pravatar.cc/150?u=m", verified: true },
-		postedAt: "1d ago"
-	},
-	{
-		id: "4",
-		title: "Introduction to Algorithms",
-		price: 55,
-		image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=2000&auto=format&fit=crop",
-		category: "Textbooks",
-		condition: "New",
-		seller: { name: "Emma Wilson", avatar: "https://i.pravatar.cc/150?u=e", verified: true },
-		postedAt: "1d ago"
-	},
-	{
-		id: "5",
-		title: "Mini Fridge",
-		price: 60,
-		image: "https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?q=80&w=2000&auto=format&fit=crop",
-		category: "Electronics",
-		condition: "Fair",
-		seller: { name: "Jake Paul", avatar: "https://i.pravatar.cc/150?u=j", verified: false },
-		postedAt: "2d ago"
-	},
-	{
-		id: "6",
-		title: "Lab Coat (Size M)",
-		price: 10,
-		image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=2000&auto=format&fit=crop",
-		category: "Clothing",
-		condition: "Like New",
-		seller: { name: "Amy Li", avatar: "https://i.pravatar.cc/150?u=a", verified: true },
-		postedAt: "3d ago"
-	}
-];
+// Defining a type that matches what ProductCard expects (or adapting ProductCard to DB)
+// ProductCard expects: Product interface
+// Let's check ProductCard props dynamically or just map it.
 
-export function ProductGrid() {
+export function ProductGrid({ refreshKey, scope = "campus" }: { refreshKey?: number, scope?: "campus" | "universe" }) {
+	const [products, setProducts] = useState<any[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [searchQuery, setSearchQuery] = useState("");
+
+	useEffect(() => {
+		const fetchProducts = async () => {
+			setLoading(true);
+			let query = supabase
+				.from('MarketplaceListing')
+				.select(`
+                    *,
+                    seller:Profile(fullName, avatarUrl)
+                `)
+				.eq('type', 'SELL')
+				.eq('scope', scope === 'campus' ? 'CAMPUS' : 'UNIVERSE')
+				.eq('status', 'ACTIVE')
+				.order('createdAt', { ascending: false });
+
+			if (searchQuery) {
+				query = query.ilike('title', `%${searchQuery}%`);
+			}
+
+			const { data, error } = await query;
+
+			if (error) {
+				console.error("Error fetching listings:", error);
+			} else {
+				// Map DB data to UI props
+				const mapped = data?.map(item => ({
+					id: item.id,
+					title: item.title,
+					price: item.price,
+					image: item.imageUrl || "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=60", // Placeholder
+					category: "General", // parsed from desc?
+					condition: "Good", // not in schema
+					seller: {
+						name: item.seller?.fullName || "Unknown",
+						avatar: item.seller?.avatarUrl,
+						verified: false
+					},
+					postedAt: new Date(item.createdAt).toLocaleDateString()
+				})) || [];
+				setProducts(mapped);
+			}
+			setLoading(false);
+		};
+
+		const debounce = setTimeout(() => {
+			fetchProducts();
+		}, 300);
+		return () => clearTimeout(debounce);
+	}, [refreshKey, searchQuery, scope]);
+
 	return (
 		<div className="space-y-6">
 			{/* Search & Filter Bar */}
 			<div className="flex flex-col sm:flex-row gap-4">
 				<div className="relative flex-1">
 					<Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-					<Input placeholder="Search for books, furniture, electronics..." className="pl-9 bg-card/50" />
+					<Input
+						placeholder="Search for items..."
+						className="pl-9 bg-card/50"
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+					/>
 				</div>
 				<div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
 					<Button variant="outline" className="gap-2 bg-card/50">
@@ -87,11 +89,17 @@ export function ProductGrid() {
 			</div>
 
 			{/* Grid */}
-			<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-				{mockProducts.map((product) => (
-					<ProductCard key={product.id} product={product} />
-				))}
-			</div>
+			{loading ? (
+				<div className="flex justify-center p-12"><Loader2 className="animate-spin text-muted-foreground" /></div>
+			) : products.length === 0 ? (
+				<div className="text-center p-12 text-muted-foreground">No items found. List something!</div>
+			) : (
+				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+					{products.map((product) => (
+						<ProductCard key={product.id} product={product} />
+					))}
+				</div>
+			)}
 		</div>
 	);
 }

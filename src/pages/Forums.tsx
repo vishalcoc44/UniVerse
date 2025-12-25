@@ -5,9 +5,11 @@ import { ThreadList } from "@/components/forums/ThreadList";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Forums = () => {
     const [activeCategory, setActiveCategory] = useState("all");
+    const [refreshKey, setRefreshKey] = useState(0);
 
     return (
         <DashboardLayout
@@ -21,7 +23,7 @@ const Forums = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Main Feed */}
                     <div className="lg:col-span-2 space-y-6">
-                        <AnonymousPostComposer />
+                        <AnonymousPostComposer activeCategory={activeCategory} refreshThreads={() => setRefreshKey(prev => prev + 1)} />
 
                         <div className="flex items-center justify-between pb-2 border-b border-border/50">
                             <h3 className="font-semibold text-lg">Trending Discussions</h3>
@@ -32,7 +34,18 @@ const Forums = () => {
                             </select>
                         </div>
 
-                        <ThreadList />
+                        <Tabs defaultValue="campus" className="w-full">
+                            <TabsList className="grid w-full grid-cols-2 mb-4 bg-card/60 border border-border/50">
+                                <TabsTrigger value="campus">Campus</TabsTrigger>
+                                <TabsTrigger value="universe">Universe</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="campus" className="mt-0">
+                                <ThreadList key={`campus-${refreshKey}`} activeCategory={activeCategory} scope="campus" />
+                            </TabsContent>
+                            <TabsContent value="universe" className="mt-0">
+                                <ThreadList key={`universe-${refreshKey}`} activeCategory={activeCategory} scope="universe" />
+                            </TabsContent>
+                        </Tabs>
                     </div>
 
                     {/* Sidebar Rules & Info */}
