@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Conversation {
@@ -19,13 +19,22 @@ interface ConversationListProps {
 	conversations: Conversation[];
 	activeId: string;
 	onSelect: (id: string) => void;
+	onNewChat: () => void;
 }
 
-export function ConversationList({ conversations, activeId, onSelect }: ConversationListProps) {
+export function ConversationList({ conversations, activeId, onSelect, onNewChat }: ConversationListProps) {
 	return (
 		<div className="flex flex-col h-full bg-card/50 backdrop-blur-sm border-r border-border/50">
 			<div className="p-4 border-b border-border/50">
-				<h2 className="text-xl font-bold mb-4">Messages</h2>
+				<div className="flex items-center justify-between mb-4">
+					<h2 className="text-xl font-bold">Messages</h2>
+					<button
+						onClick={onNewChat}
+						className="p-2 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors"
+					>
+						<Plus className="h-4 w-4" />
+					</button>
+				</div>
 				<div className="relative">
 					<Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
 					<Input placeholder="Search chats..." className="pl-9 bg-background/50" />

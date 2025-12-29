@@ -26,11 +26,10 @@ export function AnalysisDashboard() {
 				.select('*')
 				.eq('userId', user.id)
 				.order('createdAt', { ascending: false })
-				.limit(1)
-				.single();
+				.limit(1);
 
-			if (!error && data) {
-				setResume(data);
+			if (!error && data && data.length > 0) {
+				setResume(data[0]);
 			}
 			setLoading(false);
 		};

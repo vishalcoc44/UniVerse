@@ -1,5 +1,7 @@
+'use client';
+
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useRouter, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -7,22 +9,19 @@ import {
   Calendar,
   Users,
   MessageSquare,
-  Brain,
   Briefcase,
   Heart,
   Car,
   FlaskConical,
   MessageCircle,
-  Bell,
-  Settings,
   Newspaper,
   Sparkles,
   ShoppingBag,
   Map,
+  Settings,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { relative } from "path";
 import { supabase } from "@/lib/supabase";
 
 interface NavItem {
@@ -59,7 +58,7 @@ const settingsItems: NavItem[] = [
 ];
 
 interface SidebarProps {
-  activeItem?: string; // Optional: we can now use location.pathname
+  activeItem?: string;
   onNavigate?: (href: string) => void;
 }
 
@@ -67,17 +66,17 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [profile, setProfile] = useState<{ fullName: string, universityAbbr: string, avatarUrl: string } | null>(null);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Use passed activeItem or derive from URL
-  const currentPath = activeItem || location.pathname;
+  const currentPath = activeItem || pathname;
 
   const handleNavigate = (href: string) => {
     if (onNavigate) {
       onNavigate(href);
     } else {
-      navigate(href);
+      router.push(href);
     }
   };
 
@@ -113,6 +112,7 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
   const isDisplayCollapsed = collapsed && !isHovered;
 
   const NavItemComponent = ({ item }: { item: NavItem }) => {
+    // Exact match or starts with (for nested routes) - simplified for now
     const isActive = item.href === currentPath;
     const Icon = item.icon;
 
@@ -225,8 +225,6 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
           </div>
         </div>
       </nav>
-
-
 
       {/* User Profile */}
       <div className="border-t border-sidebar-border p-3">

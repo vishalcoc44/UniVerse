@@ -20,10 +20,30 @@ interface MoodSelectorProps {
   onLogComplete?: () => void;
 }
 
+const ACTIVITIES = [
+  { icon: "🏃", label: "Exercise" },
+  { icon: "😴", label: "Sleep" },
+  { icon: "🤝", label: "Social" },
+  { icon: "📚", label: "Study" },
+  { icon: "💼", label: "Work" },
+  { icon: "🎮", label: "Relax" },
+  { icon: "🍽️", label: "Eat" },
+  { icon: "🧘", label: "Meditate" },
+];
+
 export function MoodSelector({ onLogComplete }: MoodSelectorProps) {
   const [selectedMoodIndex, setSelectedMoodIndex] = useState<number | null>(null);
+  const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const toggleActivity = (activity: string) => {
+    setSelectedActivities(prev =>
+      prev.includes(activity)
+        ? prev.filter(a => a !== activity)
+        : [...prev, activity]
+    );
+  };
 
   const handleLog = async () => {
     if (selectedMoodIndex === null) return;
@@ -38,18 +58,35 @@ export function MoodSelector({ onLogComplete }: MoodSelectorProps) {
 
       const mood = MOODS[selectedMoodIndex];
 
+      // Try inserting with activities first
       const { error } = await supabase.from('MoodLog').insert({
         userId: user.id,
         moodScore: mood.score,
         notes: notes,
-        activities: [], // TODO: Add activity selector
+        activities: selectedActivities,
         loggedAt: new Date().toISOString()
       });
 
-      if (error) throw error;
+      if (error) {
+        // If error is 400 (likely bad request due to missing column), try without activities
+        console.warn("Insert with activities failed, retrying without...", error);
 
-      toast.success("Mood logged successfully!");
+        const { error: retryError } = await supabase.from('MoodLog').insert({
+          userId: user.id,
+          moodScore: mood.score,
+          notes: notes,
+          // activities: skipped
+          loggedAt: new Date().toISOString()
+        });
+
+        if (retryError) throw retryError;
+        toast.info("Mood logged (Activities skipped - DB update required)");
+      } else {
+        toast.success("Mood logged successfully!");
+      }
+
       setSelectedMoodIndex(null);
+      setSelectedActivities([]);
       setNotes("");
       if (onLogComplete) onLogComplete();
 
@@ -64,7 +101,7 @@ export function MoodSelector({ onLogComplete }: MoodSelectorProps) {
   return (
     <Card className="p-6 bg-card/40 backdrop-blur-sm border-border/50">
       <h3 className="text-lg font-semibold mb-4 text-center">How are you feeling today?</h3>
-      <div className="flex justify-between items-center gap-2">
+      <div className="flex justify-between items-center gap-2 mb-6">
         {MOODS.map((mood, index) => (
           <button
             key={index}
@@ -88,14 +125,35 @@ export function MoodSelector({ onLogComplete }: MoodSelectorProps) {
       </div>
 
       {selectedMoodIndex !== null && (
-        <div className="mt-6 animate-in fade-in slide-in-from-top-2">
+        <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-2 block">What have you been up to?</label>
+            <div className="flex flex-wrap gap-2">
+              {ACTIVITIES.map((activity) => (
+                <button
+                  key={activity.label}
+                  onClick={() => toggleActivity(activity.label)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all duration-200 border",
+                    selectedActivities.includes(activity.label)
+                      ? "bg-primary/10 border-primary/50 text-primary"
+                      : "bg-background/50 border-border hover:bg-muted text-muted-foreground"
+                  )}
+                >
+                  <span>{activity.icon}</span>
+                  <span>{activity.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <textarea
             className="w-full bg-background/50 rounded-xl p-3 text-sm border-none focus:ring-1 focus:ring-primary/20 resize-none min-h-[80px]"
             placeholder="Want to journal about it? (Private & Encrypted)"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
-          <Button size="sm" className="mt-2 w-full bg-primary/90 hover:bg-primary" onClick={handleLog} disabled={loading}>
+          <Button size="sm" className="w-full bg-primary/90 hover:bg-primary" onClick={handleLog} disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Log Entry
           </Button>

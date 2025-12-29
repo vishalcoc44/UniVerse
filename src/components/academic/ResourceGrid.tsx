@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Download, FileText, MoreVertical, Star, ThumbsUp, UploadCloud, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 interface Resource {
   id: string;
@@ -22,43 +23,95 @@ import { useUserUniversity } from "@/hooks/useUserUniversity";
 
 export function ResourceGrid() {
   const [resources, setResources] = useState<Resource[]>([]);
-  // Use local loading state combined with hook loading if needed, or just rely on hook
   const { universityId, loading: uniLoading } = useUserUniversity();
   const [loading, setLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchResources = async () => {
+    if (!universityId) return;
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('Resource')
+      .select(`
+              *,
+              course:Course!inner(code, universityId),
+              uploader:Profile(fullName)
+          `)
+      .eq('course.universityId', universityId)
+      .order('createdAt', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching resources:', error);
+    } else {
+      setResources(data as any[]);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    if (uniLoading) return; // Wait for uni ID
-    if (!universityId) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchResources = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('Resource')
-        .select(`
-                *,
-                course:Course!inner(code, universityId),
-                uploader:Profile(fullName)
-            `)
-        .eq('course.universityId', universityId)
-        .order('createdAt', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching resources:', error);
-      } else {
-        setResources(data as any[]);
-      }
-      setLoading(false);
-    };
-
+    if (uniLoading) return;
     fetchResources();
   }, [universityId, uniLoading]);
 
-  const handleUpload = () => {
-    // TODO: Implement upload modal
-    alert("Upload functionality coming soon! (Valid Supabase Storage bucket required)");
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !universityId) return;
+
+    // Check if there are any courses for this university
+    const { data: courses } = await supabase
+      .from('Course')
+      .select('id')
+      .eq('universityId', universityId)
+      .limit(1);
+
+    if (!courses || courses.length === 0) {
+      toast.error("Please add a course to your university before uploading resources.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // 1. Upload to Storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${universityId}/${fileName}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('academic-resources')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('academic-resources')
+        .getPublicUrl(filePath);
+
+      // 2. Save to Database
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error: dbError } = await supabase.from('Resource').insert({
+        title: file.name,
+        fileUrl: publicUrl,
+        type: 'NOTE', // Default for now
+        courseId: courses[0].id,
+        uploaderId: user?.id,
+        upvotes: 0
+      });
+
+      if (dbError) throw dbError;
+
+      toast.success("Resource uploaded successfully!");
+      fetchResources();
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast.error(error.message || "Failed to upload resource. Ensure 'academic-resources' bucket exists.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -68,10 +121,17 @@ export function ResourceGrid() {
           <h3 className="text-lg font-semibold text-foreground">Top Resources</h3>
           <p className="text-sm text-muted-foreground">Curated notes and papers from the community.</p>
         </div>
-        <Button className="gap-2" onClick={handleUpload}>
-          <UploadCloud className="h-4 w-4" />
-          Upload
+        <Button className="gap-2" onClick={handleUploadClick} disabled={isUploading}>
+          {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
+          {isUploading ? "Uploading..." : "Upload"}
         </Button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          onChange={handleFileUpload}
+          accept=".pdf,.doc,.docx,.txt"
+        />
       </div>
 
       {loading ? (

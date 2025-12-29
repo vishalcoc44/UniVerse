@@ -4,14 +4,31 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Image, Smile, Video, Globe, MapPin, Send } from "lucide-react";
+import { Image, Smile, Video, Globe, MapPin, Send, Tag } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function SharePostBox({ onPostCreated }: { onPostCreated?: () => void }) {
   const [content, setContent] = useState("");
   const [feedType, setFeedType] = useState("campus");
+  const [category, setCategory] = useState("General");
   const [isPosting, setIsPosting] = useState(false);
+
+  const categories = [
+    "Academic",
+    "Events",
+    "Social",
+    "Marketplace",
+    "Career",
+    "General"
+  ];
 
   const handlePost = async () => {
     if (!content.trim()) return;
@@ -22,11 +39,9 @@ export function SharePostBox({ onPostCreated }: { onPostCreated?: () => void }) 
 
       if (!user) {
         console.error("User not logged in");
-        // Ideally show error toast
         return;
       }
 
-      // Fetch user's universityId
       const { data: profile } = await supabase
         .from('Profile')
         .select('universityId')
@@ -36,14 +51,16 @@ export function SharePostBox({ onPostCreated }: { onPostCreated?: () => void }) 
       const { error } = await supabase.from('Post').insert({
         content,
         scope: feedType === 'campus' ? 'CAMPUS' : 'UNIVERSE',
-        universityId: feedType === 'campus' ? profile?.universityId : null, // Only link to uni if campus scope? Or always? Schema allows always. Best to always link if known.
+        universityId: feedType === 'campus' ? profile?.universityId : null,
         authorId: user.id,
-        type: 'TEXT'
+        type: 'TEXT',
+        category: category
       });
 
       if (error) throw error;
 
       setContent("");
+      setCategory("General");
       if (onPostCreated) onPostCreated();
 
     } catch (error) {
@@ -71,19 +88,29 @@ export function SharePostBox({ onPostCreated }: { onPostCreated?: () => void }) 
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t border-border/40">
-            <div className="flex gap-1">
+            <div className="flex gap-1 items-center">
               <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-pastel-sky-dark hover:bg-pastel-sky/20">
                 <Image className="h-4 w-4" />
               </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-pastel-rose-dark hover:bg-pastel-rose/20">
                 <Video className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-pastel-amber-dark hover:bg-pastel-amber/20">
-                <Smile className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-pastel-mint-dark hover:bg-pastel-mint/20">
-                <MapPin className="h-4 w-4" />
-              </Button>
+
+              <div className="h-4 w-[1px] bg-border/50 mx-1" />
+
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="h-8 w-[130px] bg-transparent border-none focus:ring-0 text-xs text-muted-foreground hover:bg-muted/50 transition-colors">
+                  <Tag className="h-3 w-3 mr-1" />
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat} className="text-xs">
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex items-center gap-3">

@@ -156,7 +156,7 @@ export function ResumeUploader({ onUploadComplete }: ResumeUploaderProps) {
 			</div>
 
 			{uploadStatus === "uploading" && (
-				<div className="absolute bottom-0 left-0 h-1 bg-primary transition-all duration-[2000ms] ease-out w-full" />
+				<div className="absolute bottom-0 left-0 h-1 bg-primary transition-all duration-1000 ease-out w-full" />
 			)}
 		</Card>
 	);

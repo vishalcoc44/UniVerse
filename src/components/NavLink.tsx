@@ -1,24 +1,35 @@
-import { NavLink as RouterNavLink, NavLinkProps } from "react-router-dom";
+'use client';
+
+import Link, { LinkProps } from "next/link";
+import { usePathname } from "next/navigation";
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
-interface NavLinkCompatProps extends Omit<NavLinkProps, "className"> {
-  className?: string;
+interface NavLinkCompatProps extends Omit<LinkProps, "className" | "href"> {
+  to: string; // Map 'to' to 'href'
+  className?: string; // Next.js Link doesn't accept className directly on Link, but we pass it to anchor
   activeClassName?: string;
   pendingClassName?: string;
+  children?: React.ReactNode;
 }
 
 const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
-  ({ className, activeClassName, pendingClassName, to, ...props }, ref) => {
+  ({ className, activeClassName, pendingClassName, to, children, ...props }, ref) => {
+    const pathname = usePathname();
+    // Simple exact match or subpath match could be implemented. 
+    // react-router-dom NavLink defaults to inclusive match for active, but let's stick to simple exact or startsWith for now.
+    // However, exact match is safer for root.
+    const isActive = pathname === to || (to !== '/' && pathname?.startsWith(to));
+
     return (
-      <RouterNavLink
+      <Link
         ref={ref}
-        to={to}
-        className={({ isActive, isPending }) =>
-          cn(className, isActive && activeClassName, isPending && pendingClassName)
-        }
+        href={to}
+        className={cn(className, isActive && activeClassName)}
         {...props}
-      />
+      >
+        {children}
+      </Link>
     );
   },
 );

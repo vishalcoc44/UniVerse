@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calculator, Plus, Trash2 } from "lucide-react";
+import { Calculator, Plus, Trash2, RotateCcw } from "lucide-react";
 import { useState } from "react";
 
 interface Course {
@@ -24,6 +24,12 @@ export function GPACalculator() {
 
 	const removeCourse = (id: number) => {
 		setCourses(courses.filter(c => c.id !== id));
+	};
+
+	const clearAll = () => {
+		if (confirm("Clear all courses?")) {
+			setCourses([]);
+		}
 	};
 
 	const updateCourse = (id: number, field: keyof Course, value: string | number) => {
@@ -48,6 +54,14 @@ export function GPACalculator() {
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-4">
+				<div className="flex gap-2">
+					<Button variant="outline" size="sm" className="flex-1 text-xs" onClick={addCourse}>
+						<Plus className="h-3 w-3 mr-1" /> Add Course
+					</Button>
+					<Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={clearAll}>
+						<RotateCcw className="h-3 w-3 mr-1" /> Clear
+					</Button>
+				</div>
 				<div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
 					{courses.map((course) => (
 						<div key={course.id} className="flex gap-2 items-center">
@@ -76,9 +90,6 @@ export function GPACalculator() {
 						</div>
 					))}
 				</div>
-				<Button variant="outline" size="sm" className="w-full text-xs" onClick={addCourse}>
-					<Plus className="h-3 w-3 mr-1" /> Add Course
-				</Button>
 			</CardContent>
 		</Card>
 	);

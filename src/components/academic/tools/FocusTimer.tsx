@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw, Coffee, Brain } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export function FocusTimer() {
 	const [timeLeft, setTimeLeft] = useState(25 * 60);
@@ -15,12 +17,32 @@ export function FocusTimer() {
 			interval = setInterval(() => {
 				setTimeLeft((time) => time - 1);
 			}, 1000);
-		} else if (timeLeft === 0) {
+		} else if (timeLeft === 0 && isActive) {
 			setIsActive(false);
-			// Play sound here
+			handleSessionComplete();
 		}
 		return () => clearInterval(interval);
 	}, [isActive, timeLeft]);
+
+	const handleSessionComplete = async () => {
+		// Play sound or show notification
+		toast.success(mode === "focus" ? "Focus session complete! Take a break." : "Break over! Ready to focus?");
+
+		try {
+			const { data: { user } } = await supabase.auth.getUser();
+			if (user) {
+				const duration = mode === "focus" ? 25 * 60 : 5 * 60;
+				const { error } = await supabase.from('StudySession').insert({
+					userId: user.id,
+					duration,
+					mode
+				});
+				if (error) throw error;
+			}
+		} catch (error) {
+			console.error("Error saving study session:", error);
+		}
+	};
 
 	const toggleTimer = () => setIsActive(!isActive);
 

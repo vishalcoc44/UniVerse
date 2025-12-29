@@ -3,25 +3,50 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Layers, ArrowLeft, ArrowRight, RotateCw } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { aiService } from "@/lib/ai";
+import { Loader2 } from "lucide-react";
 
-const mockFlashcards = [
+const defaultFlashcards = [
 	{ id: 1, front: "What is React?", back: "A JavaScript library for building user interfaces." },
 	{ id: 2, front: "What is a component?", back: "Independent and reusable bits of code." },
 	{ id: 3, front: "What is State?", back: "An object that determines how that component renders & behaves." },
 ];
 
 export function FlashcardGenerator() {
+	const [cards, setCards] = useState(defaultFlashcards);
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [isFlipped, setIsFlipped] = useState(false);
+	const [isGenerating, setIsGenerating] = useState(false);
+	const [topic, setTopic] = useState("React Basics");
 
 	const nextCard = () => {
 		setIsFlipped(false);
-		setCurrentIndex((prev) => (prev + 1) % mockFlashcards.length);
+		setCurrentIndex((prev) => (prev + 1) % cards.length);
 	};
 
 	const prevCard = () => {
 		setIsFlipped(false);
-		setCurrentIndex((prev) => (prev - 1 + mockFlashcards.length) % mockFlashcards.length);
+		setCurrentIndex((prev) => (prev - 1 + cards.length) % cards.length);
+	};
+
+	const generateNewSet = async () => {
+		const newTopic = prompt("Enter a topic for flashcards (e.g., Quantum Physics, French Revolution):");
+		if (!newTopic) return;
+
+		setIsGenerating(true);
+		try {
+			const newCards = await aiService.generateFlashcards(newTopic);
+			if (newCards && newCards.length > 0) {
+				setCards(newCards.map((c: any, i: number) => ({ ...c, id: Date.now() + i })));
+				setCurrentIndex(0);
+				setIsFlipped(false);
+				setTopic(newTopic);
+			}
+		} catch (error) {
+			console.error("Error generating flashcards:", error);
+		} finally {
+			setIsGenerating(false);
+		}
 	};
 
 	return (
@@ -32,7 +57,7 @@ export function FlashcardGenerator() {
 					AI Flashcards
 				</CardTitle>
 				<CardDescription className="text-xs">
-					Reviewing set: "React Basics"
+					Reviewing set: "{topic}"
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-4">
@@ -50,7 +75,7 @@ export function FlashcardGenerator() {
 					>
 						{/* Front */}
 						<div className="absolute inset-0 backface-hidden bg-background/80 border border-border rounded-xl p-6 flex items-center justify-center text-center shadow-sm">
-							<p className="font-medium text-lg">{mockFlashcards[currentIndex].front}</p>
+							<p className="font-medium text-lg">{cards[currentIndex]?.front}</p>
 							<span className="absolute bottom-2 right-3 text-[10px] text-muted-foreground uppercase tracking-widest">Question</span>
 						</div>
 
@@ -59,7 +84,7 @@ export function FlashcardGenerator() {
 							className="absolute inset-0 backface-hidden bg-primary/10 border border-primary/20 rounded-xl p-6 flex items-center justify-center text-center shadow-inner"
 							style={{ transform: 'rotateY(180deg)' }}
 						>
-							<p className="font-medium text-primary">{mockFlashcards[currentIndex].back}</p>
+							<p className="font-medium text-primary">{cards[currentIndex]?.back}</p>
 							<span className="absolute bottom-2 right-3 text-[10px] text-primary/60 uppercase tracking-widest">Answer</span>
 						</div>
 					</motion.div>
@@ -70,15 +95,22 @@ export function FlashcardGenerator() {
 						<ArrowLeft className="h-4 w-4" />
 					</Button>
 					<span className="text-xs text-muted-foreground font-mono">
-						{currentIndex + 1} / {mockFlashcards.length}
+						{currentIndex + 1} / {cards.length}
 					</span>
 					<Button variant="ghost" size="icon" onClick={nextCard}>
 						<ArrowRight className="h-4 w-4" />
 					</Button>
 				</div>
 
-				<Button variant="outline" size="sm" className="w-full gap-2">
-					<Sparkles className="h-3 w-3 text-pink-500" /> Generate New Set
+				<Button
+					variant="outline"
+					size="sm"
+					className="w-full gap-2"
+					onClick={generateNewSet}
+					disabled={isGenerating}
+				>
+					{isGenerating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 text-pink-500" />}
+					{isGenerating ? "Generating..." : "Generate New Set"}
 				</Button>
 
 			</CardContent>

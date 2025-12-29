@@ -1,5 +1,8 @@
+'use client';
+
 import { Bell, MessageSquare, Search, Command, Home, LogOut } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +15,8 @@ interface HeaderProps {
 }
 
 export function Header({ title, subtitle, breadcrumb }: HeaderProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
+
   return (
     <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="flex items-center justify-between h-16 px-6">
@@ -35,7 +39,7 @@ export function Header({ title, subtitle, breadcrumb }: HeaderProps) {
         {/* Right: Search & Actions */}
         <div className="flex items-center gap-3">
           {/* Home Button */}
-          <Link to="/">
+          <Link href="/">
             <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
               <Home className="h-5 w-5" />
             </Button>
@@ -76,7 +80,7 @@ export function Header({ title, subtitle, breadcrumb }: HeaderProps) {
             className="h-9 w-9 text-muted-foreground hover:text-destructive"
             onClick={async () => {
               await supabase.auth.signOut();
-              navigate("/auth");
+              router.push("/auth");
             }}
             title="Log Out"
           >

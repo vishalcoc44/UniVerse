@@ -1,17 +1,23 @@
 import { cn } from "@/lib/utils";
-import { Calendar, Clock, MapPin, Users, MoreHorizontal, CheckCircle2 } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, CheckCircle2, Trash2, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface EventCardProps {
+  id: string;
   title: string;
   type: string;
   date: string;
-  time: string;
+  time: string; // Keep simple string for display
   location: string;
   attendees: number;
+  imageUrl?: string | null;
   variant?: "rose" | "amber" | "mint" | "lavender" | "sky" | "peach";
   status?: "upcoming" | "live" | "ended";
+  isOrganizer?: boolean;
+  onDelete?: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onViewAttendees?: (id: string) => void;
 }
 
 const variantStyles = {
@@ -24,14 +30,20 @@ const variantStyles = {
 };
 
 export function EventCard({
+  id,
   title,
   type,
   date,
   time,
   location,
   attendees,
+  imageUrl,
   variant = "sky",
   status = "upcoming",
+  isOrganizer,
+  onDelete,
+  onEdit,
+  onViewAttendees
 }: EventCardProps) {
   // Extract day number for the badge (e.g. "Jan 15" -> "15")
   const dayNumber = date.match(/\d+/)?.[0] || "Evt";
@@ -39,23 +51,39 @@ export function EventCard({
   return (
     <div
       className={cn(
-        "rounded-3xl overflow-hidden transition-all duration-200 hover:shadow-lg flex flex-col",
+        "rounded-3xl overflow-hidden transition-all duration-200 hover:shadow-lg flex flex-col relative group",
         variantStyles[variant]
       )}
     >
-      {/* Top Header Section */}
-      <div className="p-4 pb-2 flex gap-3 items-start">
-        <div className="bg-white/90 shadow-sm rounded-xl h-10 w-10 flex items-center justify-center font-bold text-sm text-foreground shrink-0">
-          {dayNumber}
+      {/* Cover Image */}
+      {imageUrl && (
+        <div className="h-48 w-full overflow-hidden relative shrink-0">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10" />
+          <img src={imageUrl} alt={title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <div className="absolute top-3 right-3 z-20">
+            <div className="bg-white/90 backdrop-blur-md shadow-sm rounded-lg px-3 py-1.5 text-xs font-bold text-foreground">
+              {dayNumber}
+            </div>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-foreground text-base leading-tight truncate">
-            {title}
-          </h3>
-          <p className="text-xs font-medium opacity-80 mt-0.5">
-            {time}
-          </p>
-        </div>
+      )}
+
+      {/* Content Header */}
+      <div className={cn("px-4 pt-4 flex flex-col gap-1", !imageUrl && "pt-5")}>
+        {!imageUrl && (
+          <div className="mb-2">
+            <div className="bg-white/90 shadow-sm rounded-xl h-10 w-10 flex items-center justify-center font-bold text-sm text-foreground shrink-0 border border-border/50">
+              {dayNumber}
+            </div>
+          </div>
+        )}
+
+        <h3 className="font-bold text-foreground text-xl leading-tight line-clamp-2">
+          {title}
+        </h3>
+        <p className="text-sm font-medium opacity-80 flex items-center gap-1.5 text-muted-foreground">
+          <Clock className="h-4 w-4" /> {time}
+        </p>
       </div>
 
       {/* Middle White Box */}
@@ -72,23 +100,56 @@ export function EventCard({
       </div>
 
       {/* Footer Section */}
-      <div className="px-4 py-3 bg-black/5 mt-auto flex items-center gap-2">
-        <div className="flex items-center gap-1.5 bg-white py-1 px-2.5 rounded-full shadow-sm">
-          <CheckCircle2 className="h-3.5 w-3.5 text-status-success" />
-          <span className="text-[10px] font-semibold text-foreground">
-            {status === 'live' ? 'Live' : 'Confirmed'}
-          </span>
+      <div className="px-4 py-3 bg-black/5 mt-auto flex items-center gap-2 justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-white py-1 px-2.5 rounded-full shadow-sm">
+            <CheckCircle2 className="h-3.5 w-3.5 text-status-success" />
+            <span className="text-[10px] font-semibold text-foreground">
+              {status === 'live' ? 'Live' : 'Confirmed'}
+            </span>
+          </div>
+
+          <button
+            onClick={() => onViewAttendees?.(id)}
+            className="flex items-center gap-1.5 bg-white py-1 px-2.5 rounded-full shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
+          >
+            <Users className="h-3.5 w-3.5 text-blue-500" />
+            <span className="text-[10px] font-semibold text-foreground">
+              {attendees}
+            </span>
+          </button>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-white py-1 px-2.5 rounded-full shadow-sm">
-          <CheckCircle2 className="h-3.5 w-3.5 text-status-success" />
-          <span className="text-[10px] font-semibold text-foreground">
-            {attendees}
-          </span>
-        </div>
-
-        <div className="ml-auto">
-          <MoreHorizontal className="h-5 w-5 opacity-60 cursor-pointer hover:opacity-100" />
+        <div className="flex items-center gap-2">
+          {isOrganizer && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-100/50"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.(id);
+                }}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-100/50"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm("Are you sure you want to delete this event?")) {
+                    onDelete?.(id);
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+          {/* Menu Removed */}
         </div>
       </div>
     </div>

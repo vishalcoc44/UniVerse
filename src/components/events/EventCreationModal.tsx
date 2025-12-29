@@ -14,12 +14,28 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CalendarIcon, MapPin, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
-export function EventCreationModal({ onEventCreated }: { onEventCreated?: () => void }) {
-  const [open, setOpen] = useState(false);
+export function EventCreationModal({
+  onEventCreated,
+  eventToEdit,
+  isOpen,
+  onOpenChange
+}: {
+  onEventCreated?: () => void;
+  eventToEdit?: any;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  // Use external control if provided, otherwise internal state
+  const open = isOpen !== undefined ? isOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
+
   const [loading, setLoading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     date: "",
@@ -29,8 +45,52 @@ export function EventCreationModal({ onEventCreated }: { onEventCreated?: () => 
     description: ""
   });
 
+  // Pre-fill data when eventToEdit changes
+  useEffect(() => {
+    if (eventToEdit) {
+      // Parse date and time from ISO string or similar
+      const d = new Date(eventToEdit.date);
+      const dateStr = d.toISOString().split('T')[0];
+      const timeStr = d.toTimeString().slice(0, 5); // HH:MM
+
+
+      // Extract category from description if type is missing (raw data case)
+      let category = eventToEdit.type;
+      if (!category && eventToEdit.description) {
+        const match = eventToEdit.description.match(/\[Category: (.*?)\]/);
+        category = match ? match[1] : "General";
+      }
+
+      setFormData({
+        title: eventToEdit.title,
+        date: dateStr,
+        time: timeStr,
+        location: eventToEdit.location || "",
+        category: (!category || category === "General") ? "" : category.toLowerCase(),
+        description: eventToEdit.description ? eventToEdit.description.replace(/ \[Category: .*?\]/, "") : "" // Clean description for editing
+      });
+    } else {
+      // Reset form if opening in create mode
+      // Only reset if completely closed or explicit new
+    }
+  }, [eventToEdit, open]);
+
+  // Reset form when closed
+  useEffect(() => {
+    if (!open && !eventToEdit) {
+      setFormData({ title: "", date: "", time: "", location: "", category: "", description: "" });
+      setImageFile(null);
+    }
+  }, [open, eventToEdit]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    }
   };
 
   const handleSelectChange = (value: string) => {
@@ -51,6 +111,27 @@ export function EventCreationModal({ onEventCreated }: { onEventCreated?: () => 
         throw new Error("Invalid Date");
       }
 
+      // Upload Image if exists
+      let imageUrl = eventToEdit?.imageUrl || null; // Keep existing image if not replacing
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        // Use timestamp to ensure unique URL and prevent browser caching stale images
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `event-covers/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('post-images') // Reusing existing bucket for now
+          .upload(filePath, imageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabase.storage
+          .from('post-images')
+          .getPublicUrl(filePath);
+
+        imageUrl = publicUrlData.publicUrl;
+      }
+
       // Fetch user's universityId
       const { data: profile } = await supabase
         .from('Profile')
@@ -58,24 +139,45 @@ export function EventCreationModal({ onEventCreated }: { onEventCreated?: () => 
         .eq('id', user.id)
         .single();
 
-      const { error } = await supabase.from('Event').insert({
+      const payload = {
         title: formData.title,
-        description: formData.description + (formData.category ? ` [Category: ${formData.category}]` : ""), // Hacky category storage
+        description: formData.description + (formData.category ? ` [Category: ${formData.category}]` : ""),
         date: eventDate.toISOString(),
         location: formData.location,
+        imageUrl: imageUrl,
         scope: 'CAMPUS',
         universityId: profile?.universityId,
         organizerId: user.id
-      });
+      };
 
-      if (error) throw error;
+      if (eventToEdit) {
+        // Update existing
+        const { data, error } = await supabase.from('Event').update(payload).eq('id', eventToEdit.id).select();
+
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          throw new Error("Update failed: No rows modified. Check RLS policies for UPDATE.");
+        }
+      } else {
+        // Create new
+        const { error } = await supabase.from('Event').insert({
+          id: crypto.randomUUID(),
+          ...payload
+        });
+        if (error) throw error;
+      }
 
       setOpen(false);
       if (onEventCreated) onEventCreated();
-      setFormData({ title: "", date: "", time: "", location: "", category: "", description: "" });
-    } catch (error) {
-      console.error("Error creating event:", error);
-      alert("Failed to create event. Make sure you are logged in.");
+
+      // Clear image file selection to ensure next edit doesn't reuse it
+      setImageFile(null);
+      if (!eventToEdit) {
+        setFormData({ title: "", date: "", time: "", location: "", category: "", description: "" });
+      }
+    } catch (error: any) {
+      console.error("Error saving event:", error);
+      alert(`Failed to save event: ${error.message || error}`);
     } finally {
       setLoading(false);
     }
@@ -83,19 +185,29 @@ export function EventCreationModal({ onEventCreated }: { onEventCreated?: () => 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-          Create Event
-        </Button>
-      </DialogTrigger>
+      {!isOpen && (
+        <DialogTrigger asChild>
+          <Button className="bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+            Create Event
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[500px] bg-card/95 backdrop-blur-xl border-border/50">
         <DialogHeader>
-          <DialogTitle>Host an Event</DialogTitle>
+          <DialogTitle>{eventToEdit ? "Edit Event" : "Host an Event"}</DialogTitle>
           <DialogDescription>
-            Organize a workshop, club meeting, or social gathering.
+            {eventToEdit ? "Update the details of your event." : "Organize a workshop, club meeting, or social gathering."}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+
+          <div className="grid gap-2">
+            <Label htmlFor="image">Event Cover Image</Label>
+            <Input id="image" type="file" accept="image/*" onChange={handleImageChange} className="bg-background/50" />
+            {eventToEdit?.imageUrl && !imageFile && (
+              <p className="text-xs text-muted-foreground">Current image will be kept unless you upload a new one.</p>
+            )}
+          </div>
 
           <div className="grid gap-2">
             <Label htmlFor="title">Event Title</Label>
@@ -148,7 +260,7 @@ export function EventCreationModal({ onEventCreated }: { onEventCreated?: () => 
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Publish Event
+            {eventToEdit ? "Update Event" : "Publish Event"}
           </Button>
         </DialogFooter>
       </DialogContent>
