@@ -19,16 +19,18 @@ interface Resource {
   createdAt: string;
 }
 
+import { AddCourseDialog } from "@/components/academic/AddCourseDialog";
 import { useUserUniversity } from "@/hooks/useUserUniversity";
 
 export function ResourceGrid() {
   const [resources, setResources] = useState<Resource[]>([]);
-  const { universityId, loading: uniLoading } = useUserUniversity();
+  const { universityId, loading: uniLoading, role } = useUserUniversity();
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchResources = async () => {
+    console.log("Fetching resources for universityId:", universityId);
     if (!universityId) return;
     setLoading(true);
     const { data, error } = await supabase
@@ -42,7 +44,8 @@ export function ResourceGrid() {
       .order('createdAt', { ascending: false });
 
     if (error) {
-      console.error('Error fetching resources:', error);
+      console.error('Error fetching resources:', JSON.stringify(error, null, 2));
+      toast.error(`Error loading resources: ${error.message}`);
     } else {
       setResources(data as any[]);
     }
@@ -121,10 +124,18 @@ export function ResourceGrid() {
           <h3 className="text-lg font-semibold text-foreground">Top Resources</h3>
           <p className="text-sm text-muted-foreground">Curated notes and papers from the community.</p>
         </div>
-        <Button className="gap-2" onClick={handleUploadClick} disabled={isUploading}>
-          {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
-          {isUploading ? "Uploading..." : "Upload"}
-        </Button>
+        <div className="flex gap-2">
+          {role === 'ADMIN' && universityId && (
+            <AddCourseDialog
+              universityId={universityId}
+              onCourseAdded={fetchResources} // Refresh resources if needed, though mostly this affects upload
+            />
+          )}
+          <Button className="gap-2" onClick={handleUploadClick} disabled={isUploading}>
+            {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
+            {isUploading ? "Uploading..." : "Upload"}
+          </Button>
+        </div>
         <input
           type="file"
           ref={fileInputRef}

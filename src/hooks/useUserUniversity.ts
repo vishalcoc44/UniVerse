@@ -6,6 +6,7 @@ export function useUserUniversity() {
 	const [universityId, setUniversityId] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [userId, setUserId] = useState<string | null>(null);
+	const [role, setRole] = useState<string | null>(null);
 
 	useEffect(() => {
 		const fetchUni = async () => {
@@ -15,12 +16,13 @@ export function useUserUniversity() {
 				setUserId(user.id);
 				const { data } = await supabase
 					.from('Profile')
-					.select('universityId')
+					.select('universityId, role')
 					.eq('id', user.id)
 					.single();
 
 				if (data) {
 					setUniversityId(data.universityId);
+					setRole(data.role);
 				}
 			}
 			setLoading(false);
@@ -28,5 +30,5 @@ export function useUserUniversity() {
 		fetchUni();
 	}, []);
 
-	return { universityId, loading, userId };
+	return { universityId, loading, userId, role };
 }

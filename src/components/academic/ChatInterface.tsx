@@ -24,7 +24,7 @@ export function ChatInterface() {
       id: "1",
       role: "assistant",
       content: "Hello! I'm your Academic AI assistant. I can help you with course material, research papers, or explaining complex topics. What are we studying today?",
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: "Just now",
     },
   ]);
   const [isTyping, setIsTyping] = useState(false);
