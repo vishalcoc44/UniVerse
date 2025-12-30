@@ -285,17 +285,7 @@ export default function Landing() {
 				</div>
 			</section>
 
-			{/* Stats Section */}
-			<section className="py-24 bg-primary text-primary-foreground">
-				<div className="container mx-auto px-6">
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-						<StatItem value={10000} suffix="+" label="Active Students" />
-						<StatItem value={500} suffix="+" label="Study Groups" />
-						<StatItem value={50} suffix="+" label="Partner Universities" />
-						<StatItem value={98} suffix="%" label="Satisfaction Rate" />
-					</div>
-				</div>
-			</section>
+
 
 			{/* DISTRIBUTED FEATURE SHOWCASE */}
 
@@ -819,12 +809,4 @@ function WorkflowStep({ number, title, desc, delay }: { number: string, title: s
 	)
 }
 
-function StatItem({ value, suffix, label }: { value: number, suffix: string, label: string }) {
-	// Simple implementation, could add counting animation
-	return (
-		<div>
-			<div className="text-4xl md:text-5xl font-bold mb-2">{value}{suffix}</div>
-			<div className="text-sm opacity-80">{label}</div>
-		</div>
-	)
-}
+
