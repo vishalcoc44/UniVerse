@@ -35,9 +35,12 @@ export function FlashcardGenerator() {
 
 		setIsGenerating(true);
 		try {
-			const newCards = await aiService.generateFlashcards(newTopic);
-			if (newCards && newCards.length > 0) {
-				setCards(newCards.map((c: any, i: number) => ({ ...c, id: Date.now() + i })));
+			// Use Server Action instead of Client-side Edge Function call
+			const { generateFlashcardsAction } = await import("@/app/academic/actions");
+			const { success, flashcards } = await generateFlashcardsAction(newTopic);
+
+			if (success && flashcards && flashcards.length > 0) {
+				setCards(flashcards.map((c: any, i: number) => ({ ...c, id: Date.now() + i })));
 				setCurrentIndex(0);
 				setIsFlipped(false);
 				setTopic(newTopic);

@@ -4,6 +4,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ChatInterface } from "@/components/academic/ChatInterface";
 import { ResourceGrid } from "@/components/academic/ResourceGrid";
 import { FocusTimer } from "@/components/academic/tools/FocusTimer";
+import { StudyCircles } from "@/components/academic/StudyCircles";
 import { GPACalculator } from "@/components/academic/tools/GPACalculator";
 import { FlashcardGenerator } from "@/components/academic/tools/FlashcardGenerator";
 import { Card } from "@/components/ui/card";
@@ -29,30 +30,7 @@ export default function Academic() {
 				<div className="flex flex-col gap-4 overflow-y-auto pr-1 h-full">
 
 					{/* Active Study Groups (Persistent) */}
-					<Card className="p-4 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 border-indigo-500/20 shrink-0">
-						<div className="flex items-center gap-3 mb-3">
-							<div className="p-2 bg-indigo-500/20 text-indigo-600 rounded-lg">
-								<Users className="h-5 w-5" />
-							</div>
-							<div>
-								<h3 className="font-semibold text-foreground">Study Circles</h3>
-								<p className="text-xs text-muted-foreground">3 groups active now</p>
-							</div>
-						</div>
-						<div className="space-y-2 mb-3">
-							<div className="flex items-center justify-between p-2 bg-background/60 rounded-lg text-sm">
-								<span className="font-medium">CS301 Algorithm...</span>
-								<Badge variant="secondary" className="h-5 text-[10px] bg-green-500/10 text-green-600">4 online</Badge>
-							</div>
-							<div className="flex items-center justify-between p-2 bg-background/60 rounded-lg text-sm">
-								<span className="font-medium">Physics Finals Pr...</span>
-								<Badge variant="secondary" className="h-5 text-[10px] bg-amber-500/10 text-amber-600">2 online</Badge>
-							</div>
-						</div>
-						<Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20" size="sm">
-							Find a Group <ArrowRight className="h-4 w-4 ml-2" />
-						</Button>
-					</Card>
+					<StudyCircles />
 
 					<Tabs defaultValue="tools" className="flex-1 flex flex-col">
 						<TabsList className="grid w-full grid-cols-2">

@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImagePlus, Plus, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { createListing } from "@/app/marketplace/actions";
 import { toast } from "sonner";
 
 interface SellModalProps {
@@ -44,31 +44,18 @@ export function SellModal({ onListingCreated }: SellModalProps) {
 
 		setLoading(true);
 		try {
-			const { data: { user } } = await supabase.auth.getUser();
-			if (!user) {
-				toast.error("Please log in to list an item.");
-				return;
-			}
-
-			// Fetch user's universityId
-			const { data: profile } = await supabase
-				.from('Profile')
-				.select('universityId')
-				.eq('id', user.id)
-				.single();
-
-			const { error } = await supabase.from('MarketplaceListing').insert({
+			const result = await createListing({
 				title: formData.title,
 				price: parseFloat(formData.price),
-				description: `${formData.category ? `[${formData.category}] ` : ''}${formData.description}`,
+				description: formData.description,
 				type: 'SELL',
-				scope: 'CAMPUS',
-				universityId: profile?.universityId,
-				sellerId: user.id,
-				status: 'ACTIVE'
+				category: formData.category,
+				// imageUrl: ... // Handle image upload if implemented
 			});
 
-			if (error) throw error;
+			if (!result.success) {
+				throw new Error(result.error);
+			}
 
 			toast.success("Listing created successfully!");
 			setOpen(false);

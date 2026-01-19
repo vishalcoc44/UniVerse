@@ -5,6 +5,7 @@ import { Search, Filter, Loader2 } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { getListings } from "@/app/marketplace/actions";
 
 // Defining a type that matches what ProductCard expects (or adapting ProductCard to DB)
 // ProductCard expects: Product interface
@@ -18,41 +19,39 @@ export function ProductGrid({ refreshKey, scope = "campus" }: { refreshKey?: num
 	useEffect(() => {
 		const fetchProducts = async () => {
 			setLoading(true);
-			let query = supabase
-				.from('MarketplaceListing')
-				.select(`
-                    *,
-                    seller:Profile(fullName, avatarUrl)
-                `)
-				.eq('type', 'SELL')
-				.eq('scope', scope === 'campus' ? 'CAMPUS' : 'UNIVERSE')
-				.eq('status', 'ACTIVE')
-				.order('createdAt', { ascending: false });
 
-			if (searchQuery) {
-				query = query.ilike('title', `%${searchQuery}%`);
-			}
+			const { success, data, error } = await getListings({
+				scope,
+				search: searchQuery,
+				types: ['SELL']
+			});
 
-			const { data, error } = await query;
-
-			if (error) {
+			if (!success || error) {
 				console.error("Error fetching listings:", error);
 			} else {
 				// Map DB data to UI props
-				const mapped = data?.map(item => ({
-					id: item.id,
-					title: item.title,
-					price: item.price,
-					image: item.imageUrl || "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=60", // Placeholder
-					category: "General", // parsed from desc?
-					condition: "Good", // not in schema
-					seller: {
-						name: item.seller?.fullName || "Unknown",
-						avatar: item.seller?.avatarUrl,
-						verified: false
-					},
-					postedAt: new Date(item.createdAt).toLocaleDateString()
-				})) || [];
+				const mapped = data?.map((item: any) => {
+					// Extract category from description if present [Category] ...
+					const categoryMatch = item.description.match(/^\[(.*?)\]/);
+					const category = categoryMatch ? categoryMatch[1] : "General";
+					const cleanDesc = item.description.replace(/^\[.*?\]\s*/, '');
+
+					return {
+						id: item.id,
+						title: item.title,
+						price: item.price,
+						image: item.imageUrl || "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=60",
+						category: category,
+						condition: "Good", // default
+						description: cleanDesc,
+						seller: {
+							name: item.seller?.fullName || "Unknown",
+							avatar: item.seller?.avatarUrl,
+							verified: !!item.seller?.universityId
+						},
+						postedAt: new Date(item.createdAt).toLocaleDateString()
+					};
+				}) || [];
 				setProducts(mapped);
 			}
 			setLoading(false);

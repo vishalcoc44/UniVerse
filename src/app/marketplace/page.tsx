@@ -3,16 +3,25 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ProductGrid } from "@/components/marketplace/ProductGrid";
 import { RoommateFinder } from "@/components/marketplace/RoommateFinder";
+import { SellModal } from "@/components/marketplace/SellModal";
+import { useState } from "react";
 import { LostFound } from "@/components/marketplace/LostFound";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingBag, Home, HelpCircle } from "lucide-react";
 
 export default function MarketplacePage() {
+	const [refreshKey, setRefreshKey] = useState(0);
+
+	const handleListingCreated = () => {
+		setRefreshKey(prev => prev + 1);
+	};
+
 	return (
 		<DashboardLayout
 			title="Marketplace"
 			subtitle="Buy, sell, and connect with other students."
 			breadcrumb={["UniVerse", "Marketplace"]}
+			action={<SellModal onListingCreated={handleListingCreated} />}
 		>
 			<div className="pb-10 h-full">
 				<Tabs defaultValue="buy-sell" className="space-y-6">
@@ -23,7 +32,7 @@ export default function MarketplacePage() {
 					</TabsList>
 
 					<TabsContent value="buy-sell">
-						<ProductGrid />
+						<ProductGrid refreshKey={refreshKey} />
 					</TabsContent>
 
 					<TabsContent value="housing">

@@ -192,14 +192,14 @@ export function EventCreationModal({
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-[500px] bg-card/95 backdrop-blur-xl border-border/50">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col bg-card/95 backdrop-blur-xl border-border/50">
         <DialogHeader>
           <DialogTitle>{eventToEdit ? "Edit Event" : "Host an Event"}</DialogTitle>
           <DialogDescription>
             {eventToEdit ? "Update the details of your event." : "Organize a workshop, club meeting, or social gathering."}
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-4 py-4 overflow-y-auto pr-2 flex-1">
 
           <div className="grid gap-2">
             <Label htmlFor="image">Event Cover Image</Label>
@@ -256,7 +256,7 @@ export function EventCreationModal({
             <Textarea id="description" value={formData.description} onChange={handleChange} placeholder="What's this event about?" className="bg-background/50 resize-none" rows={3} />
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="mt-auto pt-2 border-t">
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

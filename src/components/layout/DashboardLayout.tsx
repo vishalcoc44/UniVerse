@@ -11,8 +11,8 @@ interface DashboardLayoutProps {
   breadcrumb?: string[];
   activeNav?: string;
   onNavigate?: (href: string) => void;
+  action?: React.ReactNode;
 }
-
 export function DashboardLayout({
   children,
   title,
@@ -20,12 +20,13 @@ export function DashboardLayout({
   breadcrumb,
   activeNav,
   onNavigate,
+  action,
 }: DashboardLayoutProps) {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar activeItem={activeNav} onNavigate={onNavigate} />
       <main className="flex-1 overflow-y-auto">
-        <Header title={title} subtitle={subtitle} breadcrumb={breadcrumb} />
+        <Header title={title} subtitle={subtitle} breadcrumb={breadcrumb} action={action} />
         <div className="p-6 animate-fade-in">{children}</div>
       </main>
     </div>

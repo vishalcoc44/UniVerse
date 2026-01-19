@@ -12,9 +12,10 @@ interface HeaderProps {
   title: string;
   subtitle?: string;
   breadcrumb?: string[];
+  action?: React.ReactNode;
 }
 
-export function Header({ title, subtitle, breadcrumb }: HeaderProps) {
+export function Header({ title, subtitle, breadcrumb, action }: HeaderProps) {
   const router = useRouter();
 
   return (
@@ -91,10 +92,18 @@ export function Header({ title, subtitle, breadcrumb }: HeaderProps) {
 
       {/* Page Title */}
       {title && (
-        <div className="px-6 pb-4">
-          <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
-          {subtitle && (
-            <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+        <div className="px-6 pb-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
+            {subtitle && (
+              <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+            )}
+          </div>
+          {/* Page Action */}
+          {action && (
+            <div>
+              {action}
+            </div>
           )}
         </div>
       )}

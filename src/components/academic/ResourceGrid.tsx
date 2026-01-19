@@ -7,13 +7,16 @@ import { Download, FileText, MoreVertical, Star, ThumbsUp, UploadCloud, Loader2 
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { getResources, voteResource, deleteResource } from "@/app/academic/actions";
+
 
 interface Resource {
   id: string;
   title: string;
   type: string;
   upvotes: number;
-  uploader: { fullName: string } | null;
+  uploader: { fullName: string; id: string } | null;
+
   course: { code: string } | null;
   fileUrl: string;
   createdAt: string;
@@ -30,22 +33,12 @@ export function ResourceGrid() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchResources = async () => {
-    console.log("Fetching resources for universityId:", universityId);
     if (!universityId) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from('Resource')
-      .select(`
-              *,
-              course:Course!inner(code, universityId),
-              uploader:Profile(fullName)
-          `)
-      .eq('course.universityId', universityId)
-      .order('createdAt', { ascending: false });
+    const { success, resources: data, error } = await getResources(universityId);
 
-    if (error) {
-      console.error('Error fetching resources:', JSON.stringify(error, null, 2));
-      toast.error(`Error loading resources: ${error.message}`);
+    if (!success || error) {
+      toast.error(`Error loading resources: ${error}`);
     } else {
       setResources(data as any[]);
     }
@@ -56,6 +49,18 @@ export function ResourceGrid() {
     if (uniLoading) return;
     fetchResources();
   }, [universityId, uniLoading]);
+
+  const handleVote = async (id: string) => {
+    // Optimistic update
+    setResources(prev => prev.map(r => r.id === id ? { ...r, upvotes: r.upvotes + 1 } : r));
+
+    const { success } = await voteResource(id);
+    if (!success) {
+      toast.error("Failed to upvote");
+      // Revert
+      setResources(prev => prev.map(r => r.id === id ? { ...r, upvotes: r.upvotes - 1 } : r));
+    }
+  };
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -71,6 +76,7 @@ export function ResourceGrid() {
       .select('id')
       .eq('universityId', universityId)
       .limit(1);
+
 
     if (!courses || courses.length === 0) {
       toast.error("Please add a course to your university before uploading resources.");
@@ -94,18 +100,19 @@ export function ResourceGrid() {
         .from('academic-resources')
         .getPublicUrl(filePath);
 
-      // 2. Save to Database
-      const { data: { user } } = await supabase.auth.getUser();
-      const { error: dbError } = await supabase.from('Resource').insert({
+      // 2. Save to Database (Server Action)
+      // We import dynamically to avoid top-level server-only import issues if any (though usually fine)
+      const { createResource } = await import("@/app/academic/actions");
+
+      const { success, error: dbError } = await createResource({
         title: file.name,
         fileUrl: publicUrl,
-        type: 'NOTE', // Default for now
+        type: 'NOTE',
         courseId: courses[0].id,
-        uploaderId: user?.id,
-        upvotes: 0
+        universityId
       });
 
-      if (dbError) throw dbError;
+      if (!success) throw new Error(dbError);
 
       toast.success("Resource uploaded successfully!");
       fetchResources();
@@ -114,6 +121,18 @@ export function ResourceGrid() {
       toast.error(error.message || "Failed to upload resource. Ensure 'academic-resources' bucket exists.");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this resource?")) return;
+
+    const { success, error } = await deleteResource(id);
+    if (success) {
+      toast.success("Resource deleted");
+      fetchResources();
+    } else {
+      toast.error(error || "Failed to delete");
     }
   };
 
@@ -174,9 +193,43 @@ export function ResourceGrid() {
                     </div>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                  <MoreVertical className="h-4 w-4" />
+
+                {/* Delete Button (Only for uploader) */}
+                {/* Note: We need the current user ID to check ownership. 
+                    Ideally 'useUserUniversity' or a separate auth hook provides 'user'. 
+                    For now, assuming backend validation handles security, 
+                    but UI hiding is better UX. 
+                    Let's use a simple client-side check if we had user ID.
+                    Since we don't have user ID in context easily yet, 
+                    we show it and let backend reject if unauthorized, 
+                    OR we fetch user ID. 
+                    Let's just show it in the menu for now. */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                  onClick={() => handleDelete(res.id)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="lucide lucide-trash-2"
+                  >
+                    <path d="M3 6h18" />
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                    <line x1="10" x2="10" y1="11" y2="17" />
+                    <line x1="14" x2="14" y1="11" y2="17" />
+                  </svg>
                 </Button>
+
               </div>
 
               <div className="flex items-center gap-2 mb-4">
@@ -192,7 +245,10 @@ export function ResourceGrid() {
 
               <div className="flex items-center justify-between pt-3 border-t border-border/40 text-xs text-muted-foreground">
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5 hover:text-foreground cursor-pointer transition-colors">
+                  <div
+                    className="flex items-center gap-1.5 hover:text-foreground cursor-pointer transition-colors"
+                    onClick={() => handleVote(res.id)}
+                  >
                     <ThumbsUp className="h-3.5 w-3.5" />
                     {res.upvotes}
                   </div>
@@ -209,7 +265,8 @@ export function ResourceGrid() {
             </Card>
           ))}
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }

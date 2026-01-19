@@ -9,6 +9,7 @@ import { aiService, ChatMessage as AIChatMessage } from "@/lib/ai";
 import { useUserUniversity } from "@/hooks/useUserUniversity";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import { getOrCreateChat, saveChatMessage } from "@/app/academic/actions";
 
 interface Message {
   id: string;
@@ -21,16 +22,38 @@ export function ChatInterface() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: "1",
+      id: "welcome",
       role: "assistant",
       content: "Hello! I'm your Academic AI assistant. I can help you with course material, research papers, or explaining complex topics. What are we studying today?",
       timestamp: "Just now",
     },
   ]);
   const [isTyping, setIsTyping] = useState(false);
+  const [chatId, setChatId] = useState<string | null>(null);
   const { universityId } = useUserUniversity();
   const scrollRef = useRef<HTMLDivElement>(null);
   const EndOfMessagesRef = useRef<HTMLDivElement>(null);
+
+  // Load chat history
+  useEffect(() => {
+    const loadChat = async () => {
+      const { success, chatId: id, messages: history } = await getOrCreateChat();
+      if (success && id) {
+        setChatId(id);
+        if (history && history.length > 0) {
+          const mapped: Message[] = history.map(m => ({
+            id: m.id,
+            role: m.role,
+            content: m.content,
+            timestamp: new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }));
+          // Prepend welcome message if needed, or just replace
+          setMessages(mapped);
+        }
+      }
+    };
+    loadChat();
+  }, []);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -40,32 +63,40 @@ export function ChatInterface() {
   }, [messages, isTyping]);
 
   const handleSend = async () => {
-    if (!input.trim() || isTyping) return;
+    if (!input.trim() || isTyping || !chatId) return;
 
     const userMsgContent = input;
     setInput(""); // Clear immediately for better UX
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+    // Optimistic Update
     const newMessage: Message = {
       id: Date.now().toString(),
       role: "user",
       content: userMsgContent,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp,
     };
-
     setMessages((prev) => [...prev, newMessage]);
     setIsTyping(true);
 
+    // Save User Message
+    saveChatMessage(chatId, 'user', userMsgContent);
+
     try {
-      // Filter out the initial welcome message (id: "1") from the history
-      const history: AIChatMessage[] = messages
-        .filter(m => m.id !== "1")
+      // Build history for AI context
+      const historyItems = messages
+        .filter(m => m.id !== "welcome")
         .map(m => ({
-          role: m.role,
+          role: m.role as 'user' | 'assistant',
           content: m.content
         }));
-      history.push({ role: 'user', content: userMsgContent });
+      historyItems.push({ role: 'user', content: userMsgContent });
 
-      const response = await aiService.chat(history, universityId || undefined);
+      // Call Server Action
+      const { chatAction } = await import("@/app/academic/actions");
+      const { success, response, error } = await chatAction(historyItems);
+
+      if (!success || !response) throw new Error(error || "Failed to get AI response");
 
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -74,6 +105,10 @@ export function ChatInterface() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, aiResponse]);
+
+      // Save AI Message
+      await saveChatMessage(chatId, 'assistant', response);
+
     } catch (error) {
       console.error("Chat error:", error);
     } finally {
@@ -101,7 +136,7 @@ export function ChatInterface() {
           </div>
         </div>
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => window.location.reload()}>
             <RefreshCw className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
@@ -114,6 +149,9 @@ export function ChatInterface() {
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
         <div className="space-y-6 px-2 pb-4">
           <AnimatePresence initial={false}>
+            {messages.length === 0 && (
+              <div className="text-center text-muted-foreground mt-20">Start a conversation...</div>
+            )}
             {messages.map((msg) => (
               <motion.div
                 key={msg.id}
