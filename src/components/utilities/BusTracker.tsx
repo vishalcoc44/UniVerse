@@ -1,95 +1,487 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Bus, Clock, MapPin } from "lucide-react";
+"use client";
 
-interface BusRoute {
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Bus, Clock, MapPin, Plus, Trash2, Check, X, Shield, Search, Info, Accessibility } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useUserUniversity } from "@/hooks/useUserUniversity";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+
+interface UtilityShuttle {
   id: string;
-  name: string;
-  number: string;
+  routeName: string;
+  routeNumber: string;
   status: "On Time" | "Delayed" | "Arriving";
-  nextStop: string;
-  eta: string;
-  schedule: string[];
+  nextStop?: string | null;
+  etaMinutes?: number | null;
+  schedule?: string[] | null;
+  operatingHours?: string | null;
+  serviceAlerts?: string | null;
+  isAccessible?: boolean | null;
 }
 
-const mockRoutes: BusRoute[] = [
-  {
-    id: "1",
-    name: "Campus Loop - North",
-    number: "CL-N",
-    status: "Arriving",
-    nextStop: "Student Center",
-    eta: "2 min",
-    schedule: ["8:00 AM", "8:15 AM", "8:30 AM", "8:45 AM"],
-  },
-  {
-    id: "2",
-    name: "Dorm Shuttle - East",
-    number: "DS-E",
-    status: "On Time",
-    nextStop: "Housing Block B",
-    eta: "8 min",
-    schedule: ["8:10 AM", "8:30 AM", "8:50 AM", "9:10 AM"],
-  },
-  {
-    id: "3",
-    name: "Engineering Express",
-    number: "ENG-X",
-    status: "Delayed",
-    nextStop: "Tech Park Gate 1",
-    eta: "15 min",
-    schedule: ["8:05 AM", "8:35 AM", "9:05 AM", "9:35 AM"],
-  },
-];
+interface UtilitySuggestion {
+  id: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  routeName?: string | null;
+  routeNumber?: string | null;
+  nextStop?: string | null;
+  etaMinutes?: number | null;
+  schedule?: string[] | null;
+  operatingHours?: string | null;
+  serviceAlerts?: string | null;
+  notes?: string | null;
+  adminNote?: string | null;
+}
+
+const emptyShuttleForm = {
+  routeName: "",
+  routeNumber: "",
+  status: "On Time",
+  nextStop: "",
+  etaMinutes: "",
+  schedule: "",
+  operatingHours: "",
+  serviceAlerts: "",
+  isAccessible: false,
+};
+
+const emptySuggestionForm = {
+  routeName: "",
+  routeNumber: "",
+  nextStop: "",
+  etaMinutes: "",
+  schedule: "",
+  operatingHours: "",
+  serviceAlerts: "",
+  notes: "",
+};
 
 export function BusTracker() {
-  return (
-    <Card className="border-border/50 bg-card/50 backdrop-blur-sm h-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Bus className="h-5 w-5 text-primary" />
-          Campus Shuttle Tracker
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {mockRoutes.map((route) => (
-          <div key={route.id} className="group p-4 rounded-xl border border-border/50 bg-background/40 hover:bg-background/60 transition-colors">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary">
-                  {route.number}
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sm">{route.name}</h4>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                    <Badge variant={route.status === "Delayed" ? "destructive" : "default"} className="h-5 px-1.5 text-[10px]">
-                      {route.status}
-                    </Badge>
-                    <span>• ETA: {route.eta}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+  const { universityId, userId, role } = useUserUniversity();
+  const isAdmin = role === "ADMIN";
+  const [routes, setRoutes] = useState<UtilityShuttle[]>([]);
+  const [pendingSuggestions, setPendingSuggestions] = useState<UtilitySuggestion[]>([]);
+  const [userSuggestions, setUserSuggestions] = useState<UtilitySuggestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [routeForm, setRouteForm] = useState(emptyShuttleForm);
+  const [suggestionForm, setSuggestionForm] = useState(emptySuggestionForm);
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-xs">
-                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-muted-foreground">Next Stop:</span>
-                <span className="font-medium">{route.nextStop}</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs">
-                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-muted-foreground">Next Departures:</span>
-                <div className="flex gap-1.5">
-                  {route.schedule.slice(0, 3).map((time, i) => (
-                    <span key={i} className="bg-secondary px-1.5 py-0.5 rounded text-[10px]">{time}</span>
-                  ))}
-                </div>
+  const loadRoutes = async () => {
+    if (!universityId) return;
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("UtilityShuttle")
+      .select("*")
+      .eq("universityId", universityId)
+      .order("createdAt", { ascending: false });
+
+    if (error) {
+      toast.error("Failed to load shuttles.");
+    } else {
+      setRoutes(data ?? []);
+    }
+    setLoading(false);
+  };
+
+  const loadSuggestions = async () => {
+    if (!universityId || !userId) return;
+    if (isAdmin) {
+      const { data } = await supabase
+        .from("UtilitySuggestion")
+        .select("*")
+        .eq("universityId", universityId)
+        .eq("category", "SHUTTLE")
+        .eq("status", "PENDING")
+        .order("createdAt", { ascending: false });
+      setPendingSuggestions(data ?? []);
+    } else {
+      const { data } = await supabase
+        .from("UtilitySuggestion")
+        .select("*")
+        .eq("suggestedBy", userId)
+        .eq("category", "SHUTTLE")
+        .order("createdAt", { ascending: false });
+      setUserSuggestions(data ?? []);
+    }
+  };
+
+  useEffect(() => {
+    if (!universityId) return;
+    loadRoutes();
+    loadSuggestions();
+  }, [universityId, userId, role]);
+
+  const handleCreateRoute = async () => {
+    if (!universityId) return;
+    if (!routeForm.routeName || !routeForm.routeNumber) {
+      toast.error("Route name and number are required.");
+      return;
+    }
+    const payload = {
+      universityId,
+      routeName: routeForm.routeName,
+      routeNumber: routeForm.routeNumber,
+      status: routeForm.status,
+      nextStop: routeForm.nextStop || null,
+      etaMinutes: routeForm.etaMinutes ? Number(routeForm.etaMinutes) : null,
+      schedule: routeForm.schedule ? routeForm.schedule.split(",").map((s) => s.trim()) : null,
+      operatingHours: routeForm.operatingHours || null,
+      serviceAlerts: routeForm.serviceAlerts || null,
+      isAccessible: routeForm.isAccessible,
+    };
+    const { error } = await supabase.from("UtilityShuttle").insert(payload);
+    if (error) {
+      toast.error("Failed to add shuttle route.");
+      return;
+    }
+    toast.success("Shuttle route added.");
+    setRouteForm(emptyShuttleForm);
+    loadRoutes();
+  };
+
+  const handleDeleteRoute = async (id: string) => {
+    const { error } = await supabase.from("UtilityShuttle").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to remove shuttle route.");
+      return;
+    }
+    toast.success("Shuttle route removed.");
+    loadRoutes();
+  };
+
+  const handleSuggestRoute = async () => {
+    if (!universityId || !userId) return;
+    if (!suggestionForm.routeName) {
+      toast.error("Route name is required.");
+      return;
+    }
+    const payload = {
+      universityId,
+      suggestedBy: userId,
+      category: "SHUTTLE",
+      routeName: suggestionForm.routeName,
+      routeNumber: suggestionForm.routeNumber || null,
+      nextStop: suggestionForm.nextStop || null,
+      etaMinutes: suggestionForm.etaMinutes ? Number(suggestionForm.etaMinutes) : null,
+      schedule: suggestionForm.schedule ? suggestionForm.schedule.split(",").map((s) => s.trim()) : null,
+      operatingHours: suggestionForm.operatingHours || null,
+      serviceAlerts: suggestionForm.serviceAlerts || null,
+      notes: suggestionForm.notes || null,
+    };
+    const { error } = await supabase.from("UtilitySuggestion").insert(payload);
+    if (error) {
+      toast.error("Failed to submit suggestion.");
+      return;
+    }
+    toast.success("Suggestion sent.");
+    setSuggestionForm(emptySuggestionForm);
+    loadSuggestions();
+  };
+
+  const handleApproveSuggestion = async (suggestion: UtilitySuggestion) => {
+    if (!universityId) return;
+    const payload = {
+      universityId,
+      routeName: suggestion.routeName ?? "Shuttle Route",
+      routeNumber: suggestion.routeNumber ?? "N/A",
+      status: "On Time",
+      nextStop: suggestion.nextStop ?? null,
+      etaMinutes: suggestion.etaMinutes ?? null,
+      schedule: suggestion.schedule ?? null,
+      operatingHours: suggestion.operatingHours ?? null,
+      serviceAlerts: suggestion.serviceAlerts ?? null,
+      isAccessible: false,
+    };
+    const insert = await supabase.from("UtilityShuttle").insert(payload);
+    if (insert.error) {
+      toast.error("Failed to approve suggestion.");
+      return;
+    }
+    await supabase.from("UtilitySuggestion").update({ status: "APPROVED" }).eq("id", suggestion.id);
+    toast.success("Suggestion approved.");
+    loadRoutes();
+    loadSuggestions();
+  };
+
+  const handleRejectSuggestion = async (suggestion: UtilitySuggestion) => {
+    const adminNote = window.prompt("Optional rejection note") || null;
+    await supabase.from("UtilitySuggestion").update({ status: "REJECTED", adminNote }).eq("id", suggestion.id);
+    toast.success("Suggestion rejected.");
+    loadSuggestions();
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card className="border-none shadow-xl bg-background/60 backdrop-blur-md overflow-hidden">
+        <CardHeader className="border-b border-border/50 pb-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                <Bus className="h-6 w-6 text-primary" />
+                Live Transit Tracker
+              </CardTitle>
+              <CardDescription>Real-time shuttle schedules and service alerts for campus routes.</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="gap-2">
+                      <Plus className="h-4 w-4" /> Add Route
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>Add shuttle route</DialogTitle>
+                      <DialogDescription>Setup a new campus transit line.</DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-3 py-2">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="grid gap-2">
+                          <Label>Route Name</Label>
+                          <Input value={routeForm.routeName} onChange={(e) => setRouteForm({ ...routeForm, routeName: e.target.value })} />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Number/ID</Label>
+                          <Input value={routeForm.routeNumber} onChange={(e) => setRouteForm({ ...routeForm, routeNumber: e.target.value })} />
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Current Status</Label>
+                        <Input value={routeForm.status} onChange={(e) => setRouteForm({ ...routeForm, status: e.target.value as any })} />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Next Stop</Label>
+                        <Input value={routeForm.nextStop || ""} onChange={(e) => setRouteForm({ ...routeForm, nextStop: e.target.value })} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="grid gap-2">
+                          <Label>ETA (minutes)</Label>
+                          <Input type="number" value={routeForm.etaMinutes} onChange={(e) => setRouteForm({ ...routeForm, etaMinutes: e.target.value })} />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Accessible</Label>
+                          <Button 
+                            variant={routeForm.isAccessible ? "default" : "outline"} 
+                            className="w-full justify-start gap-2"
+                            onClick={() => setRouteForm({ ...routeForm, isAccessible: !routeForm.isAccessible })}
+                          >
+                            <Accessibility className="h-4 w-4" /> {routeForm.isAccessible ? "Enabled" : "Disabled"}
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Operating Hours</Label>
+                        <Input value={routeForm.operatingHours} onChange={(e) => setRouteForm({ ...routeForm, operatingHours: e.target.value })} />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Service Alerts</Label>
+                        <Textarea value={routeForm.serviceAlerts} onChange={(e) => setRouteForm({ ...routeForm, serviceAlerts: e.target.value })} />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={handleCreateRoute}>Initialize Route</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Input placeholder="Filter routes..." className="pl-8 h-8 w-[150px] bg-background/50" />
               </div>
             </div>
           </div>
-        ))}
-      </CardContent>
-    </Card>
+        </CardHeader>
+
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {loading ? (
+              [1, 2, 3].map((i) => (
+                <div key={i} className="h-40 rounded-xl bg-muted/30 animate-pulse border border-border/50" />
+              ))
+            ) : routes.length === 0 ? (
+              <div className="col-span-full py-12 text-center bg-muted/10 rounded-2xl border border-dashed border-border/50">
+                <Bus className="h-12 w-12 text-muted-foreground/20 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground font-medium">No active shuttle services detected.</p>
+              </div>
+            ) : (
+              routes.map((route) => (
+                <div key={route.id} className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/40 p-5 hover:bg-card/80 transition-all">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center font-black text-primary text-lg">
+                      {route.routeNumber}
+                    </div>
+                    <div className="text-right">
+                      <Badge 
+                        variant={route.status === "Delayed" ? "destructive" : "default"} 
+                        className={`h-5 px-2 text-[10px] uppercase font-bold tracking-tighter ${
+                          route.status === "On Time" ? "bg-green-500 hover:bg-green-600" : 
+                          route.status === "Arriving" ? "bg-blue-500 hover:bg-blue-600" : ""
+                        }`}
+                      >
+                        {route.status}
+                      </Badge>
+                      {route.etaMinutes !== null && (
+                        <p className="text-xs font-bold text-primary mt-1 flex items-center justify-end gap-1">
+                          <Clock className="h-3 w-3" /> {route.etaMinutes}m
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="font-bold text-base leading-tight">{route.routeName}</h4>
+                    {route.nextStop && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <MapPin className="h-3.5 w-3.5 text-primary/60 shrink-0" />
+                        <span className="truncate">Next: <span className="text-foreground font-medium">{route.nextStop}</span></span>
+                      </div>
+                    )}
+                    
+                    {/* Simulated Progress Line */}
+                    <div className="relative pt-2">
+                       <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                          <div className={`h-full bg-primary transition-all duration-1000 ${route.status === "Arriving" ? "w-[90%]" : "w-[40%]"}`}></div>
+                       </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="flex gap-2">
+                        {route.isAccessible && <Accessibility className="h-3.5 w-3.5 text-muted-foreground" title="Wheelchair accessible" />}
+                        {route.serviceAlerts && <Info className="h-3.5 w-3.5 text-amber-500" title="Active Alert" />}
+                      </div>
+                      {isAdmin && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive transition-opacity"
+                          onClick={() => handleDeleteRoute(route.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Moderation section */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6">
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold flex items-center gap-2">
+            <Info className="h-5 w-5 text-primary" /> Community Proposals
+          </h3>
+          
+          <div className="grid gap-3">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="h-20 border-dashed bg-background/40 hover:bg-background/80 flex flex-col gap-1 items-center justify-center">
+                  <Plus className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-xs font-semibold">Suggest a New Shuttle Route</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Route Proposal</DialogTitle>
+                  <DialogDescription>Help improve campus connectivity.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="grid gap-2">
+                      <Label>Proposed Route Name</Label>
+                      <Input placeholder="e.g. Shopping Mall Circle" value={suggestionForm.routeName} onChange={(e) => setSuggestionForm({ ...suggestionForm, routeName: e.target.value })} />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Desired Number</Label>
+                      <Input placeholder="e.g. S12" value={suggestionForm.routeNumber} onChange={(e) => setSuggestionForm({ ...suggestionForm, routeNumber: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Key Stops</Label>
+                    <Input placeholder="List main stops..." value={suggestionForm.nextStop} onChange={(e) => setSuggestionForm({ ...suggestionForm, nextStop: e.target.value })} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Proposed Hours</Label>
+                    <Input placeholder="e.g. 7 AM - 10 PM" value={suggestionForm.operatingHours} onChange={(e) => setSuggestionForm({ ...suggestionForm, operatingHours: e.target.value })} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Why is this route needed?</Label>
+                    <Textarea placeholder="Explain the benefit for students..." value={suggestionForm.notes} onChange={(e) => setSuggestionForm({ ...suggestionForm, notes: e.target.value })} />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleSuggestRoute} className="w-full">Submit Proposal</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* User's Suggestions */}
+            {!isAdmin && userSuggestions.length > 0 && (
+              <div className="space-y-2">
+                {userSuggestions.map((item) => (
+                  <div key={item.id} className="p-4 rounded-xl border border-border/50 bg-background/40 flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-sm">{item.routeName || "Unnamed Route"}</p>
+                      <p className="text-[10px] text-muted-foreground">{new Date().toLocaleDateString()}</p>
+                    </div>
+                    <Badge variant="outline" className="text-[10px]">{item.status}</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Admin Moderation Queue */}
+        {isAdmin && (
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Admin Desk</h3>
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-4">
+              <div className="flex items-center gap-2 text-amber-500">
+                <Shield className="h-4 w-4" />
+                <span className="text-xs font-black uppercase tracking-tighter">Moderation Queue</span>
+              </div>
+              
+              <ScrollArea className="h-[400px] pr-4">
+                <div className="space-y-3">
+                  {pendingSuggestions.length === 0 ? (
+                    <p className="text-[10px] text-muted-foreground text-center py-8">Inbox is empty.</p>
+                  ) : (
+                    pendingSuggestions.map((item) => (
+                      <div key={item.id} className="p-3 rounded-lg border border-border bg-background shadow-sm space-y-3">
+                        <div>
+                          <p className="text-xs font-bold">{item.routeName}</p>
+                          <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2">{item.notes}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" className="h-7 px-2 text-[10px] gap-1 bg-green-600 hover:bg-green-700" onClick={() => handleApproveSuggestion(item)}>
+                            <Check className="h-3 w-3" /> Approve
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px] gap-1 text-destructive" onClick={() => handleRejectSuggestion(item)}>
+                            <X className="h-3 w-3" /> Deny
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

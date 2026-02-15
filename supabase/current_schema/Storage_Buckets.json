@@ -1,0 +1,28 @@
+[
+  {
+    "id": "post-images",
+    "name": "post-images",
+    "owner": null,
+    "created_at": "2025-12-25 17:49:34.230568+00",
+    "updated_at": "2025-12-25 17:49:34.230568+00",
+    "public": true,
+    "avif_autodetection": false,
+    "file_size_limit": null,
+    "allowed_mime_types": null,
+    "owner_id": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "academic-resources",
+    "name": "academic-resources",
+    "owner": null,
+    "created_at": "2025-12-29 16:37:14.659896+00",
+    "updated_at": "2025-12-29 16:37:14.659896+00",
+    "public": true,
+    "avif_autodetection": false,
+    "file_size_limit": null,
+    "allowed_mime_types": null,
+    "owner_id": null,
+    "type": "STANDARD"
+  }
+]

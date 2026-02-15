@@ -170,7 +170,7 @@ export async function getResources(universityId: string) {
 			.select(`
 				*,
 				course:Course!inner(code, universityId),
-				uploader:Profile(fullName)
+				uploader:Profile(fullName, username, avatarUrl)
 			`)
 			.eq('course.universityId', universityId)
 			.order('createdAt', { ascending: false });

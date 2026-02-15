@@ -1,0 +1,37 @@
+[
+  {
+    "function_name": "match_documents",
+    "definition": "CREATE OR REPLACE FUNCTION public.match_documents(query_embedding vector, match_threshold double precision, match_count integer)\n RETURNS TABLE(id text, content text, similarity double precision)\n LANGUAGE plpgsql\n SET search_path TO 'public', 'extensions'\nAS $function$\r\nbegin\r\n  return query\r\n  select\r\n    \"ResourceEmbedding\".id,\r\n    \"ResourceEmbedding\".content,\r\n    1 - (\"ResourceEmbedding\".embedding <=> query_embedding) as similarity\r\n  from \"ResourceEmbedding\"\r\n  where 1 - (\"ResourceEmbedding\".embedding <=> query_embedding) > match_threshold\r\n  order by \"ResourceEmbedding\".embedding <=> query_embedding\r\n  limit match_count;\r\nend;\r\n$function$\n",
+    "arguments": "query_embedding vector, match_threshold double precision, match_count integer"
+  },
+  {
+    "function_name": "make_me_admin",
+    "definition": "CREATE OR REPLACE FUNCTION public.make_me_admin()\n RETURNS text\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nbegin\r\n  update public.\"Profile\"\r\n  set role = 'ADMIN'\r\n  where id = auth.uid()::text;\r\n  \r\n  return 'Success: You are now an ADMIN. Try adding a course.';\r\nend;\r\n$function$\n",
+    "arguments": ""
+  },
+  {
+    "function_name": "am_i_admin",
+    "definition": "CREATE OR REPLACE FUNCTION public.am_i_admin()\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  is_admin boolean;\r\nbegin\r\n  select (role = 'ADMIN') into is_admin\r\n  from public.\"Profile\"\r\n  where id = auth.uid()::text;\r\n  \r\n  return coalesce(is_admin, false);\r\nend;\r\n$function$\n",
+    "arguments": ""
+  },
+  {
+    "function_name": "handle_new_user",
+    "definition": "CREATE OR REPLACE FUNCTION public.handle_new_user()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nBEGIN\r\n  INSERT INTO public.\"Profile\" (\r\n    id, \r\n    email, \r\n    \"fullName\", \r\n    username, \r\n    \"universityId\", \r\n    role, \r\n    \"updatedAt\" -- Added this to prevent the \"null value\" error\r\n  )\r\n  VALUES (\r\n    new.id, \r\n    new.email, \r\n    new.raw_user_meta_data->>'full_name', \r\n    new.raw_user_meta_data->>'username',\r\n    new.raw_user_meta_data->>'universityId',\r\n    'STUDENT',\r\n    now()\r\n  );\r\n  RETURN new;\r\nEND;\r\n$function$\n",
+    "arguments": ""
+  },
+  {
+    "function_name": "handle_updated_at",
+    "definition": "CREATE OR REPLACE FUNCTION public.handle_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public'\nAS $function$\r\nBEGIN\r\n  NEW.\"updatedAt\" = now();\r\n  RETURN NEW;\r\nEND;\r\n$function$\n",
+    "arguments": ""
+  },
+  {
+    "function_name": "check_conversation_access",
+    "definition": "CREATE OR REPLACE FUNCTION public.check_conversation_access(convo_id text)\r\n RETURNS boolean\r\n LANGUAGE plpgsql\r\n SECURITY DEFINER\r\n SET search_path TO 'public'\r\nAS $function$\r\nBEGIN\r\n  RETURN EXISTS (\r\n    SELECT 1 FROM public.\"ConversationParticipant\"\r\n    WHERE \"conversationId\" = convo_id\r\n    AND \"userId\" = auth.uid()::text\r\n    AND status = 'ACCEPTED'::\"ConversationStatus\"\r\n  );\r\nEND;\r\n$function$\n",
+    "arguments": "convo_id text"
+  },
+  {
+    "function_name": "handle_conversation_creator_status",
+    "definition": "CREATE OR REPLACE FUNCTION public.handle_conversation_creator_status()\r\nRETURNS TRIGGER AS $$\r\nBEGIN\r\n  IF NEW.status = 'PENDING' AND EXISTS (\r\n    SELECT 1 FROM public.\"Conversation\" \r\n    WHERE id = NEW.\"conversationId\" \r\n    AND (\"createdBy\" = NEW.\"userId\" OR \"createdBy\" IS NULL)\r\n  ) THEN\r\n    NEW.status := 'ACCEPTED';\r\n  END IF;\r\n  RETURN NEW;\r\nEND;\r\n$$ LANGUAGE plpgsql SECURITY DEFINER;",
+    "arguments": ""
+  }
+]

@@ -186,7 +186,10 @@ export function ResourceGrid() {
                       {res.title}
                     </h4>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                      <span>{res.uploader?.fullName || "Unknown"}</span>
+                      <span className="font-medium text-foreground/80">{res.uploader?.fullName || "Unknown"}</span>
+                      {res.uploader?.username && (
+                        <span className="text-[10px] italic">@{res.uploader.username}</span>
+                      )}
                       <span>•</span>
                       {/* Mock size since not in schema */}
                       <span>2.4 MB</span>

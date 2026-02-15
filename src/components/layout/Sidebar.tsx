@@ -32,31 +32,6 @@ interface NavItem {
   isActive?: boolean;
 }
 
-const mainMenuItems: NavItem[] = [
-  { icon: LayoutDashboard, label: "Overview", href: "/dashboard", isActive: true },
-  { icon: BookOpen, label: "Academic AI", href: "/academic" },
-  { icon: Calendar, label: "Events", href: "/events" },
-  { icon: Users, label: "Campus Feed", href: "/feed" },
-  { icon: MessageSquare, label: "Messages", href: "/messages", badge: 3 },
-  { icon: Briefcase, label: "Career Hub", href: "/career" },
-  { icon: Heart, label: "Wellness", href: "/wellness" },
-  { icon: Map, label: "Utilities", href: "/utilities" },
-];
-
-const collaborationItems: NavItem[] = [
-  { icon: Car, label: "Cab Pooling", href: "/travel" },
-  { icon: FlaskConical, label: "Research Hub", href: "/research" },
-  { icon: MessageCircle, label: "Anonymous Forums", href: "/forums" },
-  { icon: Users, label: "Clubs & Societies", href: "/clubs" },
-];
-
-const settingsItems: NavItem[] = [
-  { icon: Newspaper, label: "Campus News", href: "/news" },
-  { icon: ShoppingBag, label: "Marketplace", href: "/marketplace" },
-  { icon: Sparkles, label: "What's New", href: "/updates" },
-  { icon: Settings, label: "Settings", href: "/settings" },
-];
-
 interface SidebarProps {
   activeItem?: string;
   onNavigate?: (href: string) => void;
@@ -65,9 +40,82 @@ interface SidebarProps {
 export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [profile, setProfile] = useState<{ fullName: string, universityAbbr: string, avatarUrl: string } | null>(null);
+  const [profile, setProfile] = useState<{ fullName: string, username: string, universityAbbr: string, avatarUrl: string } | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
   const pathname = usePathname();
+
+  const mainMenuItems: NavItem[] = [
+    { icon: LayoutDashboard, label: "Overview", href: "/dashboard", isActive: pathname === "/dashboard" },
+    { icon: BookOpen, label: "Academic AI", href: "/academic", isActive: pathname === "/academic" },
+    { icon: Calendar, label: "Events", href: "/events", isActive: pathname === "/events" },
+    { icon: Users, label: "Campus Feed", href: "/feed", isActive: pathname === "/feed" },
+    { icon: MessageSquare, label: "Messages", href: "/messages", badge: unreadCount > 0 ? unreadCount : undefined, isActive: pathname === "/messages" },
+    { icon: Briefcase, label: "Career Hub", href: "/career", isActive: pathname === "/career" },
+    { icon: Heart, label: "Wellness", href: "/wellness", isActive: pathname === "/wellness" },
+    { icon: Map, label: "Utilities", href: "/utilities", isActive: pathname === "/utilities" },
+  ];
+
+  const collaborationItems: NavItem[] = [
+    { icon: Car, label: "Cab Pooling", href: "/travel", isActive: pathname === "/travel" },
+    { icon: FlaskConical, label: "Research Hub", href: "/research", isActive: pathname === "/research" },
+    { icon: MessageCircle, label: "Anonymous Forums", href: "/forums", isActive: pathname === "/forums" },
+    { icon: Users, label: "Clubs & Societies", href: "/clubs", isActive: pathname === "/clubs" },
+  ];
+
+  const settingsItems: NavItem[] = [
+    { icon: Newspaper, label: "Campus News", href: "/news", isActive: pathname === "/news" },
+    { icon: ShoppingBag, label: "Marketplace", href: "/marketplace", isActive: pathname === "/marketplace" },
+    { icon: Sparkles, label: "What's New", href: "/updates", isActive: pathname === "/updates" },
+    { icon: Settings, label: "Settings", href: "/settings", isActive: pathname === "/settings" },
+  ];
+
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // 1. Get all conversations the user is in
+      const { data: participants } = await supabase
+        .from('ConversationParticipant')
+        .select('conversationId')
+        .eq('userId', user.id);
+
+      if (!participants || participants.length === 0) {
+        setUnreadCount(0);
+        return;
+      }
+
+      const conversationIds = participants.map(p => p.conversationId);
+
+      // 2. Count unread messages in those conversations
+      const { data: messages, error } = await supabase
+        .from('Message')
+        .select('id, readBy, senderId')
+        .in('conversationId', conversationIds);
+
+      if (messages) {
+        const count = messages.filter(m => 
+          m.senderId !== user.id && (!m.readBy || !m.readBy.includes(user.id))
+        ).length;
+        setUnreadCount(count);
+      }
+    };
+
+    fetchUnreadCount();
+
+    // Subscribe to message updates to keep count in sync
+    const channel = supabase
+      .channel('sidebar-unread-count')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Message' }, () => {
+        fetchUnreadCount();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   // Use passed activeItem or derive from URL
   const currentPath = activeItem || pathname;
@@ -86,7 +134,7 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         // Capitalize University to match table name if lowercase fails
-        const { data } = await supabase.from('Profile').select('fullName, avatarUrl, University(abbreviation)').eq('id', user.id).single();
+        const { data } = await supabase.from('Profile').select('fullName, username, avatarUrl, University(abbreviation)').eq('id', user.id).single();
         if (data) {
           // Supabase join query return key matches the select capitalization
           const uni: any = data.University;
@@ -94,6 +142,7 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
 
           setProfile({
             fullName: data.fullName || "Student",
+            username: data.username || "",
             universityAbbr: uniAbbr || "Uni",
             avatarUrl: data.avatarUrl || ""
           });
@@ -248,7 +297,12 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
             <p className="text-sm font-medium text-sidebar-primary truncate">
               {profile?.fullName || "Loading..."}
             </p>
-            <p className="text-xs text-sidebar-muted truncate">
+            {profile?.username && (
+              <p className="text-[10px] text-primary/60 font-medium italic -mt-0.5 truncate uppercase tracking-tighter">
+                @{profile.username}
+              </p>
+            )}
+            <p className="text-[10px] text-sidebar-muted truncate">
               Student • {profile?.universityAbbr || "Univ"}
             </p>
           </div>

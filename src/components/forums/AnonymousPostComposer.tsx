@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { EyeOff, Send, VenetianMask, Loader2 } from "lucide-react";
+import { EyeOff, Send, VenetianMask, Loader2, Tag as TagIcon, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
-import { toast } from "sonner"; // Assuming sonner is installed, otherwise standard alert
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 interface AnonymousPostComposerProps {
     refreshThreads?: () => void;
@@ -21,7 +22,23 @@ export function AnonymousPostComposer({ refreshThreads, activeCategory }: Anonym
     const [isExpanded, setIsExpanded] = useState(false);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
+    const [tagInput, setTagInput] = useState("");
+    const [tags, setTags] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
+
+    const handleAddTag = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && tagInput.trim()) {
+            e.preventDefault();
+            if (!tags.includes(tagInput.trim().toLowerCase())) {
+                setTags([...tags, tagInput.trim().toLowerCase()]);
+            }
+            setTagInput("");
+        }
+    };
+
+    const removeTag = (tagToRemove: string) => {
+        setTags(tags.filter(t => t !== tagToRemove));
+    };
 
     const handlePost = async () => {
         if (!title.trim() || !content.trim()) return;
@@ -30,7 +47,7 @@ export function AnonymousPostComposer({ refreshThreads, activeCategory }: Anonym
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                alert("Please log in to post.");
+                toast.error("Please log in to post.");
                 return;
             }
 
@@ -46,21 +63,24 @@ export function AnonymousPostComposer({ refreshThreads, activeCategory }: Anonym
                 content,
                 isAnonymous: isIncognito,
                 category: activeCategory === 'all' ? 'general' : activeCategory,
-                scope: 'CAMPUS', // Default to CAMPUS for forums
+                scope: 'CAMPUS',
                 universityId: profile?.universityId,
-                authorId: user.id
+                authorId: user.id,
+                tags: tags
             });
 
             if (error) throw error;
 
             setTitle("");
             setContent("");
+            setTags([]);
             setIsExpanded(false);
             if (refreshThreads) refreshThreads();
+            toast.success("Thread posted successfully!");
 
-        } catch (error) {
-            console.error("Error creating post:", error);
-            alert("Failed to create post");
+        } catch (error: any) {
+            console.error("Error creating post details:", error.message || error);
+            toast.error("Failed to create post: " + (error.message || "Unknown error"));
         } finally {
             setLoading(false);
         }
@@ -109,6 +129,30 @@ export function AnonymousPostComposer({ refreshThreads, activeCategory }: Anonym
                                 )}
                             />
 
+                            <div className="space-y-2">
+                                <div className="flex flex-wrap gap-1.5">
+                                    {tags.map(tag => (
+                                        <Badge key={tag} variant="secondary" className="gap-1 pr-1">
+                                            {tag}
+                                            <X className="h-3 w-3 cursor-pointer hover:text-red-500" onClick={() => removeTag(tag)} />
+                                        </Badge>
+                                    ))}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <TagIcon className="h-4 w-4 text-muted-foreground" />
+                                    <Input 
+                                        placeholder="Add tags (press Enter)" 
+                                        value={tagInput}
+                                        onChange={(e) => setTagInput(e.target.value)}
+                                        onKeyDown={handleAddTag}
+                                        className={cn(
+                                            "h-7 text-xs border-none bg-muted/50 focus-visible:ring-1",
+                                            isIncognito && "bg-zinc-800 text-zinc-300"
+                                        )}
+                                    />
+                                </div>
+                            </div>
+
                             <div className="flex items-center justify-between pt-2 border-t border-border/10">
                                 <div className="flex items-center gap-2">
                                     <Switch
@@ -140,3 +184,4 @@ export function AnonymousPostComposer({ refreshThreads, activeCategory }: Anonym
         </Card>
     );
 }
+

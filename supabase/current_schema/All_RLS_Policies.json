@@ -1,0 +1,1342 @@
+[
+  {
+    "schemaname": "public",
+    "tablename": "UtilityService",
+    "policyname": "Utility services are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilityShuttle",
+    "policyname": "Utility shuttles are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "StudyGroup",
+    "policyname": "Anyone can view study groups",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilityDiscount",
+    "policyname": "Utility discounts are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilityService",
+    "policyname": "Admins can manage utility services",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (( SELECT auth.uid() AS uid))::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\") AND (\"Profile\".\"universityId\" = \"UtilityService\".\"universityId\"))))",
+    "with_check": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (( SELECT auth.uid() AS uid))::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\") AND (\"Profile\".\"universityId\" = \"UtilityService\".\"universityId\"))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "StudyGroupMember",
+    "policyname": "Anyone can view members",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilityShuttle",
+    "policyname": "Admins can manage utility shuttles",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (( SELECT auth.uid() AS uid))::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\") AND (\"Profile\".\"universityId\" = \"UtilityShuttle\".\"universityId\"))))",
+    "with_check": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (( SELECT auth.uid() AS uid))::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\") AND (\"Profile\".\"universityId\" = \"UtilityShuttle\".\"universityId\"))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilityDiscount",
+    "policyname": "Admins can manage utility discounts",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (( SELECT auth.uid() AS uid))::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\") AND (\"Profile\".\"universityId\" = \"UtilityDiscount\".\"universityId\"))))",
+    "with_check": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (( SELECT auth.uid() AS uid))::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\") AND (\"Profile\".\"universityId\" = \"UtilityDiscount\".\"universityId\"))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Post",
+    "policyname": "Posts are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Comment",
+    "policyname": "Comments are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Like",
+    "policyname": "Likes are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Course",
+    "policyname": "Courses are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Resource",
+    "policyname": "Resources are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumThread",
+    "policyname": "Forum threads are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Event",
+    "policyname": "Events are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "MarketplaceListing",
+    "policyname": "Marketplace listings are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Club",
+    "policyname": "Clubs are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilitySuggestion",
+    "policyname": "Users can view their suggestions or admins can view all",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((\"suggestedBy\" = (( SELECT auth.uid() AS uid))::text) OR (EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (( SELECT auth.uid() AS uid))::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\") AND (\"Profile\".\"universityId\" = \"UtilitySuggestion\".\"universityId\")))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilitySuggestion",
+    "policyname": "Authenticated users can suggest utilities",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.role() AS role) = 'authenticated'::text) AND (\"suggestedBy\" = (( SELECT auth.uid() AS uid))::text) AND (\"universityId\" = ( SELECT \"Profile\".\"universityId\"\n   FROM \"Profile\"\n  WHERE (\"Profile\".id = (( SELECT auth.uid() AS uid))::text))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilitySuggestion",
+    "policyname": "Admins can moderate utility suggestions",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (( SELECT auth.uid() AS uid))::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\") AND (\"Profile\".\"universityId\" = \"UtilitySuggestion\".\"universityId\"))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilitySuggestion",
+    "policyname": "Admins can delete utility suggestions",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (( SELECT auth.uid() AS uid))::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\") AND (\"Profile\".\"universityId\" = \"UtilitySuggestion\".\"universityId\"))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "University",
+    "policyname": "Allow public read access",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Profile",
+    "policyname": "Public profiles are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "objects",
+    "policyname": "Public Access 1hys5dx_2",
+    "permissive": "PERMISSIVE",
+    "roles": "{anon,authenticated}",
+    "cmd": "SELECT",
+    "qual": "(bucket_id = 'post-images'::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "objects",
+    "policyname": "Public Access 1hys5dx_3",
+    "permissive": "PERMISSIVE",
+    "roles": "{anon,authenticated}",
+    "cmd": "DELETE",
+    "qual": "(bucket_id = 'post-images'::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "objects",
+    "policyname": "Public Access 1hys5dx_1",
+    "permissive": "PERMISSIVE",
+    "roles": "{anon,authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(bucket_id = 'post-images'::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "objects",
+    "policyname": "Public Access 1hys5dx_0",
+    "permissive": "PERMISSIVE",
+    "roles": "{anon,authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(bucket_id = 'post-images'::text)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Course",
+    "policyname": "Enable insert for admins",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (( SELECT auth.uid() AS uid))::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\"))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilityService",
+    "policyname": "UtilityServices_View",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilityService",
+    "policyname": "UtilityServices_Admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (auth.uid())::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\"))))",
+    "with_check": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (auth.uid())::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\"))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilityShuttle",
+    "policyname": "UtilityShuttles_View",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilityShuttle",
+    "policyname": "UtilityShuttles_Admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (auth.uid())::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\"))))",
+    "with_check": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (auth.uid())::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\"))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilityDiscount",
+    "policyname": "UtilityDiscounts_View",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilityDiscount",
+    "policyname": "UtilityDiscounts_Admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (auth.uid())::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\"))))",
+    "with_check": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (auth.uid())::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\"))))"
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "objects",
+    "policyname": "Public Access to Academic Resources",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(bucket_id = 'academic-resources'::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilitySuggestion",
+    "policyname": "UtilitySuggestions_Own",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((auth.uid())::text = \"suggestedBy\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumReply",
+    "policyname": "Forum replies are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilitySuggestion",
+    "policyname": "UtilitySuggestions_Create",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((auth.uid())::text = \"suggestedBy\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilitySuggestion",
+    "policyname": "UtilitySuggestions_Admin_View",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (auth.uid())::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\"))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "UtilitySuggestion",
+    "policyname": "UtilitySuggestions_Admin_Update",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (auth.uid())::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\"))))",
+    "with_check": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (auth.uid())::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\"))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ConversationPreference",
+    "policyname": "ConvPref_Own",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "((auth.uid())::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "MessageAttachment",
+    "policyname": "MsgAttachment_View",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1 FROM \"Message\" m WHERE ((m.id = \"MessageAttachment\".\"messageId\") AND (check_conversation_access(m.\"conversationId\")))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "MessageAttachment",
+    "policyname": "MsgAttachment_Insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((auth.uid())::text = \"uploaderId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "MessageReaction",
+    "policyname": "MsgReaction_View",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1 FROM \"Message\" m WHERE ((m.id = \"MessageReaction\".\"messageId\") AND (check_conversation_access(m.\"conversationId\")))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ResearchProject",
+    "policyname": "Research projects are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "MessageReaction",
+    "policyname": "MsgReaction_Manage",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "((auth.uid())::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "MessageHidden",
+    "policyname": "MsgHidden_Own",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "((auth.uid())::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "RideOffer",
+    "policyname": "Ride offers are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "AcademicAIChat",
+    "policyname": "Users can manage their own chats",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"userId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "AcademicAIChatMessage",
+    "policyname": "Users can manage messages in their chats",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"AcademicAIChat\"\n  WHERE ((\"AcademicAIChat\".id = \"AcademicAIChatMessage\".\"chatId\") AND (\"AcademicAIChat\".\"userId\" = (( SELECT auth.uid() AS uid))::text))))",
+    "with_check": "(EXISTS ( SELECT 1\n   FROM \"AcademicAIChat\"\n  WHERE ((\"AcademicAIChat\".id = \"AcademicAIChatMessage\".\"chatId\") AND (\"AcademicAIChat\".\"userId\" = (( SELECT auth.uid() AS uid))::text))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "StudyGroup",
+    "policyname": "Authenticated users can create study groups",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(( SELECT auth.role() AS role) = 'authenticated'::text)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "StudyGroup",
+    "policyname": "Admins can update their study groups",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"StudyGroupMember\"\n  WHERE ((\"StudyGroupMember\".\"studyGroupId\" = \"StudyGroupMember\".id) AND (\"StudyGroupMember\".\"userId\" = (( SELECT auth.uid() AS uid))::text) AND (\"StudyGroupMember\".role = 'ADMIN'::text))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "StudyGroupMember",
+    "policyname": "Users can join groups",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"userId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "StudyGroupMember",
+    "policyname": "Users can leave groups",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Resource",
+    "policyname": "Uploaders can update their resources",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"uploaderId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "CourseEnrollment",
+    "policyname": "Authenticated users can join courses",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(( SELECT auth.role() AS role) = 'authenticated'::text)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Post",
+    "policyname": "Users can update own posts",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"authorId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Post",
+    "policyname": "Users can delete own posts",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"authorId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Resume",
+    "policyname": "Resumes viewable by owner only",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Resume",
+    "policyname": "Resumes insertable by owner only",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"userId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "MoodLog",
+    "policyname": "MoodLogs viewable by owner only",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "MoodLog",
+    "policyname": "MoodLogs insertable by owner only",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"userId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Message",
+    "policyname": "Participants can view messages",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(check_conversation_access(\"conversationId\"))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Message",
+    "policyname": "Users can send messages",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((\"senderId\" = (auth.uid())::text) AND (check_conversation_access(\"conversationId\")))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Message",
+    "policyname": "Participants can update messages",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "(check_conversation_access(\"conversationId\"))",
+    "with_check": "(check_conversation_access(\"conversationId\"))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Message",
+    "policyname": "Users can delete their own messages",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "(\"senderId\" = (auth.uid())::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Profile",
+    "policyname": "Users can insert their own profile",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Profile",
+    "policyname": "Users can update own profile",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = id)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Resource",
+    "policyname": "Uploaders can delete their resources",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"uploaderId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Post",
+    "policyname": "Users can create posts",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"authorId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Like",
+    "policyname": "Users can like posts",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"userId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Like",
+    "policyname": "Users can unlike",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Comment",
+    "policyname": "Users can create comments",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"authorId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Event",
+    "policyname": "Users can create events",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"organizerId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Resume",
+    "policyname": "Individuals can update own resume",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Event",
+    "policyname": "Enable delete for users based on organizerId",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"organizerId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Conversation",
+    "policyname": "Participants can delete conversations",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "check_conversation_access(id)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Event",
+    "policyname": "Enable update for users based on organizerId",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"organizerId\")",
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"organizerId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Resource",
+    "policyname": "Users can upload their own resources",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"uploaderId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "StudySession",
+    "policyname": "Users can manage their own sessions",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"userId\")"
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "objects",
+    "policyname": "Authenticated Users can upload files",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((bucket_id = 'academic-resources'::text) AND (( SELECT auth.role() AS role) = 'authenticated'::text))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Bookmark",
+    "policyname": "Users can manage their bookmarks",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"userId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ClubMember",
+    "policyname": "Users can manage their club memberships",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"userId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Conversation",
+    "policyname": "Participants can view conversations",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "check_conversation_access(id) OR createdBy = (SELECT auth.uid())::text",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Conversation",
+    "policyname": "Participants can update conversations",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "check_conversation_access(id)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Conversation",
+    "policyname": "Authenticated users can create conversations",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(( SELECT auth.role() AS role) = 'authenticated'::text)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ConversationParticipant",
+    "policyname": "Participants can view conversation members",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "\"userId\" = (SELECT auth.uid())::text OR check_conversation_access(\"conversationId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ConversationParticipant",
+    "policyname": "Users can join conversations",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(( SELECT auth.role() AS role) = 'authenticated'::text)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ConversationParticipant",
+    "policyname": "Users can update their participant record",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ConversationParticipant",
+    "policyname": "Users can leave conversations",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "EventRSVP",
+    "policyname": "Users can manage their event RSVPs",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"userId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "FlashcardSet",
+    "policyname": "Users can manage their flashcard sets",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"userId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Flashcard",
+    "policyname": "Users can manage flashcards in their sets",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"FlashcardSet\" fs\n  WHERE ((fs.id = \"Flashcard\".\"setId\") AND (fs.\"userId\" = (( SELECT auth.uid() AS uid))::text))))",
+    "with_check": "(EXISTS ( SELECT 1\n   FROM \"FlashcardSet\" fs\n  WHERE ((fs.id = \"Flashcard\".\"setId\") AND (fs.\"userId\" = (( SELECT auth.uid() AS uid))::text))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumReply",
+    "policyname": "Users can create forum replies",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"authorId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumReply",
+    "policyname": "Users can update own forum replies",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"authorId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumReply",
+    "policyname": "Users can delete own forum replies",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"authorId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Friendship",
+    "policyname": "Users can view their friendships",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(((( SELECT auth.uid() AS uid))::text = \"requesterId\") OR ((( SELECT auth.uid() AS uid))::text = \"addresseeId\"))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Friendship",
+    "policyname": "Users can create friendships",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"requesterId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Friendship",
+    "policyname": "Users can update their friendships",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "(((( SELECT auth.uid() AS uid))::text = \"requesterId\") OR ((( SELECT auth.uid() AS uid))::text = \"addresseeId\"))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Friendship",
+    "policyname": "Users can delete their friendships",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "(((( SELECT auth.uid() AS uid))::text = \"requesterId\") OR ((( SELECT auth.uid() AS uid))::text = \"addresseeId\"))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "MentorshipSkill",
+    "policyname": "Users can manage their mentorship skills",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"userId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ProjectCollaborator",
+    "policyname": "Collaborators can view projects",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"ProjectCollaborator\" pc\n  WHERE ((pc.\"projectId\" = \"ProjectCollaborator\".\"projectId\") AND (pc.\"userId\" = (( SELECT auth.uid() AS uid))::text))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ProjectCollaborator",
+    "policyname": "Users can join projects",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"userId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ProjectCollaborator",
+    "policyname": "Users can update their collaborator record",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ProjectCollaborator",
+    "policyname": "Users can leave projects",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ResearchProject",
+    "policyname": "Users can create research projects",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"leadId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ResearchProject",
+    "policyname": "Leads can update research projects",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"leadId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ResearchProject",
+    "policyname": "Leads can delete research projects",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"leadId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ResourceEmbedding",
+    "policyname": "Uploaders can manage resource embeddings",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "(EXISTS ( SELECT 1\n   FROM \"Resource\" r\n  WHERE ((r.id = \"ResourceEmbedding\".\"resourceId\") AND (r.\"uploaderId\" = (( SELECT auth.uid() AS uid))::text))))",
+    "with_check": "(EXISTS ( SELECT 1\n   FROM \"Resource\" r\n  WHERE ((r.id = \"ResourceEmbedding\".\"resourceId\") AND (r.\"uploaderId\" = (( SELECT auth.uid() AS uid))::text))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "RideOffer",
+    "policyname": "Drivers can create ride offers",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"driverId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "RideOffer",
+    "policyname": "Drivers can update ride offers",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"driverId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "RideOffer",
+    "policyname": "Drivers can delete ride offers",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((( SELECT auth.uid() AS uid))::text = \"driverId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "RideRequest",
+    "policyname": "Users can view their ride requests",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(((( SELECT auth.uid() AS uid))::text = \"passengerId\") OR (EXISTS ( SELECT 1\n   FROM \"RideOffer\" ro\n  WHERE ((ro.id = \"RideRequest\".\"offerId\") AND (ro.\"driverId\" = (( SELECT auth.uid() AS uid))::text)))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "RideRequest",
+    "policyname": "Users can create ride requests",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((( SELECT auth.uid() AS uid))::text = \"passengerId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "RideRequest",
+    "policyname": "Users can update their ride requests",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "(((( SELECT auth.uid() AS uid))::text = \"passengerId\") OR (EXISTS ( SELECT 1\n   FROM \"RideOffer\" ro\n  WHERE ((ro.id = \"RideRequest\".\"offerId\") AND (ro.\"driverId\" = (( SELECT auth.uid() AS uid))::text)))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "RideRequest",
+    "policyname": "Users can delete their ride requests",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "(((( SELECT auth.uid() AS uid))::text = \"passengerId\") OR (EXISTS ( SELECT 1\n   FROM \"RideOffer\" ro\n  WHERE ((ro.id = \"RideRequest\".\"offerId\") AND (ro.\"driverId\" = (( SELECT auth.uid() AS uid))::text)))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumVote",
+    "policyname": "Users can view all votes",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumVote",
+    "policyname": "Users can vote",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((SELECT auth.uid())::text = \"userId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumVote",
+    "policyname": "Users can change their vote",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((SELECT auth.uid())::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumVote",
+    "policyname": "Users can remove their vote",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((SELECT auth.uid())::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumPoll",
+    "policyname": "Polls are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumPoll",
+    "policyname": "Thread authors can create polls",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(EXISTS ( SELECT 1 FROM \"ForumThread\" WHERE ((\"ForumThread\".id = \"ForumPoll\".\"threadId\") AND (\"ForumThread\".\"authorId\" = ((SELECT auth.uid())::text)))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumPollOption",
+    "policyname": "Options are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumPollOption",
+    "policyname": "Poll authors can create options",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(EXISTS ( SELECT 1 FROM (\"ForumPoll\" p JOIN \"ForumThread\" t ON ((p.\"threadId\" = t.id))) WHERE ((p.id = \"ForumPollOption\".\"pollId\") AND (t.\"authorId\" = ((SELECT auth.uid())::text)))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumPollVote",
+    "policyname": "Votes are viewable by everyone",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumPollVote",
+    "policyname": "Users can vote once per poll",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((SELECT auth.uid())::text = \"userId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumReport",
+    "policyname": "Admins can view reports",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1 FROM \"Profile\" WHERE ((\"Profile\".id = ((SELECT auth.uid())::text)) AND (\"Profile\".role = 'ADMIN'::\"UserRole\"))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumReport",
+    "policyname": "Users can report content",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((SELECT auth.uid())::text = \"reporterId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumBookmark",
+    "policyname": "Users can view their own bookmarks",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((SELECT auth.uid())::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumBookmark",
+    "policyname": "Users can bookmark threads",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((SELECT auth.uid())::text = \"userId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumBookmark",
+    "policyname": "Users can remove bookmarks",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((SELECT auth.uid())::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumThread",
+    "policyname": "Users can create threads",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((SELECT auth.uid())::text = \"authorId\")"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumThread",
+    "policyname": "Users can update their own threads",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((SELECT auth.uid())::text = \"authorId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "ForumThread",
+    "policyname": "Users can delete their own threads",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((SELECT auth.uid())::text = \"authorId\")",
+    "with_check": null
+  }
+]

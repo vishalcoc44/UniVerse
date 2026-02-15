@@ -16,6 +16,7 @@ export function ProfileSettings() {
 		firstName: "",
 		lastName: "",
 		email: "",
+		username: "",
 		phone: "",
 		bio: "",
 		major: "",
@@ -52,6 +53,7 @@ export function ProfileSettings() {
 					firstName,
 					lastName,
 					email: data.email,
+					username: data.username || "",
 					bio: data.bio || "",
 					major: data.department || "",
 					phone: data.phone || "",
@@ -147,6 +149,10 @@ export function ProfileSettings() {
 						<div className="space-y-2">
 							<Label htmlFor="email">University Email</Label>
 							<Input id="email" value={profile.email} disabled className="bg-muted/50" />
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="username">Handle (@username)</Label>
+							<Input id="username" value={profile.username} disabled className="bg-muted/50 font-mono text-xs" />
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="phone">Phone (Optional)</Label>
