@@ -282,7 +282,7 @@ export default function Messages() {
 		// Create new conversation
 		const { data: newConvo, error: createError } = await supabase
 			.from('Conversation')
-			.insert({ 
+			.insert({
 				isGroup: false,
 				updatedAt: new Date().toISOString()
 			})
@@ -297,18 +297,18 @@ export default function Messages() {
 		// Add participants (insert self first for RLS safety)
 		await supabase
 			.from('ConversationParticipant')
-			.insert({ 
-				conversationId: newConvo.id, 
-				userId: currentUser.id, 
+			.insert({
+				conversationId: newConvo.id,
+				userId: currentUser.id,
 				role: 'ADMIN',
 				status: 'ACCEPTED' // Creator is auto-accepted
 			});
 
 		await supabase
 			.from('ConversationParticipant')
-			.insert({ 
-				conversationId: newConvo.id, 
-				userId: userId, 
+			.insert({
+				conversationId: newConvo.id,
+				userId: userId,
 				role: 'MEMBER',
 				status: 'PENDING' // Recipient is pending
 			});
@@ -342,8 +342,8 @@ export default function Messages() {
 			});
 	}, [conversations, filters, searchQuery]);
 
-	const handleToggleFilter = (key: "unreadOnly" | "groupsOnly" | "facultyOnly" | "archivedOnly") => {
-		setFilters(prev => ({ ...prev, [key]: !prev[key] }));
+	const handleToggleFilter = (key: string) => {
+		setFilters(prev => ({ ...prev, [key as keyof typeof filters]: !prev[key as keyof typeof filters] }));
 	};
 
 	const handleConversationUpdate = (conversationId: string, updates: Partial<UIConversation>) => {
@@ -427,26 +427,26 @@ export default function Messages() {
 									<Sparkle className="absolute -top-1 -right-1 h-6 w-6 text-primary animate-pulse" />
 								</div>
 							</div>
-							
+
 							<div className="max-w-md space-y-4">
 								<h3 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text text-transparent italic">
 									Your Universe Awaits
 								</h3>
 								<p className="text-muted-foreground text-sm leading-relaxed px-4">
-									Collaborate with peers, ask questions to faculty, or start a study group. 
+									Collaborate with peers, ask questions to faculty, or start a study group.
 									Select a contact from the left to start your journey.
 								</p>
 							</div>
 
 							<div className="mt-10 flex items-center gap-4 animate-in slide-in-from-bottom-4 duration-1000 delay-300">
-								<Button 
-									onClick={handleNewChat} 
+								<Button
+									onClick={handleNewChat}
 									className="rounded-full px-8 h-12 shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all"
 								>
 									<Plus className="mr-2 h-4 w-4" /> Start Messaging
 								</Button>
-								<Button 
-									variant="outline" 
+								<Button
+									variant="outline"
 									onClick={handleNewGroup}
 									className="rounded-full px-8 h-12 bg-background/50 backdrop-blur-sm border-border/50 hover:bg-muted active:scale-95 transition-all"
 								>
