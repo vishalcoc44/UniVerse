@@ -15,7 +15,7 @@ interface Resource {
   title: string;
   type: string;
   upvotes: number;
-  uploader: { fullName: string; id: string } | null;
+  uploader: { fullName: string; id: string; username?: string } | null;
 
   course: { code: string } | null;
   fileUrl: string;

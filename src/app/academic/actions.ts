@@ -370,8 +370,9 @@ export async function createResource(data: {
 
 				// B. Extract Text
 				// Check if pdf-parse is importable (server-side only)
-				const pdf = (await import('pdf-parse')).default;
-				const pdfData = await pdf(buffer);
+				const pdfModule = await import('pdf-parse');
+				const pdf = (pdfModule as any).default || pdfModule;
+				const pdfData = await (pdf as any)(buffer);
 				const text = pdfData.text;
 
 				// C. Chunk Text

@@ -308,8 +308,8 @@ export function CampusMap() {
             )}
             <div className="relative w-full max-w-[200px]">
               <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <Input 
-                placeholder="Find building..." 
+              <Input
+                placeholder="Find building..."
                 className="pl-8 h-8 text-xs bg-background/50"
               />
             </div>
@@ -321,10 +321,10 @@ export function CampusMap() {
         {/* Map Area */}
         <div className="relative min-h-[500px] bg-muted/20 overflow-hidden cursor-crosshair">
           {/* Subtle Grid Pattern */}
-          <div className="absolute inset-0 bg-[size:30px_30px] opacity-[0.03] dark:opacity-[0.05]" 
-               style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)" }}>
+          <div className="absolute inset-0 bg-[size:30px_30px] opacity-[0.03] dark:opacity-[0.05]"
+            style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)" }}>
           </div>
-          
+
           {/* Abstract Campus Shapes */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-10">
             <rect x="10%" y="10%" width="20%" height="15%" rx="8" fill="currentColor" />
@@ -335,9 +335,9 @@ export function CampusMap() {
           </svg>
 
           {mapPins.map((loc) => (
-            <div 
-              key={loc.id} 
-              className="absolute group z-20 transition-all hover:z-30" 
+            <div
+              key={loc.id}
+              className="absolute group z-20 transition-all hover:z-30"
               style={{ top: `${loc.mapY}%`, left: `${loc.mapX}%`, transform: 'translate(-50%, -50%)' }}
             >
               <div className="relative">
@@ -345,7 +345,7 @@ export function CampusMap() {
                 <div className="h-8 w-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110">
                   <MapPin className="h-4 w-4" />
                 </div>
-                
+
                 {/* Information Popover on Hover */}
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                   <div className="bg-background/95 backdrop-blur-sm border border-border p-3 rounded-lg shadow-xl ring-1 ring-black/5">
@@ -377,7 +377,7 @@ export function CampusMap() {
             <div className="p-4 space-y-3">
               {loading ? (
                 <div className="space-y-2">
-                  {[1,2,3].map(i => <div key={i} className="h-16 w-full rounded-lg bg-muted animate-pulse" />)}
+                  {[1, 2, 3].map(i => <div key={i} className="h-16 w-full rounded-lg bg-muted animate-pulse" />)}
                 </div>
               ) : services.length === 0 ? (
                 <div className="text-center py-8">
@@ -397,9 +397,9 @@ export function CampusMap() {
                         {item.location && <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1">{item.location}</p>}
                       </div>
                       {isAdmin && (
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
+                        <Button
+                          size="icon"
+                          variant="ghost"
                           className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -419,7 +419,7 @@ export function CampusMap() {
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Propose Addition</h4>
                 </div>
-                
+
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full border-dashed gap-2 text-xs">
@@ -437,46 +437,46 @@ export function CampusMap() {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="grid gap-2">
                           <Label>Service Name</Label>
-                          <Input 
-                            placeholder="e.g. Central ATM" 
-                            value={suggestionForm.title || ""} 
-                            onChange={(e) => setSuggestionForm({ ...suggestionForm, title: e.target.value })} 
+                          <Input
+                            placeholder="e.g. Central ATM"
+                            value={suggestionForm.title || ""}
+                            onChange={(e) => setSuggestionForm({ ...suggestionForm, title: e.target.value })}
                           />
                         </div>
                         <div className="grid gap-2">
                           <Label>Category</Label>
-                          <Input 
-                            placeholder="e.g. Finance" 
-                            value={suggestionForm.serviceCategory || ""} 
-                            onChange={(e) => setSuggestionForm({ ...suggestionForm, serviceCategory: e.target.value })} 
+                          <Input
+                            placeholder="e.g. Finance"
+                            value={suggestionForm.serviceCategory || ""}
+                            onChange={(e) => setSuggestionForm({ ...suggestionForm, serviceCategory: e.target.value })}
                           />
                         </div>
                       </div>
                       <div className="grid gap-2">
                         <Label>Location / Building</Label>
-                        <Input 
-                          placeholder="e.g. Student Union, 2nd Floor" 
-                          value={suggestionForm.location || ""} 
-                          onChange={(e) => setSuggestionForm({ ...suggestionForm, location: e.target.value })} 
+                        <Input
+                          placeholder="e.g. Student Union, 2nd Floor"
+                          value={suggestionForm.location || ""}
+                          onChange={(e) => setSuggestionForm({ ...suggestionForm, location: e.target.value })}
                         />
                       </div>
                       <div className="grid gap-2">
                         <Label>Description</Label>
-                        <Textarea 
-                          placeholder="What is this place for?" 
+                        <Textarea
+                          placeholder="What is this place for?"
                           className="h-20"
-                          value={suggestionForm.description || ""} 
-                          onChange={(e) => setSuggestionForm({ ...suggestionForm, description: e.target.value })} 
+                          value={suggestionForm.description || ""}
+                          onChange={(e) => setSuggestionForm({ ...suggestionForm, description: e.target.value })}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="grid gap-2">
                           <Label>Map X (Approx %)</Label>
-                          <Input type="number" value={suggestionForm.mapX || ""} onChange={(e) => setSuggestionForm({ ...suggestionForm, mapX: Number(e.target.value) })} />
+                          <Input type="number" value={suggestionForm.mapX || ""} onChange={(e) => setSuggestionForm({ ...suggestionForm, mapX: e.target.value })} />
                         </div>
                         <div className="grid gap-2">
                           <Label>Map Y (Approx %)</Label>
-                          <Input type="number" value={suggestionForm.mapY || ""} onChange={(e) => setSuggestionForm({ ...suggestionForm, mapY: Number(e.target.value) })} />
+                          <Input type="number" value={suggestionForm.mapY || ""} onChange={(e) => setSuggestionForm({ ...suggestionForm, mapY: e.target.value })} />
                         </div>
                       </div>
                     </div>

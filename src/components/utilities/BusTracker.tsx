@@ -269,8 +269,8 @@ export function BusTracker() {
                         </div>
                         <div className="grid gap-2">
                           <Label>Accessible</Label>
-                          <Button 
-                            variant={routeForm.isAccessible ? "default" : "outline"} 
+                          <Button
+                            variant={routeForm.isAccessible ? "default" : "outline"}
                             className="w-full justify-start gap-2"
                             onClick={() => setRouteForm({ ...routeForm, isAccessible: !routeForm.isAccessible })}
                           >
@@ -320,12 +320,11 @@ export function BusTracker() {
                       {route.routeNumber}
                     </div>
                     <div className="text-right">
-                      <Badge 
-                        variant={route.status === "Delayed" ? "destructive" : "default"} 
-                        className={`h-5 px-2 text-[10px] uppercase font-bold tracking-tighter ${
-                          route.status === "On Time" ? "bg-green-500 hover:bg-green-600" : 
-                          route.status === "Arriving" ? "bg-blue-500 hover:bg-blue-600" : ""
-                        }`}
+                      <Badge
+                        variant={route.status === "Delayed" ? "destructive" : "default"}
+                        className={`h-5 px-2 text-[10px] uppercase font-bold tracking-tighter ${route.status === "On Time" ? "bg-green-500 hover:bg-green-600" :
+                            route.status === "Arriving" ? "bg-blue-500 hover:bg-blue-600" : ""
+                          }`}
                       >
                         {route.status}
                       </Badge>
@@ -345,18 +344,18 @@ export function BusTracker() {
                         <span className="truncate">Next: <span className="text-foreground font-medium">{route.nextStop}</span></span>
                       </div>
                     )}
-                    
+
                     {/* Simulated Progress Line */}
                     <div className="relative pt-2">
-                       <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
-                          <div className={`h-full bg-primary transition-all duration-1000 ${route.status === "Arriving" ? "w-[90%]" : "w-[40%]"}`}></div>
-                       </div>
+                      <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                        <div className={`h-full bg-primary transition-all duration-1000 ${route.status === "Arriving" ? "w-[90%]" : "w-[40%]"}`}></div>
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between pt-2">
                       <div className="flex gap-2">
-                        {route.isAccessible && <Accessibility className="h-3.5 w-3.5 text-muted-foreground" title="Wheelchair accessible" />}
-                        {route.serviceAlerts && <Info className="h-3.5 w-3.5 text-amber-500" title="Active Alert" />}
+                        {route.isAccessible && <span title="Wheelchair accessible"><Accessibility className="h-3.5 w-3.5 text-muted-foreground" /></span>}
+                        {route.serviceAlerts && <span title="Active Alert"><Info className="h-3.5 w-3.5 text-amber-500" /></span>}
                       </div>
                       {isAdmin && (
                         <Button
@@ -383,7 +382,7 @@ export function BusTracker() {
           <h3 className="text-lg font-bold flex items-center gap-2">
             <Info className="h-5 w-5 text-primary" /> Community Proposals
           </h3>
-          
+
           <div className="grid gap-3">
             <Dialog>
               <DialogTrigger asChild>
@@ -453,7 +452,7 @@ export function BusTracker() {
                 <Shield className="h-4 w-4" />
                 <span className="text-xs font-black uppercase tracking-tighter">Moderation Queue</span>
               </div>
-              
+
               <ScrollArea className="h-[400px] pr-4">
                 <div className="space-y-3">
                   {pendingSuggestions.length === 0 ? (
