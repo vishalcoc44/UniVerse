@@ -14,10 +14,39 @@ import { EventCard } from "@/components/dashboard/EventCard";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { PostCard } from "@/components/feed/PostCard";
 import { ProductCard } from "@/components/marketplace/ProductCard";
+import { PreviewMarquee } from "@/components/landing/PreviewMarquee";
+import { LightboxModal } from "@/components/landing/LightboxModal";
+import { useState } from "react";
 
 export default function Landing() {
-	const { scrollYProgress } = useScroll();
-	const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
+	const { scrollY, scrollYProgress } = useScroll();
+	const [showMarquee, setShowMarquee] = useState(true);
+	const [isManuallyClosed, setIsManuallyClosed] = useState(false);
+
+	useEffect(() => {
+		return scrollY.onChange((latest) => {
+			if (latest > 500) {
+				setShowMarquee(false);
+			} else {
+				// Only show if the user hasn't manually closed it at the top
+				setShowMarquee(!isManuallyClosed);
+			}
+		});
+	}, [scrollY, isManuallyClosed]);
+
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [images, setImages] = useState<string[]>([]);
+	const [activeIndex, setActiveIndex] = useState(0);
+
+	useEffect(() => {
+		fetch('/api/images')
+			.then(res => res.json())
+			.then(data => {
+				if (Array.isArray(data)) {
+					setImages(data);
+				}
+			});
+	}, []);
 
 	const containerVariants = {
 		hidden: { opacity: 0 },
@@ -50,6 +79,21 @@ export default function Landing() {
 					</Link>
 
 					<div className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
+						<PreviewMarquee
+							images={images}
+							isVisible={showMarquee}
+							onToggle={() => {
+								const next = !showMarquee;
+								setShowMarquee(next);
+								if (scrollY.get() < 500) {
+									setIsManuallyClosed(!next);
+								}
+							}}
+							onImageClick={(index) => {
+								setActiveIndex(index);
+								setIsModalOpen(true);
+							}}
+						/>
 						{['Features', 'How it Works', 'Community'].map((item) => (
 							<a key={item} href={`#${item.toLowerCase().replace(/\s+/g, '-')}`} className="hover:text-primary transition-colors relative group">
 								{item}
@@ -603,6 +647,15 @@ export default function Landing() {
 					<p className="text-sm text-muted-foreground">© 2025 UniVerse Connect. All rights reserved.</p>
 				</div>
 			</footer>
+
+			<LightboxModal
+				isOpen={isModalOpen}
+				onClose={() => setIsModalOpen(false)}
+				images={images}
+				activeIndex={activeIndex}
+				onPrev={() => setActiveIndex((prev) => (prev - 1 + images.length) % images.length)}
+				onNext={() => setActiveIndex((prev) => (prev + 1) % images.length)}
+			/>
 		</div>
 	);
 }
