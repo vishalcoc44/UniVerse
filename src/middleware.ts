@@ -29,13 +29,28 @@ export async function updateSession(request: NextRequest) {
 		}
 	)
 
-	// refreshing the auth token
-	await supabase.auth.getUser()
+	// Refresh auth token with a 3s timeout so a Supabase network hiccup
+	// never blocks page/API requests.
+	try {
+		const timeout = new Promise<null>((_, reject) =>
+			setTimeout(() => reject(new Error('Supabase auth timeout')), 3000)
+		)
+		await Promise.race([supabase.auth.getUser(), timeout])
+	} catch (err: any) {
+		// Log the issue but always proceed — don't let auth block the request.
+		if (err?.message !== 'Supabase auth timeout') {
+			console.error('Middleware: auth error:', err?.message ?? err)
+		}
+	}
 
 	return supabaseResponse
 }
 
 export async function middleware(request: NextRequest) {
+	// Skip auth session refresh for API routes — they handle auth independently.
+	if (request.nextUrl.pathname.startsWith('/api/')) {
+		return NextResponse.next({ request })
+	}
 	return await updateSession(request)
 }
 

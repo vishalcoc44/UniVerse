@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Search, Plus, Trash2, Clock, Check, X, Shield, Navigation, Map } from "lucide-react";
+import { MapPin, Search, Plus, Trash2, Clock, Check, X, Shield, Navigation, Map, RefreshCw } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
@@ -70,14 +70,27 @@ const emptySuggestionForm = {
 };
 
 export function CampusMap() {
-  const { universityId, userId, role } = useUserUniversity();
+  const { universityId, userId, role, loading: userContextLoading } = useUserUniversity();
   const isAdmin = role === "ADMIN";
   const [services, setServices] = useState<UtilityService[]>([]);
   const [pendingSuggestions, setPendingSuggestions] = useState<UtilitySuggestion[]>([]);
   const [userSuggestions, setUserSuggestions] = useState<UtilitySuggestion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
+  const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
+  const [suggestDialogOpen, setSuggestDialogOpen] = useState(false);
+  const [submittingService, setSubmittingService] = useState(false);
+  const [submittingSuggestion, setSubmittingSuggestion] = useState(false);
   const [serviceForm, setServiceForm] = useState(emptyServiceForm);
   const [suggestionForm, setSuggestionForm] = useState(emptySuggestionForm);
+
+  const parsePercent = (value: string) => {
+    const parsed = Number(value);
+    if (Number.isNaN(parsed)) return null;
+    return Math.max(0, Math.min(100, parsed));
+  };
 
   const loadServices = async () => {
     if (!universityId) return;
@@ -124,10 +137,26 @@ export function CampusMap() {
     loadSuggestions();
   }, [universityId, userId, role]);
 
+  const filteredServices = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return services;
+
+    return services.filter((item) => {
+      const haystack = `${item.name} ${item.category} ${item.location || ""} ${item.description || ""}`.toLowerCase();
+      return haystack.includes(query);
+    });
+  }, [services, searchTerm]);
+
   const mapPins = useMemo(
-    () => services.filter((item) => item.mapX !== null && item.mapY !== null),
-    [services]
+    () => filteredServices.filter((item) => item.mapX !== null && item.mapY !== null),
+    [filteredServices]
   );
+
+  const refreshAll = async () => {
+    setRefreshing(true);
+    await Promise.all([loadServices(), loadSuggestions()]);
+    setRefreshing(false);
+  };
 
   const handleCreateService = async () => {
     if (!universityId) return;
@@ -135,6 +164,7 @@ export function CampusMap() {
       toast.error("Name and category are required.");
       return;
     }
+    setSubmittingService(true);
     const payload = {
       universityId,
       name: serviceForm.name,
@@ -144,17 +174,20 @@ export function CampusMap() {
       hours: serviceForm.hours || null,
       contact: serviceForm.contact || null,
       website: serviceForm.website || null,
-      mapX: serviceForm.mapX ? Number(serviceForm.mapX) : null,
-      mapY: serviceForm.mapY ? Number(serviceForm.mapY) : null,
+      mapX: serviceForm.mapX ? parsePercent(serviceForm.mapX) : null,
+      mapY: serviceForm.mapY ? parsePercent(serviceForm.mapY) : null,
     };
     const { error } = await supabase.from("UtilityService").insert(payload);
     if (error) {
       toast.error("Failed to add service.");
+      setSubmittingService(false);
       return;
     }
     toast.success("Service added.");
     setServiceForm(emptyServiceForm);
+    setServiceDialogOpen(false);
     loadServices();
+    setSubmittingService(false);
   };
 
   const handleDeleteService = async (id: string) => {
@@ -173,6 +206,7 @@ export function CampusMap() {
       toast.error("Suggestion title is required.");
       return;
     }
+    setSubmittingSuggestion(true);
     const payload = {
       universityId,
       suggestedBy: userId,
@@ -184,18 +218,21 @@ export function CampusMap() {
       hours: suggestionForm.hours || null,
       contact: suggestionForm.contact || null,
       website: suggestionForm.website || null,
-      mapX: suggestionForm.mapX ? Number(suggestionForm.mapX) : null,
-      mapY: suggestionForm.mapY ? Number(suggestionForm.mapY) : null,
+      mapX: suggestionForm.mapX ? parsePercent(suggestionForm.mapX) : null,
+      mapY: suggestionForm.mapY ? parsePercent(suggestionForm.mapY) : null,
       notes: suggestionForm.notes || null,
     };
     const { error } = await supabase.from("UtilitySuggestion").insert(payload);
     if (error) {
       toast.error("Failed to submit suggestion.");
+      setSubmittingSuggestion(false);
       return;
     }
     toast.success("Suggestion sent.");
     setSuggestionForm(emptySuggestionForm);
+    setSuggestDialogOpen(false);
     loadSuggestions();
+    setSubmittingSuggestion(false);
   };
 
   const handleApproveSuggestion = async (suggestion: UtilitySuggestion) => {
@@ -236,6 +273,16 @@ export function CampusMap() {
     loadSuggestions();
   };
 
+  if (!userContextLoading && !universityId) {
+    return (
+      <Card className="border-none shadow-xl bg-background/60 backdrop-blur-md overflow-hidden">
+        <CardContent className="p-10 text-center text-sm text-muted-foreground">
+          Add your university in your profile to use Campus Map services.
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="border-none shadow-xl bg-background/60 backdrop-blur-md overflow-hidden">
       <CardHeader className="border-b border-border/50 pb-4">
@@ -249,7 +296,7 @@ export function CampusMap() {
           </div>
           <div className="flex items-center gap-2">
             {isAdmin && (
-              <Dialog>
+              <Dialog open={serviceDialogOpen} onOpenChange={setServiceDialogOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm" className="gap-2">
                     <Plus className="h-4 w-4" /> Add Service
@@ -301,16 +348,21 @@ export function CampusMap() {
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button onClick={handleCreateService}>Save Service</Button>
+                    <Button onClick={handleCreateService} disabled={submittingService}>{submittingService ? "Saving..." : "Save Service"}</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
             )}
+            <Button size="sm" variant="outline" className="gap-2" onClick={refreshAll} disabled={refreshing}>
+              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} /> Refresh
+            </Button>
             <div className="relative w-full max-w-[200px]">
               <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 placeholder="Find building..."
                 className="pl-8 h-8 text-xs bg-background/50"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
@@ -339,10 +391,11 @@ export function CampusMap() {
               key={loc.id}
               className="absolute group z-20 transition-all hover:z-30"
               style={{ top: `${loc.mapY}%`, left: `${loc.mapX}%`, transform: 'translate(-50%, -50%)' }}
+              onClick={() => setSelectedServiceId(loc.id)}
             >
               <div className="relative">
                 <div className="h-10 w-10 bg-primary/20 rounded-full flex items-center justify-center animate-pulse absolute -inset-0 scale-75"></div>
-                <div className="h-8 w-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110">
+                <div className={`h-8 w-8 text-primary-foreground rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 ${selectedServiceId === loc.id ? "bg-green-600" : "bg-primary"}`}>
                   <MapPin className="h-4 w-4" />
                 </div>
 
@@ -370,7 +423,7 @@ export function CampusMap() {
             <h4 className="text-sm font-semibold flex items-center gap-2">
               <Plus className="h-4 w-4 text-primary" /> Directory
             </h4>
-            <Badge variant="secondary" className="text-[10px] h-5">{services.length} Locations</Badge>
+            <Badge variant="secondary" className="text-[10px] h-5">{filteredServices.length} Locations</Badge>
           </div>
 
           <ScrollArea className="flex-1">
@@ -379,14 +432,14 @@ export function CampusMap() {
                 <div className="space-y-2">
                   {[1, 2, 3].map(i => <div key={i} className="h-16 w-full rounded-lg bg-muted animate-pulse" />)}
                 </div>
-              ) : services.length === 0 ? (
+              ) : filteredServices.length === 0 ? (
                 <div className="text-center py-8">
                   <Map className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
                   <p className="text-xs text-muted-foreground">No campus services listed yet.</p>
                 </div>
               ) : (
-                services.map((item) => (
-                  <div key={item.id} className="group rounded-xl border border-border/50 p-3 bg-card/40 hover:bg-card/80 transition-all cursor-pointer">
+                filteredServices.map((item) => (
+                  <div key={item.id} className={`group rounded-xl border p-3 bg-card/40 hover:bg-card/80 transition-all cursor-pointer ${selectedServiceId === item.id ? "border-primary" : "border-border/50"}`} onClick={() => setSelectedServiceId(item.id)}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <MapPin className="h-4 w-4 text-primary" />
@@ -420,7 +473,7 @@ export function CampusMap() {
                   <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Propose Addition</h4>
                 </div>
 
-                <Dialog>
+                <Dialog open={suggestDialogOpen} onOpenChange={setSuggestDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full border-dashed gap-2 text-xs">
                       <Plus className="h-3 w-3" /> Add to Suggestion Box
@@ -481,7 +534,7 @@ export function CampusMap() {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button onClick={handleSuggestService} className="w-full" disabled={!userId}>Submit Proposal</Button>
+                      <Button onClick={handleSuggestService} className="w-full" disabled={!userId || submittingSuggestion}>{submittingSuggestion ? "Submitting..." : "Submit Proposal"}</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>

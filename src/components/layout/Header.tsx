@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
 
 interface HeaderProps {
-  title: string;
+  title: React.ReactNode;
   subtitle?: string;
   breadcrumb?: string[];
   action?: React.ReactNode;

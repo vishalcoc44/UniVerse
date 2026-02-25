@@ -36,13 +36,16 @@ export function EventCreationModal({
 
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [userUniversityId, setUserUniversityId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     date: "",
     time: "",
     location: "",
+    scope: "campus",
     category: "",
-    description: ""
+    description: "",
+    participantLimit: ""
   });
 
   // Pre-fill data when eventToEdit changes
@@ -66,8 +69,10 @@ export function EventCreationModal({
         date: dateStr,
         time: timeStr,
         location: eventToEdit.location || "",
+        scope: (eventToEdit.scope || "CAMPUS").toLowerCase(),
         category: (!category || category === "General") ? "" : category.toLowerCase(),
-        description: eventToEdit.description ? eventToEdit.description.replace(/ \[Category: .*?\]/, "") : "" // Clean description for editing
+        description: eventToEdit.description ? eventToEdit.description.replace(/ \[Category: .*?\]/, "") : "", // Clean description for editing
+        participantLimit: eventToEdit.participantLimit !== undefined && eventToEdit.participantLimit !== null ? eventToEdit.participantLimit.toString() : ""
       });
     } else {
       // Reset form if opening in create mode
@@ -78,10 +83,32 @@ export function EventCreationModal({
   // Reset form when closed
   useEffect(() => {
     if (!open && !eventToEdit) {
-      setFormData({ title: "", date: "", time: "", location: "", category: "", description: "" });
+      setFormData({ title: "", date: "", time: "", location: "", scope: "campus", category: "", description: "", participantLimit: "" });
       setImageFile(null);
     }
   }, [open, eventToEdit]);
+
+  useEffect(() => {
+    const loadUserUniversity = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('Profile')
+        .select('universityId')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const uniId = data?.universityId || null;
+      setUserUniversityId(uniId);
+
+      if (!eventToEdit && !uniId) {
+        setFormData((prev) => ({ ...prev, scope: "universe" }));
+      }
+    };
+
+    loadUserUniversity();
+  }, [eventToEdit]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -132,12 +159,19 @@ export function EventCreationModal({
         imageUrl = publicUrlData.publicUrl;
       }
 
-      // Fetch user's universityId
+      // Fetch latest user's universityId
       const { data: profile } = await supabase
         .from('Profile')
         .select('universityId')
         .eq('id', user.id)
         .single();
+
+      const effectiveUniversityId = profile?.universityId || userUniversityId;
+      const selectedScope = formData.scope === 'universe' ? 'UNIVERSE' : 'CAMPUS';
+
+      if (selectedScope === 'CAMPUS' && !effectiveUniversityId) {
+        throw new Error("Campus event requires a university-mapped account.");
+      }
 
       const payload = {
         title: formData.title,
@@ -145,9 +179,10 @@ export function EventCreationModal({
         date: eventDate.toISOString(),
         location: formData.location,
         imageUrl: imageUrl,
-        scope: 'CAMPUS',
-        universityId: profile?.universityId,
-        organizerId: user.id
+        scope: selectedScope,
+        universityId: selectedScope === 'CAMPUS' ? effectiveUniversityId : null,
+        organizerId: user.id,
+        participantLimit: formData.participantLimit ? parseInt(formData.participantLimit) : null
       };
 
       if (eventToEdit) {
@@ -173,7 +208,7 @@ export function EventCreationModal({
       // Clear image file selection to ensure next edit doesn't reuse it
       setImageFile(null);
       if (!eventToEdit) {
-        setFormData({ title: "", date: "", time: "", location: "", category: "", description: "" });
+        setFormData({ title: "", date: "", time: "", location: "", scope: userUniversityId ? "campus" : "universe", category: "", description: "", participantLimit: "" });
       }
     } catch (error: any) {
       console.error("Error saving event:", error);
@@ -210,8 +245,8 @@ export function EventCreationModal({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="title">Event Title</Label>
-            <Input id="title" value={formData.title} onChange={handleChange} placeholder="e.g. AI & Ethics Workshop" className="bg-background/50" />
+            <Label htmlFor="participantLimit">Participant Limit (Leave empty for unlimited)</Label>
+            <Input id="participantLimit" type="number" value={formData.participantLimit} onChange={handleChange} placeholder="e.g. 50" className="bg-background/50" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -234,6 +269,20 @@ export function EventCreationModal({
               <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input id="location" value={formData.location} onChange={handleChange} placeholder="e.g. Student Center, Room 302" className="pl-9 bg-background/50" />
             </div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="scope">Scope</Label>
+            <Select onValueChange={(value) => setFormData({ ...formData, scope: value })} value={formData.scope}>
+              <SelectTrigger className="bg-background/50">
+                <SelectValue placeholder="Select scope" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="campus" disabled={!userUniversityId}>Campus</SelectItem>
+                <SelectItem value="universe">Universe</SelectItem>
+              </SelectContent>
+            </Select>
+            {!userUniversityId && formData.scope === 'campus' ? <p className="text-xs text-amber-600">Campus scope is disabled for accounts without a mapped university.</p> : null}
           </div>
 
           <div className="grid gap-2">

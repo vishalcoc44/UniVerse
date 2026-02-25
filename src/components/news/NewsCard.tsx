@@ -9,10 +9,10 @@ export interface NewsItem {
 	title: string;
 	excerpt: string;
 	category: string;
-	image: string;
+	image?: string | null;
 	author: {
 		name: string;
-		avatar: string;
+		avatar?: string | null;
 	};
 	date: string;
 	readTime: string;
@@ -31,11 +31,15 @@ export function NewsCard({ news }: NewsCardProps) {
 						{news.category}
 					</Badge>
 				</div>
-				<img
-					src={news.image}
-					alt={news.title}
-					className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-				/>
+				{news.image ? (
+					<img
+						src={news.image}
+						alt={news.title}
+						className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+					/>
+				) : (
+					<div className="w-full h-full bg-gradient-to-br from-primary/15 via-muted to-card" />
+				)}
 			</div>
 
 			<div className="p-5 flex-1 flex flex-col">
@@ -58,8 +62,8 @@ export function NewsCard({ news }: NewsCardProps) {
 				<div className="flex items-center justify-between pt-4 border-t border-border/50 mt-auto">
 					<div className="flex items-center gap-2">
 						<Avatar className="h-6 w-6">
-							<AvatarImage src={news.author.avatar} />
-							<AvatarFallback>{news.author.name[0]}</AvatarFallback>
+							<AvatarImage src={news.author.avatar ?? undefined} />
+							<AvatarFallback>{news.author.name?.[0] || "U"}</AvatarFallback>
 						</Avatar>
 						<span className="text-xs font-medium text-muted-foreground">
 							{news.author.name}

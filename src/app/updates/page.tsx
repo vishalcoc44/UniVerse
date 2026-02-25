@@ -3,11 +3,21 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ReleaseTimeline } from "@/components/updates/ReleaseTimeline";
 import { FeedbackWidget } from "@/components/updates/FeedbackWidget";
+import { Rocket } from "lucide-react";
 
 export default function UpdatesPage() {
 	return (
 		<DashboardLayout
-			title="What's New"
+			title={
+				<div className="flex items-center gap-3">
+					<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
+						<Rocket className="h-6 w-6" />
+					</div>
+					<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+						What's <span className="text-primary">New</span>
+					</h1>
+				</div>
+			}
 			subtitle="Latest features and improvements to UniVerse."
 			breadcrumb={["UniVerse", "Updates"]}
 		>

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MoreVertical, Phone, Send, Smile, Paperclip, Video, Loader2, Trash2, Edit2, Download, FileIcon, X, Check, CheckCheck, ShieldAlert, UserCheck, UserX, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import {
     DropdownMenu,
@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Message {
 	id: string;
@@ -56,8 +57,22 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 	const [editingMessage, setEditingMessage] = useState<Message | null>(null);
 	const [isUploading, setIsUploading] = useState(false);
 	const [acceptanceLoading, setAcceptanceLoading] = useState(false);
+	const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+	const [selectedProfile, setSelectedProfile] = useState<any | null>(null);
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const handleViewProfile = () => {
+		const otherParticipant = (chat.participants || []).find((participant: any) => participant?.user?.id !== currentUserId)?.user;
+
+		if (!otherParticipant) {
+			toast.info("Profile details are not available for this chat.");
+			return;
+		}
+
+		setSelectedProfile(otherParticipant);
+		setIsProfileDialogOpen(true);
+	};
 
 	const handleAcceptResponse = async (accept: boolean) => {
 		setAcceptanceLoading(true);
@@ -77,7 +92,7 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 		setAcceptanceLoading(false);
 	};
 
-	const fetchMessages = async (isInitial = false) => {
+	const fetchMessages = useCallback(async (isInitial = false) => {
 		try {
 			if (isInitial) setLoading(true);
 			const { data, error } = await supabase
@@ -113,7 +128,7 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 			setLoading(false);
 			scrollToBottom();
 		}
-	};
+	}, [chat.id, currentUserId]);
 
 	useEffect(() => {
 		fetchMessages(true);
@@ -138,12 +153,40 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 			.on('postgres_changes', { event: '*', schema: 'public', table: 'MessageAttachment' }, () => {
 				fetchMessages();
 			})
-			.subscribe();
+			.subscribe((status) => {
+				if (status === 'SUBSCRIBED') {
+					fetchMessages();
+				}
+			});
 
 		return () => {
 			supabase.removeChannel(channel);
 		};
-	}, [chat.id, currentUserId, chat.status]);
+	}, [chat.id, currentUserId, chat.status, fetchMessages]);
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+			fetchMessages();
+		}, 3000);
+
+		const refreshOnFocus = () => fetchMessages();
+		const refreshOnVisibility = () => {
+			if (document.visibilityState === 'visible') {
+				fetchMessages();
+			}
+		};
+
+		window.addEventListener('focus', refreshOnFocus);
+		window.addEventListener('online', refreshOnFocus);
+		document.addEventListener('visibilitychange', refreshOnVisibility);
+
+		return () => {
+			clearInterval(interval);
+			window.removeEventListener('focus', refreshOnFocus);
+			window.removeEventListener('online', refreshOnFocus);
+			document.removeEventListener('visibilitychange', refreshOnVisibility);
+		};
+	}, [fetchMessages]);
 
 	// Mark as read when messages change or component mounts
 	useEffect(() => {
@@ -372,7 +415,7 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="w-56 p-2">
-							<DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-primary/5">
+							<DropdownMenuItem className="rounded-md py-2 px-3 focus:bg-primary/5" onClick={handleViewProfile}>
 								<div className="flex items-center gap-2">
 									<Avatar className="h-5 w-5"><AvatarImage src={chat.avatar} /></Avatar>
 									<span>View Profile</span>
@@ -707,6 +750,39 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 					onChange={handleFileUpload}
 				/>
 			</div>
+
+			<Dialog open={isProfileDialogOpen} onOpenChange={setIsProfileDialogOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Student Profile</DialogTitle>
+						<DialogDescription>Quick details from this conversation.</DialogDescription>
+					</DialogHeader>
+					{selectedProfile ? (
+						<div className="space-y-4">
+							<div className="flex items-center gap-3">
+								<Avatar className="h-14 w-14 border border-border/50">
+									<AvatarImage src={selectedProfile.avatarUrl || ""} />
+									<AvatarFallback>{selectedProfile.fullName?.[0] || "U"}</AvatarFallback>
+								</Avatar>
+								<div>
+									<p className="font-semibold text-base">{selectedProfile.fullName || "Unknown User"}</p>
+									<p className="text-sm text-muted-foreground">{selectedProfile.username ? `@${selectedProfile.username}` : "No username"}</p>
+								</div>
+							</div>
+							<div className="grid grid-cols-2 gap-3 text-sm">
+								<div className="rounded-md border border-border/50 p-3">
+									<p className="text-xs text-muted-foreground mb-1">Role</p>
+									<p className="font-medium">{selectedProfile.role || "STUDENT"}</p>
+								</div>
+								<div className="rounded-md border border-border/50 p-3">
+									<p className="text-xs text-muted-foreground mb-1">Status</p>
+									<p className="font-medium">{chat.online ? "Active Now" : "Offline"}</p>
+								</div>
+							</div>
+						</div>
+					) : null}
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

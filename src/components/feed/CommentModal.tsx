@@ -7,6 +7,7 @@ import { Send, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
 
 interface CommentModalProps {
 	isOpen: boolean;
@@ -51,21 +52,28 @@ export function CommentModal({ isOpen, onClose, postId, postAuthorName }: Commen
 		setSending(true);
 
 		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) return;
+		if (!user) {
+			setSending(false);
+			toast.error("Please log in to comment.");
+			return;
+		}
 
 		try {
 			const { error } = await supabase.from('Comment').insert({
+				id: crypto.randomUUID(),
 				content: newComment,
 				postId: postId,
-				authorId: user.id
+				authorId: user.id,
+				updatedAt: new Date().toISOString()
 			});
 
 			if (error) throw error;
 
 			setNewComment("");
 			fetchComments(); // Refresh list
-		} catch (err) {
+		} catch (err: any) {
 			console.error("Error sending comment:", err);
+			toast.error(err?.message || "Failed to send comment.");
 		} finally {
 			setSending(false);
 		}

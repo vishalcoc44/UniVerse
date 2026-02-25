@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Bus, Clock, MapPin, Plus, Trash2, Check, X, Shield, Search, Info, Accessibility } from "lucide-react";
+import { Bus, Clock, MapPin, Plus, Trash2, Check, X, Shield, Search, Info, Accessibility, RefreshCw } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useUserUniversity } from "@/hooks/useUserUniversity";
 import { Button } from "@/components/ui/button";
@@ -65,14 +65,35 @@ const emptySuggestionForm = {
 };
 
 export function BusTracker() {
-  const { universityId, userId, role } = useUserUniversity();
+  const { universityId, userId, role, loading: userContextLoading } = useUserUniversity();
   const isAdmin = role === "ADMIN";
   const [routes, setRoutes] = useState<UtilityShuttle[]>([]);
   const [pendingSuggestions, setPendingSuggestions] = useState<UtilitySuggestion[]>([]);
   const [userSuggestions, setUserSuggestions] = useState<UtilitySuggestion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "On Time" | "Delayed" | "Arriving">("ALL");
+  const [routeDialogOpen, setRouteDialogOpen] = useState(false);
+  const [suggestDialogOpen, setSuggestDialogOpen] = useState(false);
+  const [submittingRoute, setSubmittingRoute] = useState(false);
+  const [submittingSuggestion, setSubmittingSuggestion] = useState(false);
+  const [updatingRouteId, setUpdatingRouteId] = useState<string | null>(null);
   const [routeForm, setRouteForm] = useState(emptyShuttleForm);
   const [suggestionForm, setSuggestionForm] = useState(emptySuggestionForm);
+
+  const filteredRoutes = routes.filter((route) => {
+    const query = searchTerm.trim().toLowerCase();
+    const matchesQuery = !query || `${route.routeName} ${route.routeNumber} ${route.nextStop || ""}`.toLowerCase().includes(query);
+    const matchesStatus = statusFilter === "ALL" || route.status === statusFilter;
+    return matchesQuery && matchesStatus;
+  });
+
+  const refreshAll = async () => {
+    setRefreshing(true);
+    await Promise.all([loadRoutes(), loadSuggestions()]);
+    setRefreshing(false);
+  };
 
   const loadRoutes = async () => {
     if (!universityId) return;
@@ -125,6 +146,7 @@ export function BusTracker() {
       toast.error("Route name and number are required.");
       return;
     }
+    setSubmittingRoute(true);
     const payload = {
       universityId,
       routeName: routeForm.routeName,
@@ -140,11 +162,14 @@ export function BusTracker() {
     const { error } = await supabase.from("UtilityShuttle").insert(payload);
     if (error) {
       toast.error("Failed to add shuttle route.");
+      setSubmittingRoute(false);
       return;
     }
     toast.success("Shuttle route added.");
     setRouteForm(emptyShuttleForm);
+    setRouteDialogOpen(false);
     loadRoutes();
+    setSubmittingRoute(false);
   };
 
   const handleDeleteRoute = async (id: string) => {
@@ -163,6 +188,7 @@ export function BusTracker() {
       toast.error("Route name is required.");
       return;
     }
+    setSubmittingSuggestion(true);
     const payload = {
       universityId,
       suggestedBy: userId,
@@ -179,12 +205,37 @@ export function BusTracker() {
     const { error } = await supabase.from("UtilitySuggestion").insert(payload);
     if (error) {
       toast.error("Failed to submit suggestion.");
+      setSubmittingSuggestion(false);
       return;
     }
     toast.success("Suggestion sent.");
     setSuggestionForm(emptySuggestionForm);
+    setSuggestDialogOpen(false);
     loadSuggestions();
+    setSubmittingSuggestion(false);
   };
+
+  const handleQuickStatusUpdate = async (routeId: string, status: UtilityShuttle["status"]) => {
+    setUpdatingRouteId(routeId);
+    const { error } = await supabase.from("UtilityShuttle").update({ status, updatedAt: new Date().toISOString() }).eq("id", routeId);
+    if (error) {
+      toast.error("Failed to update route status.");
+      setUpdatingRouteId(null);
+      return;
+    }
+    setRoutes((prev) => prev.map((route) => (route.id === routeId ? { ...route, status } : route)));
+    setUpdatingRouteId(null);
+  };
+
+  if (!userContextLoading && !universityId) {
+    return (
+      <Card className="border-none shadow-xl bg-background/60 backdrop-blur-md overflow-hidden">
+        <CardContent className="p-10 text-center text-sm text-muted-foreground">
+          Add your university in your profile to use Shuttle Tracker.
+        </CardContent>
+      </Card>
+    );
+  }
 
   const handleApproveSuggestion = async (suggestion: UtilitySuggestion) => {
     if (!universityId) return;
@@ -232,7 +283,7 @@ export function BusTracker() {
             </div>
             <div className="flex items-center gap-2">
               {isAdmin && (
-                <Dialog>
+                <Dialog open={routeDialogOpen} onOpenChange={setRouteDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" className="gap-2">
                       <Plus className="h-4 w-4" /> Add Route
@@ -288,14 +339,24 @@ export function BusTracker() {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button onClick={handleCreateRoute}>Initialize Route</Button>
+                      <Button onClick={handleCreateRoute} disabled={submittingRoute}>{submittingRoute ? "Saving..." : "Initialize Route"}</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
               )}
+              <Button size="sm" variant="outline" className="gap-2" onClick={refreshAll} disabled={refreshing}>
+                <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} /> Refresh
+              </Button>
+              <div className="flex items-center gap-1 border rounded-md px-1 py-1 bg-background/50">
+                {(["ALL", "On Time", "Arriving", "Delayed"] as const).map((option) => (
+                  <Button key={option} size="sm" variant={statusFilter === option ? "default" : "ghost"} className="h-6 px-2 text-[10px]" onClick={() => setStatusFilter(option)}>
+                    {option}
+                  </Button>
+                ))}
+              </div>
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input placeholder="Filter routes..." className="pl-8 h-8 w-[150px] bg-background/50" />
+                <Input placeholder="Filter routes..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-8 h-8 w-[170px] bg-background/50" />
               </div>
             </div>
           </div>
@@ -307,13 +368,13 @@ export function BusTracker() {
               [1, 2, 3].map((i) => (
                 <div key={i} className="h-40 rounded-xl bg-muted/30 animate-pulse border border-border/50" />
               ))
-            ) : routes.length === 0 ? (
+            ) : filteredRoutes.length === 0 ? (
               <div className="col-span-full py-12 text-center bg-muted/10 rounded-2xl border border-dashed border-border/50">
                 <Bus className="h-12 w-12 text-muted-foreground/20 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground font-medium">No active shuttle services detected.</p>
+                <p className="text-sm text-muted-foreground font-medium">No routes match current filters.</p>
               </div>
             ) : (
-              routes.map((route) => (
+              filteredRoutes.map((route) => (
                 <div key={route.id} className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/40 p-5 hover:bg-card/80 transition-all">
                   <div className="flex justify-between items-start mb-4">
                     <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center font-black text-primary text-lg">
@@ -358,14 +419,19 @@ export function BusTracker() {
                         {route.serviceAlerts && <span title="Active Alert"><Info className="h-3.5 w-3.5 text-amber-500" /></span>}
                       </div>
                       {isAdmin && (
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive transition-opacity"
-                          onClick={() => handleDeleteRoute(route.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]" disabled={updatingRouteId === route.id} onClick={() => handleQuickStatusUpdate(route.id, "On Time")}>On Time</Button>
+                          <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]" disabled={updatingRouteId === route.id} onClick={() => handleQuickStatusUpdate(route.id, "Arriving")}>Arriving</Button>
+                          <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] text-amber-600" disabled={updatingRouteId === route.id} onClick={() => handleQuickStatusUpdate(route.id, "Delayed")}>Delayed</Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-destructive transition-opacity"
+                            onClick={() => handleDeleteRoute(route.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -384,7 +450,7 @@ export function BusTracker() {
           </h3>
 
           <div className="grid gap-3">
-            <Dialog>
+            <Dialog open={suggestDialogOpen} onOpenChange={setSuggestDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="h-20 border-dashed bg-background/40 hover:bg-background/80 flex flex-col gap-1 items-center justify-center">
                   <Plus className="h-5 w-5 text-muted-foreground" />
@@ -421,7 +487,7 @@ export function BusTracker() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button onClick={handleSuggestRoute} className="w-full">Submit Proposal</Button>
+                  <Button onClick={handleSuggestRoute} className="w-full" disabled={submittingSuggestion}>{submittingSuggestion ? "Submitting..." : "Submit Proposal"}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>

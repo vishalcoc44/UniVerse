@@ -8,12 +8,21 @@ import { PrivacySettings } from "@/components/settings/PrivacySettings";
 import { IntegrationsSettings } from "@/components/settings/IntegrationsSettings";
 import { AccessibilitySettings } from "@/components/settings/AccessibilitySettings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bell, Lock, Palette, User, Link, Accessibility } from "lucide-react";
+import { Bell, Lock, Palette, User, Link, Accessibility, Settings as SettingsIcon } from "lucide-react";
 
 export default function Settings() {
 	return (
 		<DashboardLayout
-			title="Settings"
+			title={
+				<div className="flex items-center gap-3">
+					<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
+						<SettingsIcon className="h-6 w-6 animate-[spin_4s_linear_infinite]" />
+					</div>
+					<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+						Account <span className="text-primary">Settings</span>
+					</h1>
+				</div>
+			}
 			subtitle="Manage your account, privacy, and preferences."
 			breadcrumb={["UniVerse", "Settings"]}
 		>

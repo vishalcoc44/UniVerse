@@ -18,7 +18,16 @@ export default function MarketplacePage() {
 
 	return (
 		<DashboardLayout
-			title="Marketplace"
+			title={
+				<div className="flex items-center gap-3">
+					<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
+						<ShoppingBag className="h-6 w-6" />
+					</div>
+					<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+						Campus <span className="text-primary">Marketplace</span>
+					</h1>
+				</div>
+			}
 			subtitle="Buy, sell, and connect with other students."
 			breadcrumb={["UniVerse", "Marketplace"]}
 			action={<SellModal onListingCreated={handleListingCreated} />}

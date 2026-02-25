@@ -1,14 +1,16 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Coffee, GraduationCap, HelpCircle, UserPlus, FileText } from "lucide-react";
+import { BookOpen, Coffee, GraduationCap, HelpCircle, UserPlus, FileText, Sparkles, TrendingUp, Zap, Ghost } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface Category {
   id: string;
   name: string;
-  count: number;
-  icon: React.ReactNode;
+  count: string;
+  icon: any;
   color: string;
+  description: string;
 }
 
 interface ForumCategoryGridProps {
@@ -18,36 +20,64 @@ interface ForumCategoryGridProps {
 
 export function ForumCategoryGrid({ onSelect, activeId }: ForumCategoryGridProps) {
   const categories: Category[] = [
-    { id: "all", name: "All Topics", count: 1250, icon: <BookOpen className="w-5 h-5" />, color: "bg-blue-500/10 text-blue-500" },
-    { id: "cs", name: "Computer Science", count: 420, icon: <FileText className="w-5 h-5" />, color: "bg-purple-500/10 text-purple-500" },
-    { id: "campus", name: "Campus Life", count: 350, icon: <Coffee className="w-5 h-5" />, color: "bg-orange-500/10 text-orange-500" },
-    { id: "admissions", name: "Admissions", count: 180, icon: <UserPlus className="w-5 h-5" />, color: "bg-green-500/10 text-green-500" },
-    { id: "exams", name: "Exam Prep", count: 210, icon: <GraduationCap className="w-5 h-5" />, color: "bg-red-500/10 text-red-500" },
-    { id: "help", name: "Student Support", count: 90, icon: <HelpCircle className="w-5 h-5" />, color: "bg-cyan-500/10 text-cyan-500" },
+    { id: "all", name: "GLOBAL FEED", count: "2.4k", icon: Sparkles, color: "text-amber-500", description: "Everything everywhere" },
+    { id: "whispers", name: "WHISPERS", count: "840", icon: Ghost, color: "text-emerald-500", description: "Deeply anonymous" },
+    { id: "cs", name: "TERMINAL", count: "420", icon: Zap, color: "text-blue-500", description: "Geeks & Coders" },
+    { id: "campus", name: "LIFESTYLE", count: "310", icon: Coffee, color: "text-rose-500", description: "Campus vibes" },
+    { id: "admissions", name: "HATCHERY", count: "120", icon: UserPlus, color: "text-purple-500", description: "New arrivals" },
+    { id: "help", name: "SOS", count: "95", icon: HelpCircle, color: "text-cyan-500", description: "Mutual aid" },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-6">
-      {categories.map((cat) => (
-        <button
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {categories.map((cat, index) => (
+        <motion.button
           key={cat.id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.05 }}
           onClick={() => onSelect(cat.id)}
           className={cn(
-            "flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-300 hover:shadow-md h-28 group",
+            "relative group overflow-hidden flex flex-col items-start p-8 rounded-[2.5rem] border transition-all duration-500 text-left",
             activeId === cat.id
-              ? "bg-primary/5 border-primary shadow-sm"
-              : "bg-card/50 border-border/50 hover:bg-card/80"
+              ? "bg-primary/10 border-primary shadow-2xl shadow-primary/10 -translate-y-1"
+              : "bg-card/40 backdrop-blur-xl border-border/50 hover:border-primary/30 hover:bg-card/60 hover:-translate-y-1"
           )}
         >
+          <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
+            <cat.icon className="h-24 w-24 rotate-12" />
+          </div>
+
           <div className={cn(
-            "p-2.5 rounded-full mb-2 transition-transform duration-300 group-hover:scale-110",
+            "h-14 w-14 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 shadow-inner bg-card/80 border border-border/30 group-hover:scale-110 group-hover:rotate-3",
             cat.color
           )}>
-            {cat.icon}
+            <cat.icon className="h-6 w-6" />
           </div>
-          <span className="text-xs font-semibold text-foreground text-center line-clamp-1">{cat.name}</span>
-          <span className="text-[10px] text-muted-foreground mt-0.5">{cat.count} posts</span>
-        </button>
+
+          <div className="space-y-1 relative z-10">
+            <h4 className="text-xl font-black italic tracking-tighter text-foreground group-hover:text-primary transition-colors">
+              {cat.name}
+            </h4>
+            <p className="text-xs font-black italic uppercase tracking-widest text-muted-foreground/60">
+              {cat.description}
+            </p>
+          </div>
+
+          <div className="mt-8 flex items-center gap-3">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-[10px] font-black italic tracking-widest uppercase text-muted-foreground">
+              {cat.count} ACTIVE THREADS
+            </span>
+          </div>
+
+          {activeId === cat.id && (
+            <motion.div 
+              layoutId="activeCategoryGlow"
+              className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" 
+            />
+          )}
+        </motion.button>
       ))}
     </div>
   );

@@ -131,4 +131,6 @@ Thumbs.db
 *.swo
 
 # Supabase
-# supabase/
+supabase/.temp/
+supabase/current_schema/
+supabase/migrations/

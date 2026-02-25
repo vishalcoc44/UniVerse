@@ -138,138 +138,124 @@ export function ResourceGrid() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h3 className="text-lg font-semibold text-foreground">Top Resources</h3>
-          <p className="text-sm text-muted-foreground">Curated notes and papers from the community.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
+        <div className="space-y-0.5">
+          <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Reference Library</p>
+          <h3 className="text-xl font-bold tracking-tight">
+            Study <span className="text-primary">Materials</span>
+          </h3>
         </div>
         <div className="flex gap-2">
           {role === 'ADMIN' && universityId && (
             <AddCourseDialog
               universityId={universityId}
-              onCourseAdded={fetchResources} // Refresh resources if needed, though mostly this affects upload
+              onCourseAdded={fetchResources}
             />
           )}
-          <Button className="gap-2" onClick={handleUploadClick} disabled={isUploading}>
-            {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
-            {isUploading ? "Uploading..." : "Upload"}
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            className="hidden"
+            accept=".pdf,.doc,.docx,.ppt,.pptx,.txt"
+          />
+
+          <Button
+            onClick={handleUploadClick}
+            disabled={isUploading || !universityId}
+            className="h-10 px-6 rounded-xl bg-primary text-primary-foreground font-bold tracking-wide uppercase text-[10px] shadow-lg shadow-primary/10 gap-2 transition-all active:scale-95 group"
+          >
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <UploadCloud className="h-4 w-4 group-hover:-translate-y-0.5 transition-transform" />
+                Upload File
+              </>
+            )}
           </Button>
         </div>
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={handleFileUpload}
-          accept=".pdf,.doc,.docx,.txt"
-        />
       </div>
 
-      {loading ? (
-        <div className="flex justify-center p-8">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : resources.length === 0 ? (
-        <div className="text-center p-8 text-muted-foreground bg-card/50 rounded-lg border border-border/50">
-          No resources found. Be the first to upload!
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {resources.map((res) => (
-            <Card key={res.id} className="p-4 hover:shadow-md transition-all group bg-card/50 backdrop-blur-sm border-border/50">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
-                    {res.type.substring(0, 3)}
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-                      {res.title}
-                    </h4>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                      <span className="font-medium text-foreground/80">{res.uploader?.fullName || "Unknown"}</span>
-                      {res.uploader?.username && (
-                        <span className="text-[10px] italic">@{res.uploader.username}</span>
-                      )}
-                      <span>•</span>
-                      {/* Mock size since not in schema */}
-                      <span>2.4 MB</span>
+      <div className="grid grid-cols-1 gap-4">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Loader2 className="h-8 w-8 text-primary animate-spin" />
+            <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase animate-pulse">Loading resources...</p>
+          </div>
+        ) : resources.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center gap-4 bg-card/20 backdrop-blur-sm border border-dashed border-border/50 rounded-2xl opacity-40">
+            <div className="h-14 w-14 rounded-full bg-muted/50 flex items-center justify-center">
+              <FileText className="h-7 w-7 text-muted-foreground/30" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-base font-bold tracking-tight">No Resources found</h3>
+              <p className="text-xs text-muted-foreground">Be the first to share study materials!</p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3 pr-1">
+            {resources.map((resource) => (
+              <div
+                key={resource.id}
+                className="group relative bg-card/40 backdrop-blur-xl border border-border/30 rounded-2xl p-4 hover:border-primary/30 transition-all duration-300 shadow hover:shadow-primary/5"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex gap-4">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shrink-0">
+                      <FileText className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-sm tracking-tight group-hover:text-primary transition-colors leading-tight">
+                        {resource.title}
+                      </h4>
+                      <div className="flex items-center gap-2 mt-1 overflow-hidden">
+                        <Badge variant="outline" className="rounded-md bg-card/60 font-bold text-[8px] uppercase tracking-wider border-border/30 px-1.5 py-0 shrink-0">
+                          {resource.course?.code || "GEN-01"}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground font-medium truncate">
+                          Uploaded by {resource.uploader?.fullName || "User"}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Delete Button (Only for uploader) */}
-                {/* Note: We need the current user ID to check ownership. 
-                    Ideally 'useUserUniversity' or a separate auth hook provides 'user'. 
-                    For now, assuming backend validation handles security, 
-                    but UI hiding is better UX. 
-                    Let's use a simple client-side check if we had user ID.
-                    Since we don't have user ID in context easily yet, 
-                    we show it and let backend reject if unauthorized, 
-                    OR we fetch user ID. 
-                    Let's just show it in the menu for now. */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-red-500"
-                  onClick={() => handleDelete(res.id)}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-trash-2"
-                  >
-                    <path d="M3 6h18" />
-                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                    <line x1="10" x2="10" y1="11" y2="17" />
-                    <line x1="14" x2="14" y1="11" y2="17" />
-                  </svg>
-                </Button>
-
-              </div>
-
-              <div className="flex items-center gap-2 mb-4">
-                {res.course && (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 h-5 bg-muted/50 font-normal text-muted-foreground">
-                    #{res.course.code}
-                  </Badge>
-                )}
-                {/* <Badge className="text-[10px] px-1.5 h-5 bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-500/20 gap-1">
-                    <Star className="h-2 w-2 fill-current" /> Verified
-                </Badge> */}
-              </div>
-
-              <div className="flex items-center justify-between pt-3 border-t border-border/40 text-xs text-muted-foreground">
-                <div className="flex items-center gap-4">
-                  <div
-                    className="flex items-center gap-1.5 hover:text-foreground cursor-pointer transition-colors"
-                    onClick={() => handleVote(res.id)}
-                  >
-                    <ThumbsUp className="h-3.5 w-3.5" />
-                    {res.upvotes}
-                  </div>
-                  <div className="flex items-center gap-1.5 hover:text-foreground cursor-pointer transition-colors">
-                    <Download className="h-3.5 w-3.5" />
-                    120
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8 rounded-lg bg-card border-border/30 hover:border-primary/50 text-muted-foreground hover:text-primary transition-all"
+                      onClick={() => window.open(resource.fileUrl, '_blank')}
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3 rounded-lg bg-primary/10 text-primary border border-primary/20 font-bold uppercase text-[9px] hover:bg-primary hover:text-primary-foreground gap-1.5 transition-all active:scale-95"
+                      onClick={() => handleVote(resource.id)}
+                    >
+                      <ThumbsUp className="h-3 w-3" />
+                      {resource.upvotes}
+                    </Button>
+                    {role === 'ADMIN' && (
+                       <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive rounded-lg"
+                        onClick={() => handleDelete(resource.id)}
+                      >
+                         <MoreVertical className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                   </div>
                 </div>
-
-                <Button variant="ghost" size="sm" className="h-7 text-xs hover:text-primary -mr-2" asChild>
-                  <a href={res.fileUrl} target="_blank" rel="noopener noreferrer">Download</a>
-                </Button>
               </div>
-            </Card>
-          ))}
-        </div>
-      )
-      }
-    </div >
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

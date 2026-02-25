@@ -6,7 +6,7 @@ import { Header } from "./Header";
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  title: string;
+  title: React.ReactNode;
   subtitle?: string;
   breadcrumb?: string[];
   activeNav?: string;
@@ -25,7 +25,7 @@ export function DashboardLayout({
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar activeItem={activeNav} onNavigate={onNavigate} />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden">
         <Header title={title} subtitle={subtitle} breadcrumb={breadcrumb} action={action} />
         <div className="p-6 animate-fade-in">{children}</div>
       </main>

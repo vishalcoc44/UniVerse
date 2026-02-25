@@ -1,0 +1,172 @@
+import { NextResponse } from "next/server";
+
+export const runtime = "nodejs";
+
+interface ResumeFeedback {
+  quickFixes: Array<{
+    type: "critical" | "warning";
+    title: string;
+    description: string;
+  }>;
+  keywords: {
+    found: string[];
+    missing: string[];
+  };
+  impactScore: number;
+  summary: string;
+}
+
+function normalizeFeedback(value: unknown): ResumeFeedback {
+  if (!value || typeof value !== "object") {
+    throw new Error("AI returned invalid response shape.");
+  }
+
+  const candidate = value as Partial<ResumeFeedback>;
+  const rawQuickFixes: unknown[] = Array.isArray((candidate as { quickFixes?: unknown[] }).quickFixes)
+    ? (candidate as { quickFixes: unknown[] }).quickFixes
+    : [];
+  const keywords = candidate.keywords && typeof candidate.keywords === "object"
+    ? candidate.keywords
+    : { found: [], missing: [] };
+
+  const found = Array.isArray((keywords as { found?: unknown[] }).found)
+    ? (keywords as { found: string[] }).found.map(String)
+    : [];
+  const missing = Array.isArray((keywords as { missing?: unknown[] }).missing)
+    ? (keywords as { missing: string[] }).missing.map(String)
+    : [];
+
+  const cleanedQuickFixes = rawQuickFixes
+    .map((fix) => {
+      if (!fix || typeof fix !== "object") return null;
+      const current = fix as { type?: unknown; title?: unknown; description?: unknown };
+      return {
+        type: current.type === "critical" ? "critical" as const : "warning" as const,
+        title: String(current.title ?? "Improvement Opportunity"),
+        description: String(current.description ?? "Consider refining this section.")
+      };
+    })
+    .filter((fix): fix is { type: "critical" | "warning"; title: string; description: string } => !!fix)
+    .slice(0, 6);
+
+  const numericScore = Number(candidate.impactScore ?? 0);
+  const impactScore = Number.isFinite(numericScore)
+    ? Math.max(0, Math.min(100, Math.round(numericScore)))
+    : 0;
+
+  return {
+    quickFixes: cleanedQuickFixes,
+    keywords: {
+      found: found.slice(0, 20),
+      missing: missing.slice(0, 20)
+    },
+    impactScore,
+    summary: String(candidate.summary ?? "No summary returned by model.")
+  };
+}
+
+function parseAiJson(raw: string): ResumeFeedback {
+  const cleaned = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+  const parsed = JSON.parse(cleaned);
+  return normalizeFeedback(parsed);
+}
+
+function getAnalysisPrompt(source: "pdf" | "text", textSample?: string): string {
+  const basePrompt = `Analyze this resume and return ONLY valid JSON.
+
+Required JSON shape:
+{
+  "quickFixes": [{ "type": "critical" | "warning", "title": "...", "description": "..." }],
+  "keywords": { "found": ["..."], "missing": ["..."] },
+  "impactScore": number,
+  "summary": "..."
+}
+
+Constraints:
+- quickFixes max 6 items
+- impactScore must be an integer from 0 to 100
+- keywords should be role-relevant technical/professional terms
+- summary max 120 words
+- return JSON only (no markdown)`;
+
+  if (source === "pdf") {
+    return `${basePrompt}\n\nThe resume is attached as a PDF file.`;
+  }
+
+  return `${basePrompt}\n\nResume text:\n${(textSample ?? "").slice(0, 15000)}`;
+}
+
+export async function POST(req: Request) {
+  try {
+    const formData = await req.formData();
+    const file = formData.get("file");
+
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: "Missing file." }, { status: 400 });
+    }
+
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      return NextResponse.json({ error: "Server AI key is not configured." }, { status: 500 });
+    }
+
+    const isPdf = file.type.includes("pdf") || file.name.toLowerCase().endsWith(".pdf");
+    let parts: Array<Record<string, unknown>>;
+
+    if (isPdf) {
+      const bytes = Buffer.from(await file.arrayBuffer());
+      parts = [
+        { text: getAnalysisPrompt("pdf") },
+        {
+          inline_data: {
+            mime_type: "application/pdf",
+            data: bytes.toString("base64")
+          }
+        }
+      ];
+    } else {
+      const extractedText = (await file.text()).trim();
+      if (!extractedText) {
+        return NextResponse.json({ error: "Could not extract readable text from resume." }, { status: 422 });
+      }
+
+      parts = [{ text: getAnalysisPrompt("text", extractedText) }];
+    }
+
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
+
+    const response = await fetch(geminiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return NextResponse.json(
+        { error: errorData?.error?.message || "AI provider request failed." },
+        { status: 502 }
+      );
+    }
+
+    const aiResult = await response.json();
+    const rawText = aiResult?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!rawText || typeof rawText !== "string") {
+      return NextResponse.json({ error: "AI returned empty content." }, { status: 502 });
+    }
+
+    const feedback = parseAiJson(rawText);
+    return NextResponse.json({ feedback, score: feedback.impactScore });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unexpected analysis error.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}

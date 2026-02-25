@@ -16,10 +16,10 @@ export function NewsCategoryList({ activeCategory, onSelect }: NewsCategoryListP
 		{ id: "all", label: "All News" },
 		{ id: "academic", label: "Academics" },
 		{ id: "events", label: "Events" },
-		{ id: "sports", label: "Sports" },
-		{ id: "culture", label: "Art & Culture" },
-		{ id: "admin", label: "Administration" },
-		{ id: "research", label: "Research" },
+		{ id: "social", label: "Social" },
+		{ id: "marketplace", label: "Marketplace" },
+		{ id: "career", label: "Career" },
+		{ id: "general", label: "General" },
 	];
 
 	return (

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Tag, Plus, Trash2, Check, X, Shield, Search, Copy, Clock, CreditCard } from "lucide-react";
+import { ExternalLink, Tag, Plus, Trash2, Check, X, Shield, Search, Copy, RefreshCw } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/lib/supabase";
 import { useUserUniversity } from "@/hooks/useUserUniversity";
@@ -78,14 +78,36 @@ const emptySuggestionForm = {
 };
 
 export function DiscountHub() {
-  const { universityId, userId, role } = useUserUniversity();
+  const { universityId, userId, role, loading: userContextLoading } = useUserUniversity();
   const isAdmin = role === "ADMIN";
   const [discounts, setDiscounts] = useState<UtilityDiscount[]>([]);
   const [pendingSuggestions, setPendingSuggestions] = useState<UtilitySuggestion[]>([]);
   const [userSuggestions, setUserSuggestions] = useState<UtilitySuggestion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
+  const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
+  const [suggestDialogOpen, setSuggestDialogOpen] = useState(false);
+  const [submittingDiscount, setSubmittingDiscount] = useState(false);
+  const [submittingSuggestion, setSubmittingSuggestion] = useState(false);
   const [discountForm, setDiscountForm] = useState(emptyDiscountForm);
   const [suggestionForm, setSuggestionForm] = useState(emptySuggestionForm);
+
+  const categories = Array.from(new Set(discounts.map((item) => item.category || "General")));
+  const filteredDiscounts = discounts.filter((item) => {
+    const query = searchTerm.trim().toLowerCase();
+    const matchesQuery = !query || `${item.brand} ${item.title} ${item.offer} ${item.category || ""}`.toLowerCase().includes(query);
+    const normalizedCategory = item.category || "General";
+    const matchesCategory = categoryFilter === "ALL" || normalizedCategory === categoryFilter;
+    return matchesQuery && matchesCategory;
+  });
+
+  const refreshAll = async () => {
+    setRefreshing(true);
+    await Promise.all([loadDiscounts(), loadSuggestions()]);
+    setRefreshing(false);
+  };
 
   const loadDiscounts = async () => {
     if (!universityId) return;
@@ -139,6 +161,7 @@ export function DiscountHub() {
       toast.error("Title, brand, and offer are required.");
       return;
     }
+    setSubmittingDiscount(true);
     const payload = {
       universityId,
       title: discountForm.title,
@@ -157,11 +180,14 @@ export function DiscountHub() {
     const { error } = await supabase.from("UtilityDiscount").insert(payload);
     if (error) {
       toast.error("Failed to add discount.");
+      setSubmittingDiscount(false);
       return;
     }
     toast.success("Discount added.");
     setDiscountForm(emptyDiscountForm);
+    setDiscountDialogOpen(false);
     loadDiscounts();
+    setSubmittingDiscount(false);
   };
 
   const handleDeleteDiscount = async (id: string) => {
@@ -180,6 +206,7 @@ export function DiscountHub() {
       toast.error("Discount title is required.");
       return;
     }
+    setSubmittingSuggestion(true);
     const payload = {
       universityId,
       suggestedBy: userId,
@@ -200,12 +227,25 @@ export function DiscountHub() {
     const { error } = await supabase.from("UtilitySuggestion").insert(payload);
     if (error) {
       toast.error("Failed to submit suggestion.");
+      setSubmittingSuggestion(false);
       return;
     }
     toast.success("Suggestion sent.");
     setSuggestionForm(emptySuggestionForm);
+    setSuggestDialogOpen(false);
     loadSuggestions();
+    setSubmittingSuggestion(false);
   };
+
+  if (!userContextLoading && !universityId) {
+    return (
+      <Card className="border-none shadow-xl bg-background/60 backdrop-blur-md overflow-hidden">
+        <CardContent className="p-10 text-center text-sm text-muted-foreground">
+          Add your university in your profile to view campus discounts.
+        </CardContent>
+      </Card>
+    );
+  }
 
   const handleApproveSuggestion = async (suggestion: UtilitySuggestion) => {
     if (!universityId) return;
@@ -256,7 +296,7 @@ export function DiscountHub() {
             </div>
             <div className="flex items-center gap-2">
               {isAdmin && (
-                <Dialog>
+                <Dialog open={discountDialogOpen} onOpenChange={setDiscountDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" className="gap-2">
                       <Plus className="h-4 w-4" /> New Perk
@@ -298,14 +338,25 @@ export function DiscountHub() {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button onClick={handleCreateDiscount}>Publish Perk</Button>
+                      <Button onClick={handleCreateDiscount} disabled={submittingDiscount}>{submittingDiscount ? "Publishing..." : "Publish Perk"}</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
               )}
+              <Button size="sm" variant="outline" className="gap-2" onClick={refreshAll} disabled={refreshing}>
+                <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} /> Refresh
+              </Button>
+              <div className="flex items-center gap-1 border rounded-md px-1 py-1 bg-background/50">
+                <Button size="sm" variant={categoryFilter === "ALL" ? "default" : "ghost"} className="h-6 px-2 text-[10px]" onClick={() => setCategoryFilter("ALL")}>All</Button>
+                {categories.slice(0, 3).map((category) => (
+                  <Button key={category} size="sm" variant={categoryFilter === category ? "default" : "ghost"} className="h-6 px-2 text-[10px]" onClick={() => setCategoryFilter(category)}>
+                    {category}
+                  </Button>
+                ))}
+              </div>
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input placeholder="Search brands..." className="pl-8 h-8 w-[150px] bg-background/50" />
+                <Input placeholder="Search brands..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-8 h-8 w-[170px] bg-background/50" />
               </div>
             </div>
           </div>
@@ -317,13 +368,13 @@ export function DiscountHub() {
               [1, 2, 3, 4].map((i) => (
                 <div key={i} className="h-48 rounded-xl bg-muted/30 animate-pulse" />
               ))
-            ) : discounts.length === 0 ? (
+            ) : filteredDiscounts.length === 0 ? (
               <div className="col-span-full py-16 text-center border-2 border-dashed border-border/50 rounded-2xl">
                 <Tag className="h-10 w-10 text-muted-foreground/30 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">No active discounts available for your university.</p>
+                <p className="text-sm text-muted-foreground">No discounts match your filters.</p>
               </div>
             ) : (
-              discounts.map((item) => (
+              filteredDiscounts.map((item) => (
                 <div key={item.id} className="group relative bg-card/40 border border-border/50 rounded-2xl overflow-hidden hover:shadow-lg transition-all flex flex-col">
                   <div className="p-4 flex-1 space-y-3">
                     <div className="flex justify-between items-start">
@@ -389,7 +440,7 @@ export function DiscountHub() {
             <Check className="h-5 w-5 text-primary" /> Suggest a Deal
           </h3>
           <div className="grid gap-3">
-             <Dialog>
+             <Dialog open={suggestDialogOpen} onOpenChange={setSuggestDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="h-24 border-dashed bg-background/40 flex flex-col gap-2 items-center justify-center text-muted-foreground hover:text-foreground">
                   <Plus className="h-6 w-6" />
@@ -425,7 +476,7 @@ export function DiscountHub() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button onClick={handleSuggestDiscount} className="w-full">Submit for Approval</Button>
+                  <Button onClick={handleSuggestDiscount} className="w-full" disabled={submittingSuggestion}>{submittingSuggestion ? "Submitting..." : "Submit for Approval"}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>

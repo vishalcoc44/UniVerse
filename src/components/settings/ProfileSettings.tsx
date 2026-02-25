@@ -8,15 +8,18 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useUserSettings } from "@/hooks/useUserSettings";
 
 export function ProfileSettings() {
 	const [loading, setLoading] = useState(true);
 	const [updating, setUpdating] = useState(false);
+	const { settings, loading: settingsLoading, updateSettings } = useUserSettings();
 	const [profile, setProfile] = useState<any>({
 		firstName: "",
 		lastName: "",
 		email: "",
 		username: "",
+		universityName: "",
 		phone: "",
 		bio: "",
 		major: "",
@@ -54,11 +57,12 @@ export function ProfileSettings() {
 					lastName,
 					email: data.email,
 					username: data.username || "",
+					universityName: data.universityName || "",
 					bio: data.bio || "",
 					major: data.department || "",
-					phone: data.phone || "",
-					linkedin: data.linkedin || "",
-					github: data.github || "",
+					phone: settings.phone || "",
+					linkedin: settings.linkedin || "",
+					github: settings.github || "",
 					avatar_url: data.avatarUrl || ""
 				});
 			}
@@ -68,6 +72,15 @@ export function ProfileSettings() {
 			setLoading(false);
 		}
 	};
+
+		useEffect(() => {
+			setProfile((prev: any) => ({
+				...prev,
+				phone: settings.phone || "",
+				linkedin: settings.linkedin || "",
+				github: settings.github || ""
+			}));
+		}, [settings.phone, settings.linkedin, settings.github]);
 
 	const handleSave = async () => {
 		try {
@@ -83,14 +96,19 @@ export function ProfileSettings() {
 					fullName,
 					bio: profile.bio,
 					department: profile.major, // Mapping 'major' to 'department'
-					phone: profile.phone,
-					linkedin: profile.linkedin,
-					github: profile.github,
 					updatedAt: new Date().toISOString()
 				})
 				.eq('id', user.id);
 
 			if (error) throw error;
+
+			const { error: settingsError } = await updateSettings({
+				phone: profile.phone || "",
+				linkedin: profile.linkedin || "",
+				github: profile.github || ""
+			});
+
+			if (settingsError) throw new Error(String(settingsError));
 			toast.success("Profile updated successfully!");
 		} catch (error: any) {
 			toast.error("Error updating profile");
@@ -104,7 +122,7 @@ export function ProfileSettings() {
 		setProfile((prev: any) => ({ ...prev, [field]: value }));
 	};
 
-	if (loading) {
+	if (loading || settingsLoading) {
 		return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 	}
 
@@ -191,6 +209,11 @@ export function ProfileSettings() {
 							value={profile.major}
 							onChange={(e) => handleChange("major", e.target.value)}
 						/>
+					</div>
+					<div className="space-y-2">
+						<Label>University</Label>
+						<Input value={profile.universityName || "Not assigned"} readOnly className="bg-muted/50" />
+						<p className="text-xs text-muted-foreground">University is assigned from your verified email domain and cannot be changed manually.</p>
 					</div>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div className="space-y-2">

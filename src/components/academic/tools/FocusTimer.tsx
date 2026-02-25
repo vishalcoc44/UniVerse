@@ -74,8 +74,8 @@ export function FocusTimer() {
 						{mode === 'focus' ? <Brain className="h-4 w-4 text-indigo-400" /> : <Coffee className="h-4 w-4 text-green-400" />}
 						Focus Timer
 					</span>
-					<Badge variant="outline" className={`text-xs ${isActive ? 'animate-pulse' : ''} ${mode === 'focus' ? 'border-indigo-500/30 text-indigo-400' : 'border-green-500/30 text-green-400'}`}>
-						{mode === 'focus' ? 'Flow State' : 'Chill Mode'}
+					<Badge variant="outline" className={`text-xs ${isActive ? 'animate-pulse' : ''} ${mode === 'focus' ? 'border-primary/30 text-primary' : 'border-green-500/30 text-green-400'}`}>
+						{mode === 'focus' ? 'Focus Session' : 'Break Time'}
 					</Badge>
 				</CardTitle>
 			</CardHeader>

@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/server-supabase";
 import { revalidatePath } from "next/cache"; // Removed cookies import as per recent changes not using it directly here in imports seen
 // import pdf from 'pdf-parse'; // Will be imported dynamically to avoid build issues with fs
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, TaskType } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -12,36 +12,59 @@ export async function chatAction(history: { role: 'user' | 'assistant'; content:
 		const supabase = await createClient();
 		const userMsg = history[history.length - 1].content;
 
-		// 1. Generate Query Embedding
-		const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
-		const result = await embeddingModel.embedContent(userMsg);
-		const embedding = result.embedding.values;
+		// 1. Generate Query Embedding using dedicated embedding model
+		// gemini-2.5-flash is for text generation ONLY — use gemini-embedding-001 for embeddings
+		let embedding: number[] | null = null;
+		try {
+			const embeddingModel = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
+			// RETRIEVAL_QUERY task type optimizes the embedding for semantic question answering
+			const result = await embeddingModel.embedContent({
+				content: { parts: [{ text: userMsg }], role: "user" },
+				taskType: TaskType.RETRIEVAL_QUERY,
+			});
+			embedding = result?.embedding?.values || null;
+			console.log("DEBUG: Generated query embedding, dimensions:", embedding?.length);
+		} catch (embedErr: any) {
+			console.warn("Embedding failed (falling back to no-context generation):", embedErr?.message || embedErr);
+			embedding = null;
+		}
 
-		// 2. Retrieve Context (Vector Search)
-		console.log("DEBUG: Generating embedding for query:", userMsg.substring(0, 50) + "...");
-		const { data: documents, error } = await supabase.rpc('match_documents', {
-			query_embedding: embedding,
-			match_threshold: 0.3, // Similarity threshold
-			match_count: 5
-		});
-
-		if (error) {
-			console.error("DEBUG: Vector Search Error:", error);
+		// 2. Retrieve Context (Vector Search) if embedding succeeded
+		let documents: any[] | null = null;
+		if (embedding && Array.isArray(embedding)) {
+			try {
+				console.log("DEBUG: Running vector search for query:", userMsg.substring(0, 50) + "...");
+				const rpcResult = await supabase.rpc('match_documents', {
+					query_embedding: embedding,
+					match_threshold: 0.1, // Lower threshold = more permissive = more context retrieved
+					match_count: 8       // More chunks = richer context for the AI
+				});
+				documents = (rpcResult as any).data || null;
+				if ((rpcResult as any).error) console.error("DEBUG: Vector Search Error:", (rpcResult as any).error);
+				else console.log("DEBUG: Vector Search Results:", documents?.length || 0, "documents found");
+			} catch (vecErr: any) {
+				console.error("Vector search RPC failed, continuing without context:", vecErr?.message || vecErr);
+				documents = null;
+			}
 		} else {
-			console.log("DEBUG: Vector Search Results:", documents?.length || 0, "documents found");
+			console.log("Skipping vector search because embedding is not available.");
 		}
 
 		const contextText = documents?.map((d: { content: string }) => d.content).join("\n---\n") || "";
 		console.log("DEBUG: Final Context Length:", contextText.length);
 
 		// 3. Augment System Prompt
-		const systemInstructionText = `You are an expert academic AI tutor. 
-        Use the following context from the user's uploaded notes to answer their question. 
-        If the answer is not in the context, use your general knowledge but mention that it's not in the notes.
-        
-        Context:
-        ${contextText}
-        `;
+		const hasContext = contextText.length > 0;
+		const systemInstructionText = hasContext
+			? `You are an expert academic AI tutor. The user has uploaded study materials.
+
+Answer the user's question using ONLY the context below from their uploaded notes.
+Be specific, cite details from the context, and be thorough. Do NOT say the answer is not in the notes if you can find it.
+
+--- CONTEXT FROM UPLOADED NOTES ---
+${contextText}
+--- END CONTEXT ---`
+			: `You are an expert academic AI tutor. Help the user study and learn. No uploaded notes context is available, so answer from your general knowledge.`;
 
 		// 4. Generate Response
 		// Re-initialize model with specific system instruction for this turn
@@ -60,7 +83,7 @@ export async function chatAction(history: { role: 'user' | 'assistant'; content:
 			}))
 		});
 
-		const msgResult = await chat.sendMessage(userMsg);
+	const msgResult = await chat.sendMessage(userMsg);
 		const response = msgResult.response.text();
 
 		return { success: true, response };
@@ -375,24 +398,39 @@ export async function createResource(data: {
 				const pdfData = await (pdf as any)(buffer);
 				const text = pdfData.text;
 
-				// C. Chunk Text
-				const chunks = text.match(/[\s\S]{1,1000}/g) || [];
-				console.log(`DEBUG: Extracted ${chunks.length} chunks from PDF.`);
+				// C. Chunk Text (500 chars with ~50 char overlap for better retrieval coverage)
+				const rawChunks = text.match(/[\s\S]{1,500}/g) || [];
+				// Remove chunks that are mostly whitespace/numbers (low information)
+				const chunks = rawChunks.filter((c: string) => c.trim().length > 50);
+				console.log(`DEBUG: Extracted ${chunks.length} usable chunks from PDF.`);
 
-				// D. Generate Embeddings & Store
-				const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+				// D. Generate Embeddings & Store using dedicated gemini-embedding-001 model
+				// IMPORTANT: Use gemini-embedding-001 for documents (RETRIEVAL_DOCUMENT task type)
+				const embModel = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
 
 				let chunkCount = 0;
-				for (const chunk of chunks.slice(0, 20)) { // Limit to 20 chunks for MVP/Speed
-					const result = await model.embedContent(chunk);
-					const embedding = result.embedding.values;
-
-					await supabase.from('ResourceEmbedding').insert({
-						resourceId: resource.id,
-						content: chunk,
-						embedding // Supabase pgvector handles the array
-					});
-					chunkCount++;
+				for (const chunk of chunks.slice(0, 30)) { // Process up to 30 chunks
+					try {
+						// RETRIEVAL_DOCUMENT task type optimizes for document indexing
+						const result = await embModel.embedContent({
+							content: { parts: [{ text: chunk }], role: "user" },
+							taskType: TaskType.RETRIEVAL_DOCUMENT,
+						});
+						const embedding = result?.embedding?.values || null;
+						if (embedding) {
+							await supabase.from('ResourceEmbedding').insert({
+								resourceId: resource.id,
+								content: chunk,
+								embedding // Supabase pgvector handles the array
+							});
+							chunkCount++;
+						} else {
+							console.warn("Embedding not returned for chunk, skipping storage.");
+						}
+					} catch (chunkErr: any) {
+						console.warn("Embedding failed for a chunk, skipping it:", chunkErr?.message || chunkErr);
+						continue; // proceed with next chunk
+					}
 				}
 				console.log(`DEBUG: Successfully embedded and stored ${chunkCount} chunks.`);
 			}

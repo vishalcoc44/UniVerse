@@ -2,11 +2,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowBigDown, ArrowBigUp, Flag, MessageSquare, Share2, Loader2, Trash2, Eye, Tag } from "lucide-react";
+import { ArrowBigDown, ArrowBigUp, Flag, MessageSquare, Share2, Loader2, Trash2, Eye, Tag, MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 import { useUserUniversity } from "@/hooks/useUserUniversity";
 
@@ -39,7 +40,9 @@ export function ThreadList({ activeCategory, scope = 'campus', sortBy = 'latest'
       if (universityId) {
         query = query.eq('scope', 'CAMPUS').eq('universityId', universityId);
       } else {
-        query = query.eq('scope', 'CAMPUS').is('universityId', null);
+        setThreads([]);
+        setLoading(false);
+        return;
       }
     } else {
       query = query.eq('scope', 'UNIVERSE');
@@ -111,102 +114,152 @@ export function ThreadList({ activeCategory, scope = 'campus', sortBy = 'latest'
   };
 
   return (
-    <div className="space-y-4 min-h-[200px]">
+    <div className="space-y-6 min-h-[400px]">
       {loading ? (
-        <div className="flex justify-center p-8">
-          <Loader2 className="animate-spin text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center p-20 gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
+          <p className="text-xs font-black italic tracking-widest text-muted-foreground uppercase">Decrypting Feed...</p>
         </div>
       ) : threads.length === 0 ? (
-        <div className="text-center p-8 text-muted-foreground bg-card/40 rounded-xl">
-          No threads found in this category. Be the first to post!
-        </div>
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center p-20 text-muted-foreground bg-card/20 rounded-[3rem] border-2 border-dashed border-border/30 flex flex-col items-center gap-6"
+        >
+          <div className="h-16 w-16 rounded-full bg-muted/20 flex items-center justify-center">
+            <MessageSquare className="h-8 w-8 opacity-20" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-xl font-black italic tracking-tighter text-foreground">Silence is the only thing here.</p>
+            <p className="text-sm font-medium italic">Be the first to shatter the quiet. Post your thoughts.</p>
+          </div>
+          <Button variant="outline" className="rounded-full font-black italic tracking-tight">Post Something</Button>
+        </motion.div>
       ) : (
-        threads.map((thread) => (
-          <Card key={thread.id} className={cn(
-            "flex overflow-hidden transition-all hover:border-primary/20 bg-card/60 backdrop-blur-sm border-border/50",
-            thread.isPinned && "border-primary/30 bg-primary/5"
-          )}>
-            {/* Voting Column */}
-            <div className="w-12 bg-muted/20 flex flex-col items-center p-2 gap-1 border-r border-border/50">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className={cn(
-                  "h-8 w-8 hover:bg-orange-500/10",
-                  userVotes[thread.id] === 1 ? "text-orange-500" : "text-muted-foreground"
-                )}
-                onClick={() => handleVote(thread.id, 1)}
-              >
-                <ArrowBigUp className="h-6 w-6" />
-              </Button>
-              <span className="text-sm font-bold">{thread.totalVotes}</span>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className={cn(
-                  "h-8 w-8 hover:bg-blue-500/10",
-                  userVotes[thread.id] === -1 ? "text-blue-500" : "text-muted-foreground"
-                )}
-                onClick={() => handleVote(thread.id, -1)}
-              >
-                <ArrowBigDown className="h-6 w-6" />
-              </Button>
-            </div>
+        <div className="flex flex-col gap-6">
+            {threads.map((thread, index) => (
+            <motion.div
+                key={thread.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+            >
+                <Card className={cn(
+                    "group relative flex overflow-hidden transition-all duration-500 hover:border-primary/50 bg-card/40 backdrop-blur-xl border-border/50 rounded-[2rem] shadow-xl hover:shadow-primary/5 hover:-translate-y-1",
+                    thread.isPinned && "border-primary/40 bg-primary/5 shadow-primary/10"
+                )}>
+                    {/* Voting Column */}
+                    <div className="w-16 flex flex-col items-center p-4 gap-2 border-r border-border/20 bg-muted/5 group-hover:bg-muted/10 transition-colors">
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            aria-label={`Upvote thread. Current votes: ${thread.totalVotes}`}
+                            className={cn(
+                                "h-10 w-10 rounded-xl transition-all outline-none focus-visible:ring-2 focus-visible:ring-orange-500",
+                                userVotes[thread.id] === 1 ? "bg-orange-500/20 text-orange-500" : "text-muted-foreground hover:bg-orange-500/10 hover:text-orange-500"
+                            )}
+                            onClick={() => handleVote(thread.id, 1)}
+                        >
+                            <ArrowBigUp className="h-7 w-7" />
+                        </Button>
+                        <span className="text-lg font-black italic tracking-tighter" aria-hidden="true">
+                            {thread.totalVotes > 999 ? `${(thread.totalVotes/1000).toFixed(1)}k` : thread.totalVotes}
+                        </span>
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            aria-label="Downvote thread"
+                            className={cn(
+                                "h-10 w-10 rounded-xl transition-all outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+                                userVotes[thread.id] === -1 ? "bg-blue-500/20 text-blue-500" : "text-muted-foreground hover:bg-blue-500/10 hover:text-blue-500"
+                            )}
+                            onClick={() => handleVote(thread.id, -1)}
+                        >
+                            <ArrowBigDown className="h-7 w-7" />
+                        </Button>
+                    </div>
 
-            {/* Content Column */}
-            <div className="flex-1 p-4">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1.5 flex-wrap">
-                {thread.isPinned && (
-                  <Badge variant="default" className="text-[10px] h-4 px-1 gap-1">
-                    PINNED
-                  </Badge>
-                )}
-                <Badge variant="outline" className="bg-secondary/50 font-normal border-border">
-                  {thread.category || "General"}
-                </Badge>
-                {thread.tags?.map((tag: string) => (
-                   <Badge key={tag} variant="secondary" className="text-[10px] h-4 px-1 gap-1">
-                     <Tag className="h-2 w-2" />
-                     {tag}
-                   </Badge>
-                ))}
-                <span>• Posted by {thread.isAnonymous ? (
-                    <span className="flex items-center gap-1">
-                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: `hsl(${thread.authorId.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) % 360}, 70%, 50%)` }} />
-                        Anonymous
-                    </span>
-                ) : "User"}</span>
-                <span>• {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}</span>
-              </div>
+                    {/* Content Column */}
+                    <div className="flex-1 p-8">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                {thread.isPinned && (
+                                    <Badge className="bg-primary text-primary-foreground font-black italic tracking-widest text-[9px] uppercase px-2 py-0.5 rounded-md">
+                                        Pinned
+                                    </Badge>
+                                )}
+                                <div className="flex items-center gap-2 px-3 py-1 bg-muted/20 rounded-full border border-border/30">
+                                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse" aria-hidden="true" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground italic">
+                                        {thread.category || "General"}
+                                    </span>
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 italic">
+                                    {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}
+                                </span>
+                            </div>
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                aria-label="Thread options"
+                                className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity focus-visible:opacity-100 outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </div>
 
-              <h3 className="text-lg font-semibold text-foreground mb-1 leading-snug flex items-center gap-2">
-                {thread.title}
-              </h3>
-              <p className="text-sm text-muted-foreground/90 line-clamp-3 mb-3 whitespace-pre-wrap">
-                {thread.content}
-              </p>
+                        <div className="space-y-3">
+                            <h3 className="text-2xl font-black italic tracking-tighter text-foreground group-hover:text-primary transition-colors leading-tight">
+                                {thread.title}
+                            </h3>
+                            <p className="text-base font-medium text-muted-foreground/80 italic tracking-tight line-clamp-3 leading-relaxed">
+                                {thread.content}
+                            </p>
+                        </div>
 
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-muted-foreground gap-1.5 hover:text-foreground">
-                  <MessageSquare className="h-4 w-4" />
-                  {thread.replies ? thread.replies[0]?.count : 0} Comments
-                </Button>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Eye className="h-4 w-4" />
-                  {thread.viewCount || 0}
-                </div>
-                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-muted-foreground gap-1.5 hover:text-foreground">
-                  <Share2 className="h-4 w-4" />
-                  Share
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-muted-foreground gap-1.5 hover:text-red-500 hover:bg-red-500/10 ml-auto">
-                  <Flag className="h-3 w-3" />
-                  Report
-                </Button>
-              </div>
-            </div>
-          </Card>
-        ))
+                        <div className="flex flex-wrap gap-2 mt-6" role="list" aria-label="Thread tags">
+                            {thread.tags?.map((tag: string) => (
+                                <Badge key={tag} role="listitem" className="bg-muted/20 text-muted-foreground hover:bg-muted/30 border-none px-3 py-1 rounded-full font-black italic tracking-widest text-[9px] uppercase">
+                                    #{tag}
+                                </Badge>
+                            ))}
+                        </div>
+
+                        <div className="flex items-center justify-between mt-8 pt-6 border-t border-border/10">
+                            <div className="flex items-center gap-6">
+                                <button 
+                                    className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors focus-visible:text-primary outline-none focus-visible:underline"
+                                    aria-label={`${thread.replies ? thread.replies[0]?.count : 0} responses`}
+                                >
+                                    <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                                    <span className="text-xs font-black italic tracking-widest uppercase">
+                                        {thread.replies ? thread.replies[0]?.count : 0} RESPONSES
+                                    </span>
+                                </button>
+                                <div className="flex items-center gap-2 text-muted-foreground/60" aria-label={`${thread.viewCount || 0} reads`}>
+                                    <Eye className="h-4 w-4" aria-hidden="true" />
+                                    <span className="text-xs font-black italic tracking-widest uppercase">
+                                        {thread.viewCount || 0} READS
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <div className="flex -space-x-2 mr-2" aria-hidden="true">
+                                    {[1,2,3].map(i => (
+                                        <div key={i} className="h-6 w-6 rounded-full border-2 border-background bg-muted" />
+                                    ))}
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground italic">
+                                    {thread.isAnonymous ? "ANONYMOUS SOURCE" : "VERIFIED ID"}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </Card>
+            </motion.div>
+            ))}
+        </div>
       )}
     </div>
   );

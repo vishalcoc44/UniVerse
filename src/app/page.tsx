@@ -40,11 +40,22 @@ export default function Landing() {
 
 	useEffect(() => {
 		fetch('/api/images')
-			.then(res => res.json())
+			.then(async res => {
+				if (!res.ok) {
+					const errorText = await res.text();
+					throw new Error(`Failed to fetch images: ${res.status} ${res.statusText} - ${errorText}`);
+				}
+				return res.json();
+			})
 			.then(data => {
 				if (Array.isArray(data)) {
 					setImages(data);
+				} else {
+					console.warn('API /api/images returned non-array data:', data);
 				}
+			})
+			.catch(err => {
+				console.error('Error fetching images:', err);
 			});
 	}, []);
 

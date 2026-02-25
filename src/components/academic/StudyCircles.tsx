@@ -80,76 +80,118 @@ export function StudyCircles() {
 	};
 
 	return (
-		<Card className="p-4 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 border-indigo-500/20 shrink-0">
-			<div className="flex items-center justify-between mb-3">
-				<div className="flex items-center gap-3">
-					<div className="p-2 bg-indigo-500/20 text-indigo-600 rounded-lg">
-						<Users className="h-5 w-5" />
-					</div>
-					<div>
-						<h3 className="font-semibold text-foreground">Study Circles</h3>
-						<p className="text-xs text-muted-foreground">{groups.length} active circles</p>
-					</div>
+		<div className="flex flex-col gap-4 p-3">
+			<div className="flex items-center justify-between px-1">
+				<div className="flex flex-col">
+					<p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-0.5">Community</p>
+					<h3 className="text-base font-bold tracking-tight">
+						Study <span className="text-primary">Circles</span>
+					</h3>
 				</div>
 				<Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
 					<DialogTrigger asChild>
-						<Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600 hover:bg-indigo-500/10">
-							<Plus className="h-5 w-5" />
+						<Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-border/30 bg-card/60 hover:bg-muted shadow transition-all active:scale-90">
+							<Plus className="h-4 w-4 text-primary" />
 						</Button>
 					</DialogTrigger>
-					<DialogContent>
+					<DialogContent className="bg-card/90 backdrop-blur-2xl border-border/50 rounded-2xl p-6">
 						<DialogHeader>
-							<DialogTitle>Create Study Circle</DialogTitle>
-							<DialogDescription>Start a new group for collaborative learning.</DialogDescription>
+							<DialogTitle className="text-xl font-bold tracking-tight">Create Study Group</DialogTitle>
+							<DialogDescription className="text-sm">Collaborate with fellow students from your university.</DialogDescription>
 						</DialogHeader>
-						<div className="space-y-4 py-4">
+						<div className="space-y-4 py-6">
 							<div className="space-y-2">
-								<Label>Group Name</Label>
-								<Input placeholder="e.g. CS101 Finals Prep" value={newGroup.name} onChange={e => setNewGroup({ ...newGroup, name: e.target.value })} />
+								<Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Group Name</Label>
+								<Input 
+									placeholder="e.g. CS101 Advanced Study" 
+									className="h-11 rounded-xl bg-card border-border/30 focus:border-primary font-medium"
+									value={newGroup.name} 
+									onChange={e => setNewGroup({ ...newGroup, name: e.target.value })} 
+								/>
 							</div>
 							<div className="space-y-2">
-								<Label>Description</Label>
-								<Textarea placeholder="What are you studying?" value={newGroup.description} onChange={e => setNewGroup({ ...newGroup, description: e.target.value })} />
+								<Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Description</Label>
+								<Textarea 
+									placeholder="What will you study together?" 
+									className="rounded-xl bg-card border-border/30 focus:border-primary font-medium min-h-[100px]"
+									value={newGroup.description} 
+									onChange={e => setNewGroup({ ...newGroup, description: e.target.value })} 
+								/>
 							</div>
 						</div>
-						<DialogFooter>
-							<Button onClick={handleCreate} disabled={isCreating || !newGroup.name}>
-								{isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Circle"}
+						<DialogFooter className="flex-col sm:flex-row gap-2">
+							<Button 
+								variant="outline" 
+								onClick={() => setIsCreateOpen(false)}
+								className="h-11 flex-1 rounded-xl font-bold uppercase tracking-wider text-[10px]"
+							>
+								Cancel
+							</Button>
+							<Button 
+								onClick={handleCreate} 
+								disabled={isCreating || !newGroup.name}
+								className="h-11 flex-1 rounded-xl bg-primary text-primary-foreground font-bold uppercase tracking-wider text-[10px] shadow-lg shadow-primary/20"
+							>
+								{isCreating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Create Group"}
 							</Button>
 						</DialogFooter>
 					</DialogContent>
 				</Dialog>
 			</div>
 
-			<div className="space-y-2 mb-3 max-h-[160px] overflow-y-auto pr-1">
+			<div className="space-y-2.5 px-0.5 custom-scrollbar overflow-y-auto pr-1">
 				{loading ? (
-					<div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+					<div className="flex flex-col items-center justify-center py-12 gap-3">
+						<Loader2 className="h-6 w-6 animate-spin text-primary/40" />
+						<p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase animate-pulse">Finding groups...</p>
+					</div>
 				) : groups.length === 0 ? (
-					<p className="text-xs text-center text-muted-foreground py-2">No active circles. Create one!</p>
+					<div className="flex flex-col items-center justify-center py-12 gap-3 border border-dashed border-border/30 rounded-2xl opacity-40">
+						<Users className="h-6 w-6" />
+						<p className="text-[10px] font-bold tracking-wider uppercase">No active groups</p>
+					</div>
 				) : (
 					groups.map(group => (
-						<div key={group.id} className="flex items-center justify-between p-2 bg-background/60 rounded-lg text-sm hover:bg-background/80 transition-colors">
-							<div className="overflow-hidden">
-								<div className="font-medium truncate max-w-[140px]" title={group.name}>{group.name}</div>
-								<div className="text-[10px] text-muted-foreground truncate max-w-[140px]">{group.description || "No description"}</div>
+						<div key={group.id} className="group relative flex flex-col p-3 bg-card/60 backdrop-blur-md rounded-2xl border border-border/30 hover:border-primary/30 transition-all duration-300 shadow hover:shadow-primary/5">
+							<div className="flex items-start justify-between mb-2">
+								<div className="overflow-hidden">
+									<h4 className="font-bold text-sm tracking-tight truncate" title={group.name}>{group.name}</h4>
+									<p className="text-[10px] text-muted-foreground font-medium truncate mt-0.5">{group.description || "Study group"}</p>
+								</div>
+								<div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shrink-0">
+									<Users className="h-3.5 w-3.5" />
+								</div>
 							</div>
-							<Button
-								variant="secondary"
-								size="sm"
-								className="h-6 text-[10px] bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20"
-								onClick={() => handleJoin(group.id, group.name)}
-								disabled={joiningId === group.id}
-							>
-								{joiningId === group.id ? <Loader2 className="h-3 w-3 animate-spin" /> : `${group.memberCount} joined`}
-							</Button>
+							<div className="flex items-center justify-between gap-4 mt-1.5">
+								<div className="flex items-center gap-2">
+									<div className="flex -space-x-1.5">
+										{[1,2,3].map(i => (
+											<div key={i} className="h-5 w-5 rounded-full border border-card bg-muted text-[7px] flex items-center justify-center font-bold uppercase opacity-80">U{i}</div>
+										))}
+									</div>
+									<span className="text-[9px] font-bold text-muted-foreground uppercase">{group.memberCount} Members</span>
+								</div>
+								<Button
+									variant="ghost"
+									size="sm"
+									className="h-8 px-3 rounded-lg bg-primary/10 text-primary border border-primary/20 font-bold uppercase text-[8px] hover:bg-primary hover:text-primary-foreground transition-all"
+									onClick={() => handleJoin(group.id, group.name)}
+									disabled={joiningId === group.id}
+								>
+									{joiningId === group.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Join"}
+								</Button>
+							</div>
 						</div>
 					))
 				)}
 			</div>
 
-			<Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20" size="sm" variant="outline">
-				Browse All <ArrowRight className="h-4 w-4 ml-2" />
+			<Button 
+				variant="outline"
+				className="w-full h-11 rounded-xl bg-card border-border/30 font-bold uppercase tracking-wider text-[10px] shadow hover:border-primary/30 transition-colors"
+			>
+				All Groups
 			</Button>
-		</Card>
+		</div>
 	);
 }

@@ -1,105 +1,152 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, ArrowRight, UserPlus, Check } from "lucide-react";
+import { Users, ArrowRight, Check, Loader2, Globe2, School, Crown, Sparkles, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
 
 interface ClubCardProps {
 	id: string;
 	name: string;
 	description: string;
-	category: "Tech" | "Arts" | "Sports" | "Social" | "Academic";
+	category: string;
 	members: number;
-	nextEvent?: string;
-	logo: string;
+	logoUrl?: string | null;
+	scope?: "CAMPUS" | "UNIVERSE";
 	isJoined?: boolean;
+	onToggleJoin?: (clubId: string, joined: boolean) => void;
+	joinLoading?: boolean;
 }
 
-const categoryColors = {
-	Tech: "bg-blue-500/10 text-blue-600 border-blue-200 dark:border-blue-900",
-	Arts: "bg-purple-500/10 text-purple-600 border-purple-200 dark:border-purple-900",
-	Sports: "bg-orange-500/10 text-orange-600 border-orange-200 dark:border-orange-900",
-	Social: "bg-pink-500/10 text-pink-600 border-pink-200 dark:border-pink-900",
-	Academic: "bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-900",
+const categoryStyles = {
+	Tech: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+	Arts: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+	Sports: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+	Social: "bg-pink-500/20 text-pink-400 border-pink-500/30",
+	Academic: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
 };
 
 export function ClubCard({
+	id,
 	name,
 	description,
 	category,
 	members,
-	nextEvent,
-	logo,
+	logoUrl,
+	scope = "CAMPUS",
 	isJoined = false,
+	onToggleJoin,
+	joinLoading = false,
 }: ClubCardProps) {
+	const currentStyle = (category as keyof typeof categoryStyles) in categoryStyles 
+		? categoryStyles[category as keyof typeof categoryStyles] 
+		: categoryStyles.Social;
+
 	return (
-		<Card className="group relative overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl border-border/60">
-
-			{/* Cover Background */}
-			<div className="h-28 bg-gradient-to-br from-muted/50 to-muted w-full relative">
-				<div className="absolute top-3 right-3 z-10">
-					<Badge variant="secondary" className={cn("backdrop-blur-md shadow-sm", categoryColors[category])}>
-						{category}
-					</Badge>
-				</div>
-			</div>
-
-			<CardContent className="pt-0 flex-1 flex flex-col">
-				{/* Header Row: Logo overlaps cover + Join Button */}
-				<div className="flex justify-between items-start -mt-10 mb-3 px-1">
-					<div className="h-20 w-20 rounded-2xl bg-card border-[3px] border-card shadow-md flex items-center justify-center text-4xl shrink-0 group-hover:scale-105 transition-transform duration-300">
-						{logo}
+		<motion.div
+			whileHover={{ y: -8, scale: 1.02 }}
+			transition={{ type: "spring", stiffness: 300, damping: 20 }}
+			className="h-full"
+		>
+			<Card className="group relative h-full bg-card/40 backdrop-blur-xl border border-border/50 rounded-[2.5rem] overflow-hidden flex flex-col transition-shadow hover:shadow-2xl hover:shadow-primary/5">
+				{/* Header/Cover Image Area */}
+				<div className="relative h-32 overflow-hidden">
+					<div className={cn(
+						"absolute inset-0 bg-gradient-to-br transition-opacity duration-500 group-hover:opacity-80",
+						scope === "UNIVERSE" ? "from-violet-600/30 via-primary/20 to-transparent" : "from-emerald-600/30 via-secondary/20 to-transparent"
+					)} />
+					
+					<div className="absolute top-4 right-4 flex flex-col items-end gap-2">
+						<Badge className={cn("px-4 py-1 rounded-xl font-black italic tracking-widest text-[9px] uppercase border", currentStyle)}>
+							{category}
+						</Badge>
+						<Badge variant="outline" className="bg-black/20 backdrop-blur-md border-white/10 text-[9px] font-black uppercase tracking-widest text-white/80 transition-all group-hover:border-primary/50">
+							{scope === "UNIVERSE" ? <Globe2 className="h-3 w-3 mr-1.5" /> : <School className="h-3 w-3 mr-1.5" />}
+							{scope === "UNIVERSE" ? "Cosmos" : "Local"}
+						</Badge>
 					</div>
 
-					<div className="pt-12">
+					<div className="absolute -bottom-1 -left-1 px-8">
+						<div className="h-20 w-20 rounded-3xl bg-card/80 backdrop-blur-2xl border-4 border-background overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 flex items-center justify-center">
+							{logoUrl ? (
+								<img src={logoUrl} alt={name} className="h-full w-full object-cover" />
+							) : (
+								<span className="text-3xl font-black italic tracking-tighter text-primary">
+									{name.charAt(0)}
+								</span>
+							)}
+						</div>
+					</div>
+				</div>
+
+				<CardContent className="pt-12 px-8 flex-1 flex flex-col">
+					<div className="space-y-4 flex-1">
+						<div className="flex items-center justify-between">
+							<h3 className="text-2xl font-black italic tracking-tighter text-foreground group-hover:text-primary transition-colors leading-none">
+								{name}
+							</h3>
+							{members > 500 && <Crown className="h-4 w-4 text-primary animate-pulse" />}
+						</div>
+						
+						<p className="text-sm font-medium text-muted-foreground italic tracking-tight leading-relaxed line-clamp-2">
+							{description}
+						</p>
+
+						<div className="flex items-center gap-6 pt-2">
+							<div className="flex flex-col">
+								<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 italic mb-1">Impact</span>
+								<div className="flex items-center gap-2">
+									<div className="relative flex h-2 w-2">
+										<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+										<span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+									</div>
+									<span className="text-lg font-black italic tracking-tighter">{members}</span>
+									<span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Souls</span>
+								</div>
+							</div>
+							
+							<div className="flex flex-col">
+								<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 italic mb-1">Status</span>
+								<div className="flex items-center gap-1.5">
+									<Sparkles className="h-3 w-3 text-secondary" />
+									<span className="text-[10px] font-black uppercase tracking-widest text-foreground italic">Trending</span>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					{/* Actions Footer */}
+					<div className="mt-8 pt-6 border-t border-border/10 flex items-center justify-between gap-4">
+						<Button 
+							variant="ghost" 
+							className="h-12 w-12 rounded-2xl bg-muted/20 hover:bg-muted text-muted-foreground hover:text-foreground"
+						>
+							<ExternalLink className="h-5 w-5" />
+						</Button>
+
 						{isJoined ? (
-							<Badge variant="outline" className="gap-1 border-green-200 text-green-600 bg-green-50">
-								<Check className="h-3 w-3" /> Member
-							</Badge>
+							<Button 
+								variant="outline"
+								onClick={() => onToggleJoin?.(id, true)}
+								disabled={joinLoading}
+								className="h-12 px-8 rounded-2xl font-black italic tracking-tighter border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 flex-1 transition-all"
+							>
+								{joinLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
+								STATIONED
+							</Button>
 						) : (
-							<Button size="sm" className="h-8 rounded-full px-4 shadow-sm" variant="default">
-								Join
+							<Button 
+								onClick={() => onToggleJoin?.(id, false)}
+								disabled={joinLoading}
+								className="h-12 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black italic tracking-tighter shadow-xl shadow-primary/20 group/btn flex-1 transition-all"
+							>
+								{joinLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4 mr-2 group-hover/btn:translate-x-1 transition-transform" />}
+								INITIATE CONTACT
 							</Button>
 						)}
 					</div>
-				</div>
-
-				{/* Text Content */}
-				<div className="space-y-3 mb-4 flex-1">
-					<div>
-						<h3 className="font-bold text-xl leading-tight text-foreground group-hover:text-primary transition-colors duration-200">
-							{name}
-						</h3>
-						<p className="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
-							{description}
-						</p>
-					</div>
-				</div>
-
-				<Separator className="bg-border/60 mb-4" />
-
-				{/* Footer Stats */}
-				<div className="space-y-3">
-					<div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
-						<div className="flex items-center gap-1.5 bg-secondary/50 px-2 py-1 rounded-md">
-							<Users className="h-3.5 w-3.5 opacity-70" />
-							<span>{members} members</span>
-						</div>
-						{nextEvent && (
-							<div className="flex items-center gap-1.5 text-primary">
-								<Calendar className="h-3.5 w-3.5" />
-								<span>{nextEvent}</span>
-							</div>
-						)}
-					</div>
-
-					<Button variant="ghost" className="w-full justify-between text-muted-foreground hover:text-primary hover:bg-primary/5 h-9 text-sm font-normal group/btn">
-						Visit Club Page
-						<ArrowRight className="h-4 w-4 opacity-50 transition-transform group-hover/btn:translate-x-1 group-hover/btn:opacity-100" />
-					</Button>
-				</div>
-			</CardContent>
-		</Card>
+				</CardContent>
+			</Card>
+		</motion.div>
 	);
 }

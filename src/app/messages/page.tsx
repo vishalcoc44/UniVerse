@@ -204,6 +204,12 @@ export default function Messages() {
 		// Real-time for global updates (new conversations, last message updates, preferences)
 		const channel = supabase
 			.channel('messages-global')
+			.on('postgres_changes', { event: '*', schema: 'public', table: 'Conversation' }, () => {
+				fetchConversations();
+			})
+			.on('postgres_changes', { event: '*', schema: 'public', table: 'ConversationParticipant' }, () => {
+				fetchConversations();
+			})
 			.on('postgres_changes', { event: '*', schema: 'public', table: 'Message' }, () => {
 				fetchConversations();
 			})
@@ -212,7 +218,26 @@ export default function Messages() {
 			})
 			.subscribe();
 
+		const interval = setInterval(() => {
+			fetchConversations();
+		}, 5000);
+
+		const refreshOnFocus = () => fetchConversations();
+		const refreshOnVisibility = () => {
+			if (document.visibilityState === 'visible') {
+				fetchConversations();
+			}
+		};
+
+		window.addEventListener('focus', refreshOnFocus);
+		window.addEventListener('online', refreshOnFocus);
+		document.addEventListener('visibilitychange', refreshOnVisibility);
+
 		return () => {
+			clearInterval(interval);
+			window.removeEventListener('focus', refreshOnFocus);
+			window.removeEventListener('online', refreshOnFocus);
+			document.removeEventListener('visibilitychange', refreshOnVisibility);
 			supabase.removeChannel(channel);
 		};
 	}, []);
@@ -377,7 +402,16 @@ export default function Messages() {
 
 	return (
 		<DashboardLayout
-			title="Messages"
+			title={
+				<div className="flex items-center gap-3">
+					<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
+						<MessageSquare className="h-6 w-6" />
+					</div>
+					<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+						Direct <span className="text-primary">Messages</span>
+					</h1>
+				</div>
+			}
 			subtitle="Connect with peers and faculty."
 			breadcrumb={["UniVerse", "Messages"]}
 		>
