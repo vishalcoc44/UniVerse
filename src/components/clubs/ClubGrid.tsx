@@ -26,6 +26,7 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 	const [clubs, setClubs] = useState<ClubRow[]>([]);
 	const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
 	const [joinedClubIds, setJoinedClubIds] = useState<Set<string>>(new Set());
+	const [ownedClubIds, setOwnedClubIds] = useState<Set<string>>(new Set());
 	const [joinLoadingClubId, setJoinLoadingClubId] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [errorText, setErrorText] = useState<string | null>(null);
@@ -51,6 +52,7 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 					setClubs([]);
 					setMemberCounts({});
 					setJoinedClubIds(new Set());
+					setOwnedClubIds(new Set());
 					setLoading(false);
 					return;
 				}
@@ -75,7 +77,7 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 					const clubIds = rows.map((club) => club.id);
 					const { data: memberships, error: membershipError } = await supabase
 						.from('ClubMember')
-						.select('clubId,userId')
+						.select('clubId,userId,role')
 						.in('clubId', clubIds);
 
 					if (!membershipError && memberships) {
@@ -88,17 +90,26 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 						const { data: authData } = await supabase.auth.getUser();
 						const userId = authData.user?.id;
 						if (userId) {
-							const joined = new Set(
-								(memberships as Array<{ clubId: string; userId: string }>)
-									.filter((item) => item.userId === userId)
-									.map((item) => item.clubId)
-							);
+							const joined = new Set<string>();
+							const owned = new Set<string>();
+
+							(memberships as Array<{ clubId: string; userId: string; role: string }>).forEach((item) => {
+								if (item.userId === userId) {
+									joined.add(item.clubId);
+									if (item.role === 'OWNER') {
+										owned.add(item.clubId);
+									}
+								}
+							});
+
 							setJoinedClubIds(joined);
+							setOwnedClubIds(owned);
 						}
 					}
 				} else {
 					setMemberCounts({});
 					setJoinedClubIds(new Set());
+					setOwnedClubIds(new Set());
 				}
 			}
 			setLoading(false);
@@ -170,12 +181,28 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 		}
 	};
 
+	const handleDeleteClub = async (clubId: string) => {
+		try {
+			const { error } = await supabase
+				.from('Club')
+				.delete()
+				.eq('id', clubId);
+
+			if (error) throw error;
+
+			setClubs((prev) => prev.filter(c => c.id !== clubId));
+			toast.success("Club disbanded successfully.");
+		} catch (error: any) {
+			toast.error(`Failed to delete club: ${getErrorMessage(error)}`);
+		}
+	};
+
 	if (loading) {
 		return (
 			<div className="flex flex-col items-center justify-center py-40 gap-4">
 				<div className="relative">
 					<div className="h-20 w-20 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-					<motion.div 
+					<motion.div
 						animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
 						transition={{ duration: 2, repeat: Infinity }}
 						className="absolute inset-0 flex items-center justify-center"
@@ -203,7 +230,7 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 				</div>
 
 				<div className="flex flex-wrap items-center gap-2">
-					<div 
+					<div
 						className="flex items-center gap-1.5 p-1.5 bg-card/60 backdrop-blur-md rounded-2xl border border-border/30"
 						role="tablist"
 						aria-label="Category filter"
@@ -216,8 +243,8 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 								onClick={() => setActiveFilter(cat)}
 								className={cn(
 									"px-5 py-2 rounded-xl text-xs font-black italic uppercase tracking-widest transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary",
-									activeFilter === cat 
-										? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
+									activeFilter === cat
+										? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
 										: "text-muted-foreground hover:text-foreground hover:bg-muted"
 								)}
 							>
@@ -232,7 +259,7 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 			</div>
 
 			<AnimatePresence mode="popLayout">
-				<motion.div 
+				<motion.div
 					layout
 					className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"
 				>
@@ -254,7 +281,9 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 								logoUrl={club.logoUrl}
 								scope={club.scope}
 								isJoined={joinedClubIds.has(club.id)}
+								isOwner={ownedClubIds.has(club.id)}
 								onToggleJoin={handleToggleJoin}
+								onDelete={handleDeleteClub}
 								joinLoading={joinLoadingClubId === club.id}
 							/>
 						</motion.div>
@@ -263,7 +292,7 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 			</AnimatePresence>
 
 			{filteredClubs.length === 0 && (
-				<motion.div 
+				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					className="flex flex-col items-center justify-center py-40 text-center gap-6 bg-card/20 backdrop-blur-sm border border-dashed border-border/50 rounded-[3rem]"
@@ -275,8 +304,8 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 						<h3 className="text-2xl font-black italic tracking-tighter">UNABLE TO LOCATE TRIBE</h3>
 						<p className="text-muted-foreground font-medium italic">Adjust your signals and try searching for another community.</p>
 					</div>
-					<Button 
-						variant="outline" 
+					<Button
+						variant="outline"
 						className="rounded-xl font-black italic text-[10px] uppercase tracking-widest px-8"
 						onClick={() => { setSearchTerm(""); setActiveFilter("All"); }}
 					>

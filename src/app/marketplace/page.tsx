@@ -7,10 +7,12 @@ import { SellModal } from "@/components/marketplace/SellModal";
 import { useState } from "react";
 import { LostFound } from "@/components/marketplace/LostFound";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingBag, Home, HelpCircle } from "lucide-react";
+import { ShoppingBag, Home, HelpCircle, School, Globe } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function MarketplacePage() {
 	const [refreshKey, setRefreshKey] = useState(0);
+	const [activeScope, setActiveScope] = useState<'campus' | 'universe'>('campus');
 
 	const handleListingCreated = () => {
 		setRefreshKey(prev => prev + 1);
@@ -19,18 +21,48 @@ export default function MarketplacePage() {
 	return (
 		<DashboardLayout
 			title={
-				<div className="flex items-center gap-3">
-					<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
-						<ShoppingBag className="h-6 w-6" />
+				<div className="flex flex-col gap-1">
+					<div className="flex items-center gap-3">
+						<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
+							<ShoppingBag className="h-6 w-6" />
+						</div>
+						<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+							Market<span className="text-primary">place</span>
+						</h1>
 					</div>
-					<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-						Campus <span className="text-primary">Marketplace</span>
-					</h1>
+					<div className="flex items-center gap-2 mt-2">
+						<div className="flex items-center p-1 bg-muted/50 rounded-lg border border-border/50">
+							<button
+								onClick={() => setActiveScope('campus')}
+								className={cn(
+									"flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md transition-all",
+									activeScope === 'campus'
+										? "bg-background text-primary shadow-sm"
+										: "text-muted-foreground hover:text-foreground"
+								)}
+							>
+								<School className="h-3.5 w-3.5" />
+								Campus
+							</button>
+							<button
+								onClick={() => setActiveScope('universe')}
+								className={cn(
+									"flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md transition-all",
+									activeScope === 'universe'
+										? "bg-background text-primary shadow-sm"
+										: "text-muted-foreground hover:text-foreground"
+								)}
+							>
+								<Globe className="h-3.5 w-3.5" />
+								Universe
+							</button>
+						</div>
+					</div>
 				</div>
 			}
-			subtitle="Buy, sell, and connect with other students."
+			subtitle="Buy, sell, and connect across your campus and beyond."
 			breadcrumb={["UniVerse", "Marketplace"]}
-			action={<SellModal onListingCreated={handleListingCreated} />}
+			action={<SellModal onListingCreated={handleListingCreated} activeScope={activeScope} />}
 		>
 			<div className="pb-10 h-full">
 				<Tabs defaultValue="buy-sell" className="space-y-6">
@@ -41,15 +73,15 @@ export default function MarketplacePage() {
 					</TabsList>
 
 					<TabsContent value="buy-sell">
-						<ProductGrid refreshKey={refreshKey} />
+						<ProductGrid refreshKey={refreshKey} scope={activeScope} />
 					</TabsContent>
 
 					<TabsContent value="housing">
-						<RoommateFinder />
+						<RoommateFinder scope={activeScope} />
 					</TabsContent>
 
 					<TabsContent value="lost-found">
-						<LostFound />
+						<LostFound scope={activeScope} />
 					</TabsContent>
 				</Tabs>
 			</div>

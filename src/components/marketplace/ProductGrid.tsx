@@ -3,9 +3,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, Loader2 } from "lucide-react";
 import { ProductCard } from "./ProductCard";
+import { SellModal } from "./SellModal";
+import type { ListingToEdit } from "./SellModal";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { getListings } from "@/app/marketplace/actions";
+import { toast } from "sonner";
 
 // Defining a type that matches what ProductCard expects (or adapting ProductCard to DB)
 // ProductCard expects: Product interface
@@ -15,6 +18,9 @@ export function ProductGrid({ refreshKey, scope = "campus" }: { refreshKey?: num
 	const [products, setProducts] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+	const [editingProduct, setEditingProduct] = useState<ListingToEdit | null>(null);
+	const [editOpen, setEditOpen] = useState(false);
 
 	useEffect(() => {
 		const fetchProducts = async () => {
@@ -40,10 +46,13 @@ export function ProductGrid({ refreshKey, scope = "campus" }: { refreshKey?: num
 						id: item.id,
 						title: item.title,
 						price: item.price,
-						image: item.imageUrl || "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=60",
+						image: item.imageUrl,
 						category: category,
 						condition: "Good", // default
 						description: cleanDesc,
+						imageUrl: item.imageUrl,
+						scope: item.scope,
+						sellerId: item.sellerId,
 						seller: {
 							name: item.seller?.fullName || "Unknown",
 							avatar: item.seller?.avatarUrl,
@@ -53,7 +62,10 @@ export function ProductGrid({ refreshKey, scope = "campus" }: { refreshKey?: num
 					};
 				}) || [];
 				setProducts(mapped);
+				const { data: { user } } = await supabase.auth.getUser();
+				if (user) setCurrentUserId(user.id);
 			}
+
 			setLoading(false);
 		};
 
@@ -63,7 +75,39 @@ export function ProductGrid({ refreshKey, scope = "campus" }: { refreshKey?: num
 		return () => clearTimeout(debounce);
 	}, [refreshKey, searchQuery, scope]);
 
+	const handleEditProduct = (id: string) => {
+		const product = products.find(p => p.id === id);
+		if (!product) return;
+		setEditingProduct({
+			id: product.id,
+			title: product.title,
+			price: product.price,
+			category: product.category,
+			description: product.description,
+			scope: product.scope,
+			imageUrl: product.imageUrl,
+		});
+		setEditOpen(true);
+	};
+
+	const handleDeleteProduct = async (id: string) => {
+		try {
+			const { error } = await supabase
+				.from('MarketplaceListing')
+				.delete()
+				.eq('id', id);
+
+			if (error) throw error;
+
+			setProducts(prev => prev.filter(p => p.id !== id));
+			toast.success("Listing removed successfully.");
+		} catch (error: any) {
+			toast.error(`Failed to delete listing: ${error.message}`);
+		}
+	};
+
 	return (
+		<>
 		<div className="space-y-6">
 			{/* Search & Filter Bar */}
 			<div className="flex flex-col sm:flex-row gap-4">
@@ -95,10 +139,29 @@ export function ProductGrid({ refreshKey, scope = "campus" }: { refreshKey?: num
 			) : (
 				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 					{products.map((product) => (
-						<ProductCard key={product.id} product={product} />
+						<ProductCard
+							key={product.id}
+							product={product}
+							isSeller={currentUserId === product.sellerId}
+							onDelete={handleDeleteProduct}
+							onEdit={handleEditProduct}
+						/>
 					))}
 				</div>
 			)}
 		</div>
+
+		{editingProduct && (
+			<SellModal
+				listingToEdit={editingProduct}
+				isOpen={editOpen}
+				onOpenChange={(open) => {
+					setEditOpen(open);
+					if (!open) setEditingProduct(null);
+				}}
+				onListingCreated={() => window.location.reload()}
+			/>
+		)}
+		</>
 	);
 }

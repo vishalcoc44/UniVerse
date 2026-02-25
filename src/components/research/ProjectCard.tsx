@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { FlaskConical, Beaker, Users, Calendar, ArrowRight, Microscope, Target } from "lucide-react";
+import { FlaskConical, Beaker, Users, Calendar, ArrowRight, Microscope, Target, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -23,9 +23,10 @@ interface ProjectCardProps {
     applying?: boolean;
     hasApplied?: boolean;
     onApply?: (projectId: string) => Promise<void> | void;
+    onDelete?: (projectId: string) => void;
 }
 
-export function ProjectCard({ project, canApply = true, applying = false, hasApplied = false, onApply }: ProjectCardProps) {
+export function ProjectCard({ project, canApply = true, applying = false, hasApplied = false, onApply, onDelete }: ProjectCardProps) {
     const statusColors = {
         OPEN: "from-emerald-500 to-teal-500 text-emerald-500",
         ACTIVE: "from-blue-500 to-indigo-500 text-blue-500",
@@ -44,7 +45,7 @@ export function ProjectCard({ project, canApply = true, applying = false, hasApp
             <Card className="group relative h-full flex flex-col bg-card/40 backdrop-blur-xl border-border/50 rounded-[1.75rem] overflow-hidden hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500">
                 {/* Status Bar */}
                 <div className={cn("h-1 w-full bg-gradient-to-r", currentColor.split(' ').slice(0, 2).join(' '))} />
-                
+
                 <div className="p-6 space-y-5 flex-1 flex flex-col">
                     <div className="flex justify-between items-start gap-3">
                         <div className="space-y-2 flex-1">
@@ -61,8 +62,23 @@ export function ProjectCard({ project, canApply = true, applying = false, hasApp
                                 {project.title}
                             </h3>
                         </div>
-                        <div className="p-3 rounded-xl bg-primary/5 text-primary border border-primary/10 group-hover:scale-105 transition-transform duration-500">
-                            <Microscope className="h-5 w-5" />
+                        <div className="flex gap-2">
+                            {onDelete && !canApply && (
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDelete(project.id);
+                                    }}
+                                    className="p-3 h-auto w-auto rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 hover:text-red-500 border border-red-500/20 group-hover:scale-105 transition-transform duration-500"
+                                >
+                                    <Trash2 className="h-5 w-5" />
+                                </Button>
+                            )}
+                            <div className="p-3 rounded-xl bg-primary/5 text-primary border border-primary/10 group-hover:scale-105 transition-transform duration-500">
+                                <Microscope className="h-5 w-5" />
+                            </div>
                         </div>
                     </div>
 
@@ -108,8 +124,8 @@ export function ProjectCard({ project, canApply = true, applying = false, hasApp
                             size="sm"
                             className={cn(
                                 "w-full h-10 rounded-xl font-black italic tracking-tighter transition-all duration-300 group/btn",
-                                hasApplied 
-                                    ? "bg-muted text-muted-foreground border-border/50" 
+                                hasApplied
+                                    ? "bg-muted text-muted-foreground border-border/50"
                                     : "bg-primary text-primary-foreground shadow-lg shadow-primary/10 hover:shadow-primary/20"
                             )}
                             onClick={() => onApply?.(project.id)}

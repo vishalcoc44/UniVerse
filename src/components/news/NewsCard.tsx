@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Clock, Share2 } from "lucide-react";
+import { Clock, Share2, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface NewsItem {
@@ -20,9 +20,11 @@ export interface NewsItem {
 
 interface NewsCardProps {
 	news: NewsItem;
+	isAuthor?: boolean;
+	onDelete?: (id: string) => void;
 }
 
-export function NewsCard({ news }: NewsCardProps) {
+export function NewsCard({ news, isAuthor = false, onDelete }: NewsCardProps) {
 	return (
 		<Card className="group overflow-hidden bg-card/60 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all duration-300 flex flex-col h-full">
 			<div className="relative h-48 overflow-hidden">
@@ -69,9 +71,21 @@ export function NewsCard({ news }: NewsCardProps) {
 							{news.author.name}
 						</span>
 					</div>
-					<Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-						<Share2 className="h-4 w-4" />
-					</Button>
+					<div className="flex items-center gap-1">
+						{isAuthor && onDelete && (
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => onDelete(news.id)}
+								className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-500/10"
+							>
+								<Trash2 className="h-4 w-4" />
+							</Button>
+						)}
+						<Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+							<Share2 className="h-4 w-4" />
+						</Button>
+					</div>
 				</div>
 			</div>
 		</Card>

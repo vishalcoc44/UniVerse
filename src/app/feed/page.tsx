@@ -217,7 +217,11 @@ export default function Feed() {
 			if (wasLiked) {
 				await supabase.from('Like').delete().eq('postId', postId).eq('userId', user.id);
 			} else {
-				await supabase.from('Like').insert({ postId, userId: user.id });
+				await supabase.from('Like').insert({ 
+					id: crypto.randomUUID(), // Explicitly generate ID to avoid null constraint
+					postId, 
+					userId: user.id 
+				});
 			}
 		} catch (err) {
 			console.error("Error toggling like:", err);
@@ -248,7 +252,11 @@ export default function Feed() {
 					setPosts(prev => prev.filter(p => p.id !== postId));
 				}
 			} else {
-				await supabase.from('Bookmark').insert({ postId, userId: user.id });
+				await supabase.from('Bookmark').insert({
+					id: crypto.randomUUID(), // Explicitly generate ID to avoid null constraint
+					postId,
+					userId: user.id
+				});
 			}
 		} catch (err) {
 			console.error("Error displaying bookmark:", err);

@@ -53,11 +53,11 @@ const mockProfiles: RoommateProfile[] = [
 	}
 ];
 
-export function RoommateFinder() {
+export function RoommateFinder({ scope }: { scope: 'campus' | 'universe' }) {
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-col gap-2 bg-primary/5 p-6 rounded-xl border border-primary/10 text-center">
-				<h3 className="font-semibold text-lg">Find Your Perfect Match</h3>
+				<h3 className="font-semibold text-lg">Find Your Perfect Match {scope === 'universe' ? '(Global)' : '(Campus)'}</h3>
 				<p className="text-sm text-muted-foreground max-w-lg mx-auto">Create a profile with your living habits and budget to match with compatible roommates.</p>
 				<Button className="w-fit mx-auto mt-2">Create Roommate Profile</Button>
 			</div>

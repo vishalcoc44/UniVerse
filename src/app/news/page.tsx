@@ -22,9 +22,11 @@ type PostRow = {
 	scope: "CAMPUS" | "UNIVERSE";
 	createdAt: string;
 	author: {
+		id: string;
 		fullName: string | null;
 		avatarUrl: string | null;
 	} | {
+		id: string;
 		fullName: string | null;
 		avatarUrl: string | null;
 	}[] | null;
@@ -37,6 +39,7 @@ export default function NewsPage() {
 	const [loading, setLoading] = useState(true);
 	const [errorText, setErrorText] = useState<string | null>(null);
 	const [posts, setPosts] = useState<PostRow[]>([]);
+	const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 	const { universityId, loading: uniLoading } = useUserUniversity();
 
 	const getErrorMessage = (error: any) => error?.message || error?.details || error?.hint || "Unknown error";
@@ -50,7 +53,7 @@ export default function NewsPage() {
 
 			let query = supabase
 				.from('Post')
-				.select('id,content,mediaUrl,category,scope,createdAt,author:Profile(fullName,avatarUrl)')
+				.select('id,content,mediaUrl,category,scope,createdAt,author:Profile(id,fullName,avatarUrl)')
 				.order('createdAt', { ascending: false })
 				.limit(30);
 
@@ -86,6 +89,12 @@ export default function NewsPage() {
 			setLoading(false);
 		};
 
+		const fetchUser = async () => {
+			const { data: { user } } = await supabase.auth.getUser();
+			if (user) setCurrentUserId(user.id);
+		};
+
+		fetchUser();
 		fetchNews();
 	}, [activeScope, activeCategory, searchTerm, universityId, uniLoading]);
 
@@ -115,6 +124,7 @@ export default function NewsPage() {
 			excerpt: formatPostExcerpt(post.content),
 			category: post.category || "General",
 			image: post.mediaUrl,
+			authorId: Array.isArray(post.author) ? post.author[0]?.id : post.author?.id,
 			author: {
 				name: (Array.isArray(post.author) ? post.author[0]?.fullName : post.author?.fullName) || "UniVerse",
 				avatar: (Array.isArray(post.author) ? post.author[0]?.avatarUrl : post.author?.avatarUrl) || null,
@@ -126,6 +136,17 @@ export default function NewsPage() {
 
 	const featured = mappedNews[0] || null;
 	const remaining = mappedNews.slice(1);
+
+	const handleDeletePost = async (id: string) => {
+		try {
+			const { error } = await supabase.from('Post').delete().eq('id', id);
+			if (error) throw error;
+			setPosts((prev) => prev.filter((p) => p.id !== id));
+			toast.success("News post deleted.");
+		} catch (error: any) {
+			toast.error(`Failed to delete post: ${getErrorMessage(error)}`);
+		}
+	};
 
 	return (
 		<DashboardLayout
@@ -186,7 +207,12 @@ export default function NewsPage() {
 						{remaining.length > 0 ? (
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 								{remaining.map((item) => (
-									<NewsCard key={item.id} news={item} />
+									<NewsCard
+										key={item.id}
+										news={item}
+										isAuthor={currentUserId === (item as any).authorId}
+										onDelete={handleDeletePost}
+									/>
 								))}
 							</div>
 						) : (

@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, ArrowRight, Check, Loader2, Globe2, School, Crown, Sparkles, ExternalLink } from "lucide-react";
+import { Users, ArrowRight, Check, Loader2, Globe2, School, Crown, Sparkles, ExternalLink, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -14,7 +14,9 @@ interface ClubCardProps {
 	logoUrl?: string | null;
 	scope?: "CAMPUS" | "UNIVERSE";
 	isJoined?: boolean;
+	isOwner?: boolean;
 	onToggleJoin?: (clubId: string, joined: boolean) => void;
+	onDelete?: (clubId: string) => void;
 	joinLoading?: boolean;
 }
 
@@ -35,11 +37,13 @@ export function ClubCard({
 	logoUrl,
 	scope = "CAMPUS",
 	isJoined = false,
+	isOwner = false,
 	onToggleJoin,
+	onDelete,
 	joinLoading = false,
 }: ClubCardProps) {
-	const currentStyle = (category as keyof typeof categoryStyles) in categoryStyles 
-		? categoryStyles[category as keyof typeof categoryStyles] 
+	const currentStyle = (category as keyof typeof categoryStyles) in categoryStyles
+		? categoryStyles[category as keyof typeof categoryStyles]
 		: categoryStyles.Social;
 
 	return (
@@ -55,7 +59,7 @@ export function ClubCard({
 						"absolute inset-0 bg-gradient-to-br transition-opacity duration-500 group-hover:opacity-80",
 						scope === "UNIVERSE" ? "from-violet-600/30 via-primary/20 to-transparent" : "from-emerald-600/30 via-secondary/20 to-transparent"
 					)} />
-					
+
 					<div className="absolute top-4 right-4 flex flex-col items-end gap-2">
 						<Badge className={cn("px-4 py-1 rounded-xl font-black italic tracking-widest text-[9px] uppercase border", currentStyle)}>
 							{category}
@@ -87,7 +91,7 @@ export function ClubCard({
 							</h3>
 							{members > 500 && <Crown className="h-4 w-4 text-primary animate-pulse" />}
 						</div>
-						
+
 						<p className="text-sm font-medium text-muted-foreground italic tracking-tight leading-relaxed line-clamp-2">
 							{description}
 						</p>
@@ -104,7 +108,7 @@ export function ClubCard({
 									<span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Souls</span>
 								</div>
 							</div>
-							
+
 							<div className="flex flex-col">
 								<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 italic mb-1">Status</span>
 								<div className="flex items-center gap-1.5">
@@ -115,17 +119,27 @@ export function ClubCard({
 						</div>
 					</div>
 
-					{/* Actions Footer */}
 					<div className="mt-8 pt-6 border-t border-border/10 flex items-center justify-between gap-4">
-						<Button 
-							variant="ghost" 
-							className="h-12 w-12 rounded-2xl bg-muted/20 hover:bg-muted text-muted-foreground hover:text-foreground"
-						>
-							<ExternalLink className="h-5 w-5" />
-						</Button>
+						<div className="flex gap-2">
+							<Button
+								variant="ghost"
+								className="h-12 w-12 rounded-2xl bg-muted/20 hover:bg-muted text-muted-foreground hover:text-foreground"
+							>
+								<ExternalLink className="h-5 w-5" />
+							</Button>
+							{isOwner && onDelete && (
+								<Button
+									variant="ghost"
+									onClick={() => onDelete(id)}
+									className="h-12 w-12 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-500 transition-colors"
+								>
+									<Trash2 className="h-5 w-5" />
+								</Button>
+							)}
+						</div>
 
 						{isJoined ? (
-							<Button 
+							<Button
 								variant="outline"
 								onClick={() => onToggleJoin?.(id, true)}
 								disabled={joinLoading}
@@ -135,7 +149,7 @@ export function ClubCard({
 								STATIONED
 							</Button>
 						) : (
-							<Button 
+							<Button
 								onClick={() => onToggleJoin?.(id, false)}
 								disabled={joinLoading}
 								className="h-12 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black italic tracking-tighter shadow-xl shadow-primary/20 group/btn flex-1 transition-all"

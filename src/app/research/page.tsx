@@ -227,6 +227,24 @@ export default function ResearchPage() {
 		}
 	};
 
+	const handleDeleteProject = async (projectId: string) => {
+		try {
+			// Fixes: "violates foreign key constraint ProjectCollaborator_projectId_fkey"
+			const { error: collabError } = await supabase.from("ProjectCollaborator").delete().eq("projectId", projectId);
+			if (collabError) throw collabError;
+
+			const { error } = await supabase.from("ResearchProject").delete().eq("id", projectId);
+
+			if (error) throw error;
+
+			setProjects((prev) => prev.filter((p) => p.id !== projectId));
+			toast.success("Project deleted successfully.");
+		} catch (error: any) {
+			console.error("Error deleting project:", error?.message || error);
+			toast.error(error?.message || "Failed to delete project.");
+		}
+	};
+
 	const openProjects = projects.filter((project) => project.status === "OPEN");
 	const myProjects = projects.filter((project) => {
 		const role = collaboratorMap.get(project.id);
@@ -442,6 +460,7 @@ export default function ResearchPage() {
 										hasApplied={collaboratorMap.has(project.id)}
 										applying={applyLoadingProjectId === project.id}
 										onApply={onApply}
+										onDelete={handleDeleteProject}
 									/>
 								))
 							)}

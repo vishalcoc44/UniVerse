@@ -2,13 +2,13 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Calendar, Loader2 } from "lucide-react";
+import { Search, MapPin, Calendar, Loader2, Package } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { getListings, ListingType } from "@/app/marketplace/actions";
 import { ReportLostFoundModal } from "./ReportLostFoundModal";
 
-export function LostFound() {
+export function LostFound({ scope }: { scope: 'campus' | 'universe' }) {
 	const [items, setItems] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -19,7 +19,7 @@ export function LostFound() {
 		const { success, data, error } = await getListings({
 			types: ['LOST', 'FOUND'],
 			search: searchQuery,
-			scope: 'campus'
+			scope: scope
 		});
 
 		if (success && data) {
@@ -36,7 +36,7 @@ export function LostFound() {
 					type: item.type === 'LOST' ? 'Lost' : 'Found',
 					location: locMatch ? locMatch[1] : "Unknown",
 					date: dateMatch ? dateMatch[1] : new Date(item.createdAt).toLocaleDateString(),
-					image: item.imageUrl || "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?q=80&w=2000&auto=format&fit=crop",
+					image: item.imageUrl,
 					description: descClean || item.description,
 					user: item.seller?.fullName || "Anonymous",
 					avatar: item.seller?.avatarUrl
@@ -67,7 +67,10 @@ export function LostFound() {
 						onChange={(e) => setSearchQuery(e.target.value)}
 					/>
 				</div>
-				<ReportLostFoundModal onListingCreated={() => setRefreshKey(k => k + 1)} />
+				<ReportLostFoundModal 
+					onListingCreated={() => setRefreshKey(k => k + 1)} 
+					activeScope={scope}
+				/>
 			</div>
 
 			{/* Grid */}
@@ -78,12 +81,19 @@ export function LostFound() {
 			) : (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 					{items.map((item) => (
-						<Card key={item.id} className="overflow-hidden bg-card/60 backdrop-blur-sm border-border/50">
-							<div className="relative h-48">
-								<img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+						<Card key={item.id} className="overflow-hidden bg-card/60 backdrop-blur-sm border-border/50 hover:shadow-md transition-shadow">
+							<div className="relative h-48 bg-muted overflow-hidden">
+								{item.image ? (
+									<img src={item.image} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+								) : (
+									<div className="w-full h-full flex flex-col items-center justify-center bg-muted/40 text-muted-foreground/30">
+										<Package className="h-10 w-10 mb-2" />
+										<span className="text-[10px] uppercase font-medium tracking-widest">No Item Image</span>
+									</div>
+								)}
 								<Badge
 									variant={item.type === 'Lost' ? 'destructive' : 'default'}
-									className="absolute top-3 right-3"
+									className="absolute top-3 right-3 shadow-lg"
 								>
 									{item.type}
 								</Badge>

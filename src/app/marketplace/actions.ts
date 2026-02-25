@@ -1,6 +1,6 @@
 'use server';
 
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/server-supabase";
 import { revalidatePath } from "next/cache";
 
 export type ListingType = 'SELL' | 'BUY' | 'LOST' | 'FOUND';
@@ -10,11 +10,13 @@ export interface CreateListingData {
 	price: number;
 	description: string;
 	type: ListingType;
+	scope?: 'CAMPUS' | 'UNIVERSE';
 	category?: string;
 	imageUrl?: string;
 }
 
 export async function createListing(data: CreateListingData) {
+	const supabase = await createClient();
 	try {
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) throw new Error("Unauthorized");
@@ -34,12 +36,13 @@ export async function createListing(data: CreateListingData) {
 			: data.description;
 
 		const { error } = await supabase.from('MarketplaceListing').insert({
+			id: crypto.randomUUID(),
 			title: data.title,
 			price: data.price,
 			description: finalDescription,
 			type: data.type,
 			imageUrl: data.imageUrl,
-			scope: 'CAMPUS',
+			scope: data.scope || 'CAMPUS',
 			universityId: profile.universityId,
 			sellerId: user.id,
 			status: 'ACTIVE'
@@ -49,9 +52,9 @@ export async function createListing(data: CreateListingData) {
 
 		revalidatePath('/marketplace');
 		return { success: true };
-	} catch (error) {
+	} catch (error: any) {
 		console.error("Error creating listing:", error);
-		return { success: false, error: "Failed to create listing" };
+		return { success: false, error: error?.message || "Failed to create listing" };
 	}
 }
 
@@ -64,6 +67,7 @@ export async function getListings({
 	types?: ListingType[],
 	search?: string
 }) {
+	const supabase = await createClient();
 	try {
 		let query = supabase
 			.from('MarketplaceListing')
@@ -90,7 +94,8 @@ export async function getListings({
 				}
 			}
 		} else {
-			// Universe scope logic if any
+			// In universe mode, only show items explicitly marked as UNIVERSE
+			query = query.eq('scope', 'UNIVERSE');
 		}
 
 		if (search) {
@@ -104,5 +109,45 @@ export async function getListings({
 	} catch (error) {
 		console.error("Error fetching listings:", error);
 		return { success: false, start: [], error: "Failed to fetch listings" };
+	}
+}
+
+export async function updateListing(id: string, data: {
+	title?: string;
+	price?: number;
+	description?: string;
+	category?: string;
+	imageUrl?: string;
+	scope?: 'CAMPUS' | 'UNIVERSE';
+}) {
+	const supabase = await createClient();
+	try {
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) throw new Error("Unauthorized");
+
+		const updates: any = {};
+		if (data.title !== undefined) updates.title = data.title;
+		if (data.price !== undefined) updates.price = data.price;
+		if (data.imageUrl !== undefined) updates.imageUrl = data.imageUrl;
+		if (data.scope !== undefined) updates.scope = data.scope;
+		if (data.description !== undefined) {
+			updates.description = data.category
+				? `[${data.category}] ${data.description}`
+				: data.description;
+		}
+
+		const { error } = await supabase
+			.from('MarketplaceListing')
+			.update(updates)
+			.eq('id', id)
+			.eq('sellerId', user.id);
+
+		if (error) throw error;
+
+		revalidatePath('/marketplace');
+		return { success: true };
+	} catch (error: any) {
+		console.error("Error updating listing:", error);
+		return { success: false, error: error?.message || "Failed to update listing" };
 	}
 }

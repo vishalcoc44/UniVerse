@@ -20,9 +20,10 @@ import { toast } from "sonner";
 
 interface ReportLostFoundModalProps {
 	onListingCreated?: () => void;
+	activeScope?: 'campus' | 'universe';
 }
 
-export function ReportLostFoundModal({ onListingCreated }: ReportLostFoundModalProps) {
+export function ReportLostFoundModal({ onListingCreated, activeScope = 'campus' }: ReportLostFoundModalProps) {
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
@@ -31,6 +32,7 @@ export function ReportLostFoundModal({ onListingCreated }: ReportLostFoundModalP
 		location: "",
 		date: "",
 		description: "",
+		scope: (activeScope?.toUpperCase() as 'CAMPUS' | 'UNIVERSE') || 'CAMPUS'
 	});
 
 	const handleChange = (field: string, value: string) => {
@@ -54,7 +56,7 @@ export function ReportLostFoundModal({ onListingCreated }: ReportLostFoundModalP
 				price: 0, // Lost/Found items have no price
 				description: richDescription,
 				type: formData.type,
-				// imageUrl: ... 
+				scope: formData.scope
 			});
 
 			if (!result.success) {
@@ -90,30 +92,46 @@ export function ReportLostFoundModal({ onListingCreated }: ReportLostFoundModalP
 					</DialogDescription>
 				</DialogHeader>
 				<div className="grid gap-4 py-4">
-					<div className="grid grid-cols-2 gap-4">
-						<div className="grid gap-2">
-							<Label>Type</Label>
+					<div className="grid grid-cols-3 gap-3">
+						<div className="grid gap-1.5">
+							<Label className="text-xs">Type</Label>
 							<Select
 								value={formData.type}
 								onValueChange={(val) => handleChange('type', val as ListingType)}
 							>
-								<SelectTrigger>
-									<SelectValue placeholder="Select Type" />
+								<SelectTrigger className="h-9">
+									<SelectValue placeholder="Select" />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="LOST">Lost Item</SelectItem>
-									<SelectItem value="FOUND">Found Item</SelectItem>
+									<SelectItem value="LOST">Lost</SelectItem>
+									<SelectItem value="FOUND">Found</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="date">Date</Label>
+						<div className="grid gap-1.5">
+							<Label className="text-xs">Date</Label>
 							<Input
 								id="date"
-								placeholder="e.g. Today, 10 AM"
+								className="h-9"
+								placeholder="Today, 10 AM"
 								value={formData.date}
 								onChange={(e) => handleChange('date', e.target.value)}
 							/>
+						</div>
+						<div className="grid gap-1.5">
+							<Label className="text-xs">Visibility</Label>
+							<Select
+								value={formData.scope}
+								onValueChange={(val) => handleChange('scope', val as 'CAMPUS' | 'UNIVERSE')}
+							>
+								<SelectTrigger className="h-9">
+									<SelectValue placeholder="Scope" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="CAMPUS">Campus</SelectItem>
+									<SelectItem value="UNIVERSE">Universe</SelectItem>
+								</SelectContent>
+							</Select>
 						</div>
 					</div>
 

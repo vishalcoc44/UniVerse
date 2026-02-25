@@ -92,13 +92,17 @@ export function SharePostBox({ onPostCreated }: { onPostCreated?: () => void }) 
 				.eq('id', user.id)
 				.single();
 
+			console.log("Post insertion attempted for user:", user.id);
+			
 			const { error } = await supabase.from('Post').insert({
+				id: crypto.randomUUID(), // Explicitly generate ID to avoid null constraint errors
 				content,
 				scope: feedType === 'campus' ? 'CAMPUS' : 'UNIVERSE',
-				universityId: feedType === 'campus' ? profile?.universityId : null,
+				universityId: feedType === 'campus' && profile?.universityId ? profile.universityId : null,
 				authorId: user.id,
 				type: 'TEXT',
-				category: category
+				category: category,
+				updatedAt: new Date().toISOString()
 			});
 
 			if (error) throw error;
