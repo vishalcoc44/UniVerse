@@ -237,6 +237,17 @@ export function EventCreationModal({
         <div className="grid gap-4 py-4 overflow-y-auto pr-2 flex-1">
 
           <div className="grid gap-2">
+            <Label htmlFor="title">Event Title</Label>
+            <Input
+              id="title"
+              value={formData.title}
+              onChange={handleChange}
+              placeholder="e.g. AI Workshop: Build Your First Agent"
+              className="bg-background/50"
+            />
+          </div>
+
+          <div className="grid gap-2">
             <Label htmlFor="image">Event Cover Image</Label>
             <Input id="image" type="file" accept="image/*" onChange={handleImageChange} className="bg-background/50" />
             {eventToEdit?.imageUrl && !imageFile && (

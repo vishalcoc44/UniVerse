@@ -50,6 +50,7 @@ export default function Dashboard() {
 	});
 
 	const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
+	const [calendarEventDates, setCalendarEventDates] = useState<string[]>([]);
 	const [feedPosts, setFeedPosts] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 
@@ -106,6 +107,7 @@ export default function Dashboard() {
 					.limit(3);
 
 				if (upcomingData) {
+					setCalendarEventDates(upcomingData.map(event => event.date));
 					setUpcomingEvents(upcomingData.map(event => {
 						const eventDate = new Date(event.date);
 						return {
@@ -123,6 +125,8 @@ export default function Dashboard() {
 							status: eventDate < new Date() ? "ended" : "upcoming"
 						};
 					}));
+				} else {
+					setCalendarEventDates([]);
 				}
 
 				// 6. Campus Feed (Recent posts)
@@ -299,7 +303,7 @@ export default function Dashboard() {
 				{/* Right Sidebar - 1 column */}
 				<div className="space-y-6">
 					{/* Mini Calendar */}
-					<MiniCalendar />
+					<MiniCalendar eventDates={calendarEventDates} />
 
 					{/* Upcoming Deadlines */}
 					<section className="bg-card rounded-xl border border-border p-4 shadow-card">

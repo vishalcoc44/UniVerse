@@ -18,6 +18,12 @@ import { PreviewMarquee } from "@/components/landing/PreviewMarquee";
 import { LightboxModal } from "@/components/landing/LightboxModal";
 import { useState } from "react";
 
+const FALLBACK_PREVIEW_IMAGES = [
+	"/images/Screenshot%202026-02-21%20122427.png",
+	"/images/Screenshot%202026-02-21%20122503.png",
+	"/images/Screenshot%202026-02-21%20122520.png",
+];
+
 export default function Landing() {
 	const { scrollY, scrollYProgress } = useScroll();
 	const [showMarquee, setShowMarquee] = useState(true);
@@ -39,24 +45,35 @@ export default function Landing() {
 	const [activeIndex, setActiveIndex] = useState(0);
 
 	useEffect(() => {
-		fetch('/api/images')
-			.then(async res => {
+		let isMounted = true;
+
+		const loadImages = async () => {
+			try {
+				const res = await fetch('/api/images', { cache: 'no-store' });
 				if (!res.ok) {
-					const errorText = await res.text();
-					throw new Error(`Failed to fetch images: ${res.status} ${res.statusText} - ${errorText}`);
+					throw new Error(`Failed to fetch images: ${res.status} ${res.statusText}`);
 				}
-				return res.json();
-			})
-			.then(data => {
-				if (Array.isArray(data)) {
+
+				const data = await res.json();
+				if (!isMounted) return;
+
+				if (Array.isArray(data) && data.length > 0) {
 					setImages(data);
-				} else {
-					console.warn('API /api/images returned non-array data:', data);
+					return;
 				}
-			})
-			.catch(err => {
-				console.error('Error fetching images:', err);
-			});
+
+				setImages(FALLBACK_PREVIEW_IMAGES);
+			} catch {
+				if (!isMounted) return;
+				setImages(FALLBACK_PREVIEW_IMAGES);
+			}
+		};
+
+		void loadImages();
+
+		return () => {
+			isMounted = false;
+		};
 	}, []);
 
 	const containerVariants = {

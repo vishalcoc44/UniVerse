@@ -12,15 +12,31 @@ const MONTHS = [
 
 interface CalendarDay {
   day: number;
+  date: Date;
   isCurrentMonth: boolean;
   hasEvent?: boolean;
   isToday?: boolean;
   eventColor?: "rose" | "amber" | "mint" | "lavender";
 }
 
-export function MiniCalendar() {
+interface MiniCalendarProps {
+  eventDates?: string[];
+}
+
+export function MiniCalendar({ eventDates = [] }: MiniCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const today = new Date();
+
+  const normalizedEventDates = eventDates.map((value) => new Date(value));
+
+  const hasEventOnDate = (date: Date) => {
+    return normalizedEventDates.some((eventDate) =>
+      eventDate.getFullYear() === date.getFullYear() &&
+      eventDate.getMonth() === date.getMonth() &&
+      eventDate.getDate() === date.getDate()
+    );
+  };
 
   const getDaysInMonth = (date: Date): CalendarDay[] => {
     const year = date.getFullYear();
@@ -33,8 +49,10 @@ export function MiniCalendar() {
     const startPadding = (firstDay.getDay() + 6) % 7;
     const prevMonth = new Date(year, month, 0);
     for (let i = startPadding - 1; i >= 0; i--) {
+      const prevMonthDate = new Date(year, month - 1, prevMonth.getDate() - i);
       days.push({
         day: prevMonth.getDate() - i,
+        date: prevMonthDate,
         isCurrentMonth: false,
       });
     }
@@ -46,12 +64,13 @@ export function MiniCalendar() {
         today.getMonth() === month &&
         today.getFullYear() === year;
 
-      // Mock events
-      const hasEvent = [5, 9, 12, 14, 19, 20, 26, 27, 28, 29, 30].includes(i);
+      const dayDate = new Date(year, month, i);
+      const hasEvent = hasEventOnDate(dayDate);
       const eventColors: ("rose" | "amber" | "mint" | "lavender")[] = ["rose", "amber", "mint", "lavender"];
 
       days.push({
         day: i,
+        date: dayDate,
         isCurrentMonth: true,
         isToday,
         hasEvent,
@@ -62,8 +81,10 @@ export function MiniCalendar() {
     // Days from next month
     const endPadding = 42 - days.length;
     for (let i = 1; i <= endPadding; i++) {
+      const nextMonthDate = new Date(year, month + 1, i);
       days.push({
         day: i,
+        date: nextMonthDate,
         isCurrentMonth: false,
       });
     }
@@ -80,6 +101,11 @@ export function MiniCalendar() {
   };
 
   const days = getDaysInMonth(currentDate);
+
+  const currentMonthEventsCount = normalizedEventDates.filter((eventDate) =>
+    eventDate.getFullYear() === currentDate.getFullYear() &&
+    eventDate.getMonth() === currentDate.getMonth()
+  ).length;
 
   const eventDotColors = {
     rose: "bg-pastel-rose-dark",
@@ -102,7 +128,7 @@ export function MiniCalendar() {
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="font-semibold text-foreground text-sm">
-            {MONTHS[currentDate.getMonth()]}
+            {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
           </span>
           <Button
             variant="ghost"
@@ -139,12 +165,24 @@ export function MiniCalendar() {
         {days.map((day, index) => (
           <button
             key={index}
+            type="button"
+            onClick={() => {
+              setCurrentDate(new Date(day.date.getFullYear(), day.date.getMonth(), 1));
+              if (day.isCurrentMonth) {
+                setSelectedDate(day.date);
+              }
+            }}
             className={cn(
               "relative flex items-center justify-center h-8 w-full rounded-md text-xs transition-colors",
               day.isCurrentMonth
                 ? "text-foreground hover:bg-muted"
                 : "text-muted-foreground/40",
-              day.isToday && "bg-primary text-primary-foreground hover:bg-primary/90"
+              day.isToday && "bg-primary text-primary-foreground hover:bg-primary/90",
+              selectedDate &&
+                selectedDate.getFullYear() === day.date.getFullYear() &&
+                selectedDate.getMonth() === day.date.getMonth() &&
+                selectedDate.getDate() === day.date.getDate() &&
+                "ring-1 ring-primary"
             )}
           >
             {day.day}
@@ -163,7 +201,7 @@ export function MiniCalendar() {
       {/* Events Summary */}
       <div className="mt-4 pt-4 border-t border-border">
         <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">9</span> Events this month
+          <span className="font-medium text-foreground">{currentMonthEventsCount}</span> Events this month
         </p>
       </div>
     </div>
