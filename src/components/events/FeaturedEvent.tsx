@@ -1,8 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin, Users, Ticket, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Calendar, Clock, MapPin, Ticket, ArrowRight, CheckCircle2, Timer } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 interface FeaturedEventProps {
 	event: {
@@ -17,18 +18,55 @@ interface FeaturedEventProps {
 		isPinned?: boolean;
 		isRSVPed?: boolean;
 		participantLimit?: number | null;
+		description?: string;
+		rawDate?: Date;
 	};
 	onRSVP?: (id: string) => void;
 	onViewDetails?: (id: string) => void;
 	onViewAttendees?: (id: string) => void;
 }
 
+function useCountdown(targetDate?: Date) {
+	const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, isPast: false });
+
+	useEffect(() => {
+		if (!targetDate) return;
+
+		const calculate = () => {
+			const now = new Date().getTime();
+			const target = targetDate.getTime();
+			const diff = target - now;
+
+			if (diff <= 0) {
+				setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isPast: true });
+				return;
+			}
+
+			setTimeLeft({
+				days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+				hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+				minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+				seconds: Math.floor((diff % (1000 * 60)) / 1000),
+				isPast: false
+			});
+		};
+
+		calculate();
+		const interval = setInterval(calculate, 1000);
+		return () => clearInterval(interval);
+	}, [targetDate]);
+
+	return timeLeft;
+}
+
 export function FeaturedEvent({ event, onRSVP, onViewDetails, onViewAttendees }: FeaturedEventProps) {
+	const countdown = useCountdown(event.rawDate);
+
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
-			className="relative w-full min-h-[400px] rounded-[3rem] overflow-hidden group shadow-2xl border border-white/10"
+			className="relative w-full min-h-[420px] rounded-[3rem] overflow-hidden group shadow-2xl border border-white/10"
 		>
 			<div className="absolute inset-0">
 				<img
@@ -39,6 +77,46 @@ export function FeaturedEvent({ event, onRSVP, onViewDetails, onViewAttendees }:
 				<div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 			</div>
 
+			{/* Countdown Timer — top right */}
+			{!countdown.isPast && (
+				<motion.div
+					initial={{ opacity: 0, y: -10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: 0.4 }}
+					className="absolute top-6 right-6 z-20 flex items-center gap-3 bg-black/50 backdrop-blur-lg border border-white/10 rounded-2xl px-4 py-3"
+				>
+					<Timer className="h-4 w-4 text-primary shrink-0" />
+					<div className="flex items-center gap-2 text-white font-black text-sm tabular-nums">
+						{countdown.days > 0 && (
+							<span className="flex flex-col items-center leading-none">
+								<span className="text-lg">{String(countdown.days).padStart(2, '0')}</span>
+								<span className="text-[8px] text-zinc-400 uppercase tracking-widest font-bold">Days</span>
+							</span>
+						)}
+						{countdown.days > 0 && <span className="text-zinc-500 text-lg">:</span>}
+						<span className="flex flex-col items-center leading-none">
+							<span className="text-lg">{String(countdown.hours).padStart(2, '0')}</span>
+							<span className="text-[8px] text-zinc-400 uppercase tracking-widest font-bold">Hrs</span>
+						</span>
+						<span className="text-zinc-500 text-lg">:</span>
+						<span className="flex flex-col items-center leading-none">
+							<span className="text-lg">{String(countdown.minutes).padStart(2, '0')}</span>
+							<span className="text-[8px] text-zinc-400 uppercase tracking-widest font-bold">Min</span>
+						</span>
+						<span className="text-zinc-500 text-lg">:</span>
+						<span className="flex flex-col items-center leading-none">
+							<span className="text-lg text-primary">{String(countdown.seconds).padStart(2, '0')}</span>
+							<span className="text-[8px] text-zinc-400 uppercase tracking-widest font-bold">Sec</span>
+						</span>
+					</div>
+				</motion.div>
+			)}
+			{countdown.isPast && (
+				<div className="absolute top-6 right-6 z-20 bg-red-500/80 backdrop-blur-lg border border-red-400/20 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-2xl">
+					Event Ended
+				</div>
+			)}
+
 			<div className="relative z-10 h-full flex flex-col justify-end p-8 md:p-12 space-y-4 max-w-3xl">
 				<motion.div
 					initial={{ opacity: 0, x: -20 }}
@@ -48,6 +126,9 @@ export function FeaturedEvent({ event, onRSVP, onViewDetails, onViewAttendees }:
 				>
 					<Badge className="bg-primary/90 text-white backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-bold border-none">
 						{event.isPinned ? "📌 PINNED STORY" : "🔥 FEATURING NOW"}
+					</Badge>
+					<Badge className="bg-white/10 text-white backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-bold border-none">
+						{event.type}
 					</Badge>
 				</motion.div>
 
@@ -80,14 +161,32 @@ export function FeaturedEvent({ event, onRSVP, onViewDetails, onViewAttendees }:
 					</div>
 				</motion.div>
 
-				<motion.p
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ delay: 0.5 }}
-					className="text-zinc-400 text-lg line-clamp-2 max-w-xl"
-				>
-					Join the most anticipated event of the month! Experience workshops, networking opportunities, and more with fellow students.
-				</motion.p>
+				{event.description && (
+					<motion.p
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ delay: 0.5 }}
+						className="text-zinc-400 text-base line-clamp-2 max-w-xl"
+					>
+						{event.description.replace(/\[Category:.*?\]/g, '').trim() || "Join the most anticipated event of the month!"}
+					</motion.p>
+				)}
+
+				{/* Attendance progress */}
+				{event.participantLimit && (
+					<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }} className="max-w-sm">
+						<div className="flex justify-between text-xs text-zinc-400 font-bold mb-1">
+							<span>{event.attendees} attending</span>
+							<span>{event.participantLimit - event.attendees} spots left</span>
+						</div>
+						<div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+							<div
+								className={cn("h-full rounded-full transition-all", event.attendees / event.participantLimit >= 0.9 ? "bg-red-500" : "bg-primary")}
+								style={{ width: `${Math.min(100, (event.attendees / event.participantLimit) * 100)}%` }}
+							/>
+						</div>
+					</motion.div>
+				)}
 
 				<motion.div
 					initial={{ opacity: 0, y: 10 }}
@@ -105,17 +204,11 @@ export function FeaturedEvent({ event, onRSVP, onViewDetails, onViewAttendees }:
 						)}
 					>
 						{event.isRSVPed ? (
-							<>
-								<CheckCircle2 className="h-5 w-5" />
-								I&apos;m Going!
-							</>
+							<><CheckCircle2 className="h-5 w-5" /> I&apos;m Going!</>
 						) : event.participantLimit !== null && event.participantLimit !== undefined && event.attendees >= event.participantLimit ? (
 							"SOLD OUT"
 						) : (
-							<>
-								<Ticket className="h-5 w-5" />
-								Get My Spot
-							</>
+							<><Ticket className="h-5 w-5" /> Get My Spot</>
 						)}
 					</Button>
 					<Button
@@ -124,8 +217,7 @@ export function FeaturedEvent({ event, onRSVP, onViewDetails, onViewAttendees }:
 						size="lg"
 						className="rounded-full px-8 h-14 text-lg font-bold text-white hover:bg-white/10 gap-2"
 					>
-						Event Details
-						<ArrowRight className="h-5 w-5" />
+						Event Details <ArrowRight className="h-5 w-5" />
 					</Button>
 				</motion.div>
 			</div>

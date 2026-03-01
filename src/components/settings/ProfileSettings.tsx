@@ -4,15 +4,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 import { useUserSettings } from "@/hooks/useUserSettings";
 
 export function ProfileSettings() {
 	const [loading, setLoading] = useState(true);
 	const [updating, setUpdating] = useState(false);
+	const [uploadingAvatar, setUploadingAvatar] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 	const { settings, loading: settingsLoading, updateSettings } = useUserSettings();
 	const [profile, setProfile] = useState<any>({
 		firstName: "",
@@ -40,7 +42,7 @@ export function ProfileSettings() {
 
 			const { data, error } = await supabase
 				.from('Profile')
-				.select('*')
+				.select('*, University(name)')
 				.eq('id', user.id)
 				.single();
 
@@ -52,12 +54,16 @@ export function ProfileSettings() {
 				const firstName = names[0] || "";
 				const lastName = names.slice(1).join(" ") || "";
 
+				// Get university name from the joined University table
+				const uni: any = data.University;
+				const universityName = Array.isArray(uni) ? uni[0]?.name : uni?.name;
+
 				setProfile({
 					firstName,
 					lastName,
 					email: data.email,
 					username: data.username || "",
-					universityName: data.universityName || "",
+					universityName: universityName || "",
 					bio: data.bio || "",
 					major: data.department || "",
 					phone: settings.phone || "",
@@ -73,14 +79,14 @@ export function ProfileSettings() {
 		}
 	};
 
-		useEffect(() => {
-			setProfile((prev: any) => ({
-				...prev,
-				phone: settings.phone || "",
-				linkedin: settings.linkedin || "",
-				github: settings.github || ""
-			}));
-		}, [settings.phone, settings.linkedin, settings.github]);
+	useEffect(() => {
+		setProfile((prev: any) => ({
+			...prev,
+			phone: settings.phone || "",
+			linkedin: settings.linkedin || "",
+			github: settings.github || ""
+		}));
+	}, [settings.phone, settings.linkedin, settings.github]);
 
 	const handleSave = async () => {
 		try {
@@ -122,6 +128,84 @@ export function ProfileSettings() {
 		setProfile((prev: any) => ({ ...prev, [field]: value }));
 	};
 
+	const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		// Validate file
+		if (!file.type.startsWith('image/')) {
+			toast.error('Please select an image file');
+			return;
+		}
+		if (file.size > 1024 * 1024) {
+			toast.error('Image must be under 1MB');
+			return;
+		}
+
+		try {
+			setUploadingAvatar(true);
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user) return;
+
+			const fileExt = file.name.split('.').pop();
+			const filePath = `${user.id}/avatar.${fileExt}`;
+
+			// Upload to Supabase Storage
+			const { error: uploadError } = await supabase.storage
+				.from('avatars')
+				.upload(filePath, file, { upsert: true });
+
+			if (uploadError) throw uploadError;
+
+			// Get public URL
+			const { data: urlData } = supabase.storage
+				.from('avatars')
+				.getPublicUrl(filePath);
+
+			const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+			// Update Profile
+			const { error: updateError } = await supabase
+				.from('Profile')
+				.update({ avatarUrl, updatedAt: new Date().toISOString() })
+				.eq('id', user.id);
+
+			if (updateError) throw updateError;
+
+			setProfile((prev: any) => ({ ...prev, avatar_url: avatarUrl }));
+			toast.success('Avatar updated!');
+		} catch (error: any) {
+			console.error('Avatar upload error:', error);
+			toast.error(error.message || 'Failed to upload avatar');
+		} finally {
+			setUploadingAvatar(false);
+			// Reset file input so the same file can be selected again
+			if (fileInputRef.current) fileInputRef.current.value = '';
+		}
+	};
+
+	const handleRemoveAvatar = async () => {
+		try {
+			setUploadingAvatar(true);
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user) return;
+
+			const { error } = await supabase
+				.from('Profile')
+				.update({ avatarUrl: null, updatedAt: new Date().toISOString() })
+				.eq('id', user.id);
+
+			if (error) throw error;
+
+			setProfile((prev: any) => ({ ...prev, avatar_url: '' }));
+			toast.success('Avatar removed');
+		} catch (error: any) {
+			toast.error('Failed to remove avatar');
+		} finally {
+			setUploadingAvatar(false);
+		}
+	};
+
 	if (loading || settingsLoading) {
 		return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 	}
@@ -135,15 +219,51 @@ export function ProfileSettings() {
 				</CardHeader>
 				<CardContent className="space-y-6">
 					<div className="flex items-center gap-6">
-						<Avatar className="h-20 w-20 border-2 border-border">
-							<AvatarImage src={profile.avatar_url} />
-							<AvatarFallback className="text-lg bg-primary/10 text-primary">
-								{profile.firstName?.[0]}{profile.lastName?.[0]}
-							</AvatarFallback>
-						</Avatar>
+						<div className="relative">
+							<Avatar className="h-20 w-20 border-2 border-border">
+								<AvatarImage src={profile.avatar_url} />
+								<AvatarFallback className="text-lg bg-primary/10 text-primary">
+									{profile.firstName?.[0]}{profile.lastName?.[0]}
+								</AvatarFallback>
+							</Avatar>
+							{uploadingAvatar && (
+								<div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full">
+									<Loader2 className="h-6 w-6 animate-spin text-white" />
+								</div>
+							)}
+						</div>
 						<div className="space-y-2">
-							<Button variant="outline" size="sm">Change Avatar</Button>
-							<p className="text-xs text-muted-foreground">JPG, GIF or PNG. Max 1MB.</p>
+							<input
+								ref={fileInputRef}
+								type="file"
+								accept="image/png,image/jpeg,image/gif,image/webp"
+								className="hidden"
+								onChange={handleAvatarUpload}
+							/>
+							<div className="flex gap-2">
+								<Button
+									variant="outline"
+									size="sm"
+									disabled={uploadingAvatar}
+									onClick={() => fileInputRef.current?.click()}
+								>
+									<Upload className="h-3.5 w-3.5 mr-1.5" />
+									Change Avatar
+								</Button>
+								{profile.avatar_url && (
+									<Button
+										variant="ghost"
+										size="sm"
+										disabled={uploadingAvatar}
+										onClick={handleRemoveAvatar}
+										className="text-destructive hover:text-destructive"
+									>
+										<X className="h-3.5 w-3.5 mr-1" />
+										Remove
+									</Button>
+								)}
+							</div>
+							<p className="text-xs text-muted-foreground">JPG, GIF, PNG or WebP. Max 1MB.</p>
 						</div>
 					</div>
 

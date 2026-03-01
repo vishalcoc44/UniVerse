@@ -66,7 +66,7 @@ export function FocusTimer() {
 	return (
 		<Card className="border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden relative">
 			{/* Ambient Background Glow */}
-			<div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-[60px] transition-colors duration-1000 ${isActive ? (mode === 'focus' ? 'bg-indigo-500/20' : 'bg-green-500/20') : 'bg-transparent'}`} />
+			<div className={`absolute -top-10 -right-10 w-32 h-32 pointer-events-none rounded-full blur-[60px] transition-colors duration-1000 ${isActive ? (mode === 'focus' ? 'bg-indigo-500/20' : 'bg-green-500/20') : 'bg-transparent'}`} />
 
 			<CardHeader className="pb-2">
 				<CardTitle className="flex items-center justify-between text-base">

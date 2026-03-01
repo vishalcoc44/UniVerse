@@ -1,8 +1,9 @@
 'use client';
 
-import { Bell, MessageSquare, Search, Command, Home, LogOut } from "lucide-react";
+import { Bell, MessageSquare, Search, Command, Home, LogOut, Sun, Moon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ interface HeaderProps {
 
 export function Header({ title, subtitle, breadcrumb, action }: HeaderProps) {
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
 
   return (
     <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
@@ -59,6 +61,18 @@ export function Header({ title, subtitle, breadcrumb, action }: HeaderProps) {
               </kbd>
             </div>
           </div>
+
+          {/* Dark Mode Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 text-muted-foreground hover:text-foreground"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            title="Toggle theme"
+          >
+            <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          </Button>
 
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative h-9 w-9">

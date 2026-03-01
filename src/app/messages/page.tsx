@@ -120,7 +120,7 @@ export default function Messages() {
 
 					const { data: messages } = await supabase
 						.from('Message')
-						.select('id, content, createdAt, senderId, readBy, conversationId')
+						.select('id, content, createdAt, senderId, readBy, conversationId, deletedFor')
 						.in('conversationId', conversationIds);
 
 					const { data: preferences } = await supabase
@@ -135,6 +135,8 @@ export default function Messages() {
 
 					const messageByConversation = new Map<string, Message[]>();
 					(messages || []).forEach((msg: Message) => {
+						// Skip messages that the current user has marked as deleted
+						if ((msg as any).deletedFor && Array.isArray((msg as any).deletedFor) && (msg as any).deletedFor.includes(user.id)) return;
 						const list = messageByConversation.get(msg.conversationId) || [];
 						list.push(msg);
 						messageByConversation.set(msg.conversationId, list);
@@ -218,10 +220,8 @@ export default function Messages() {
 			})
 			.subscribe();
 
-		const interval = setInterval(() => {
-			fetchConversations();
-		}, 5000);
-
+		// No polling interval needed — realtime handles live updates.
+		// Only refetch on focus/tab-visible as a fallback.
 		const refreshOnFocus = () => fetchConversations();
 		const refreshOnVisibility = () => {
 			if (document.visibilityState === 'visible') {
@@ -234,7 +234,6 @@ export default function Messages() {
 		document.addEventListener('visibilitychange', refreshOnVisibility);
 
 		return () => {
-			clearInterval(interval);
 			window.removeEventListener('focus', refreshOnFocus);
 			window.removeEventListener('online', refreshOnFocus);
 			document.removeEventListener('visibilitychange', refreshOnVisibility);
@@ -414,8 +413,9 @@ export default function Messages() {
 			}
 			subtitle="Connect with peers and faculty."
 			breadcrumb={["UniVerse", "Messages"]}
+			noPadding
 		>
-			<Card className="flex h-[calc(100vh-12rem)] min-h-[500px] overflow-hidden border-border/40 shadow-2xl bg-card/10 backdrop-blur-2xl rounded-3xl group/container">
+			<Card className="flex h-full overflow-hidden border-0 md:border border-border/40 shadow-none md:shadow-2xl bg-card/10 backdrop-blur-2xl md:rounded-none group/container">
 				{/* Left: Conversation List */}
 				<div className={`${activeChatId ? 'hidden md:block' : 'w-full'} md:w-80 lg:w-96 flex-shrink-0 h-full border-r border-border/40 bg-background/20 relative z-20`}>
 					{loading ? (

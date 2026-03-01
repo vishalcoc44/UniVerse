@@ -65,7 +65,7 @@ export function ReportLostFoundModal({ onListingCreated, activeScope = 'campus' 
 
 			toast.success(`${formData.type === 'LOST' ? 'Lost' : 'Found'} item reported successfully!`);
 			setOpen(false);
-			setFormData({ title: "", type: "LOST", location: "", date: "", description: "" });
+			setFormData({ title: "", type: "LOST", location: "", date: "", description: "", scope: (activeScope?.toUpperCase() as 'CAMPUS' | 'UNIVERSE') || 'CAMPUS' });
 			if (onListingCreated) onListingCreated();
 
 		} catch (error) {

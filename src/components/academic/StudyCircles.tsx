@@ -3,14 +3,15 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, ArrowRight, Plus, Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Users, ArrowRight, Plus, Loader2, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { getStudyGroups, createStudyGroup, joinStudyGroup } from "@/app/academic/actions";
+import { getStudyGroups, createStudyGroup, joinStudyGroup, getRecommendedStudyGroups } from "@/app/academic/actions";
 import { useUserUniversity } from "@/hooks/useUserUniversity";
 
 interface StudyGroup {
@@ -22,6 +23,7 @@ interface StudyGroup {
 
 export function StudyCircles() {
 	const [groups, setGroups] = useState<StudyGroup[]>([]);
+	const [recommendedGroups, setRecommendedGroups] = useState<StudyGroup[]>([]);
 	const [loading, setLoading] = useState(true);
 	const { universityId, loading: uniLoading } = useUserUniversity();
 
@@ -36,12 +38,20 @@ export function StudyCircles() {
 	const fetchGroups = async () => {
 		if (!universityId) return;
 		setLoading(true);
-		const { success, groups: data, error } = await getStudyGroups(universityId);
-		if (success && data) {
-			setGroups(data);
-		} else {
-			console.error(error);
+
+		const allGroupsPromise = getStudyGroups(universityId);
+		const recommendedPromise = getRecommendedStudyGroups(universityId);
+
+		const [allResult, recResult] = await Promise.all([allGroupsPromise, recommendedPromise]);
+
+		if (allResult.success && allResult.groups) {
+			setGroups(allResult.groups);
 		}
+
+		if (recResult.success && recResult.recommendations) {
+			setRecommendedGroups(recResult.recommendations);
+		}
+
 		setLoading(false);
 	};
 
@@ -79,6 +89,39 @@ export function StudyCircles() {
 		setJoiningId(null);
 	};
 
+	const renderGroupCard = (group: StudyGroup) => (
+		<div key={group.id} className="group relative flex flex-col p-3 bg-card/60 backdrop-blur-md rounded-2xl border border-border/30 hover:border-primary/30 transition-all duration-300 shadow hover:shadow-primary/5">
+			<div className="flex items-start justify-between mb-2">
+				<div className="overflow-hidden">
+					<h4 className="font-bold text-sm tracking-tight truncate" title={group.name}>{group.name}</h4>
+					<p className="text-[10px] text-muted-foreground font-medium truncate mt-0.5">{group.description || "Study group"}</p>
+				</div>
+				<div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shrink-0">
+					<Users className="h-3.5 w-3.5" />
+				</div>
+			</div>
+			<div className="flex items-center justify-between gap-4 mt-1.5">
+				<div className="flex items-center gap-2">
+					<div className="flex -space-x-1.5">
+						{[1, 2, 3].map(i => (
+							<div key={i} className="h-5 w-5 rounded-full border border-card bg-muted text-[7px] flex items-center justify-center font-bold uppercase opacity-80">U{i}</div>
+						))}
+					</div>
+					<span className="text-[9px] font-bold text-muted-foreground uppercase">{group.memberCount} Members</span>
+				</div>
+				<Button
+					variant="ghost"
+					size="sm"
+					className="h-8 px-3 rounded-lg bg-primary/10 text-primary border border-primary/20 font-bold uppercase text-[8px] hover:bg-primary hover:text-primary-foreground transition-all"
+					onClick={() => handleJoin(group.id, group.name)}
+					disabled={joiningId === group.id}
+				>
+					{joiningId === group.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Join"}
+				</Button>
+			</div>
+		</div>
+	);
+
 	return (
 		<div className="flex flex-col gap-4 p-3">
 			<div className="flex items-center justify-between px-1">
@@ -102,33 +145,33 @@ export function StudyCircles() {
 						<div className="space-y-4 py-6">
 							<div className="space-y-2">
 								<Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Group Name</Label>
-								<Input 
-									placeholder="e.g. CS101 Advanced Study" 
+								<Input
+									placeholder="e.g. CS101 Advanced Study"
 									className="h-11 rounded-xl bg-card border-border/30 focus:border-primary font-medium"
-									value={newGroup.name} 
-									onChange={e => setNewGroup({ ...newGroup, name: e.target.value })} 
+									value={newGroup.name}
+									onChange={e => setNewGroup({ ...newGroup, name: e.target.value })}
 								/>
 							</div>
 							<div className="space-y-2">
 								<Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Description</Label>
-								<Textarea 
-									placeholder="What will you study together?" 
+								<Textarea
+									placeholder="What will you study together?"
 									className="rounded-xl bg-card border-border/30 focus:border-primary font-medium min-h-[100px]"
-									value={newGroup.description} 
-									onChange={e => setNewGroup({ ...newGroup, description: e.target.value })} 
+									value={newGroup.description}
+									onChange={e => setNewGroup({ ...newGroup, description: e.target.value })}
 								/>
 							</div>
 						</div>
 						<DialogFooter className="flex-col sm:flex-row gap-2">
-							<Button 
-								variant="outline" 
+							<Button
+								variant="outline"
 								onClick={() => setIsCreateOpen(false)}
 								className="h-11 flex-1 rounded-xl font-bold uppercase tracking-wider text-[10px]"
 							>
 								Cancel
 							</Button>
-							<Button 
-								onClick={handleCreate} 
+							<Button
+								onClick={handleCreate}
 								disabled={isCreating || !newGroup.name}
 								className="h-11 flex-1 rounded-xl bg-primary text-primary-foreground font-bold uppercase tracking-wider text-[10px] shadow-lg shadow-primary/20"
 							>
@@ -139,54 +182,49 @@ export function StudyCircles() {
 				</Dialog>
 			</div>
 
-			<div className="space-y-2.5 px-0.5 custom-scrollbar overflow-y-auto pr-1">
-				{loading ? (
-					<div className="flex flex-col items-center justify-center py-12 gap-3">
-						<Loader2 className="h-6 w-6 animate-spin text-primary/40" />
-						<p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase animate-pulse">Finding groups...</p>
-					</div>
-				) : groups.length === 0 ? (
-					<div className="flex flex-col items-center justify-center py-12 gap-3 border border-dashed border-border/30 rounded-2xl opacity-40">
-						<Users className="h-6 w-6" />
-						<p className="text-[10px] font-bold tracking-wider uppercase">No active groups</p>
-					</div>
-				) : (
-					groups.map(group => (
-						<div key={group.id} className="group relative flex flex-col p-3 bg-card/60 backdrop-blur-md rounded-2xl border border-border/30 hover:border-primary/30 transition-all duration-300 shadow hover:shadow-primary/5">
-							<div className="flex items-start justify-between mb-2">
-								<div className="overflow-hidden">
-									<h4 className="font-bold text-sm tracking-tight truncate" title={group.name}>{group.name}</h4>
-									<p className="text-[10px] text-muted-foreground font-medium truncate mt-0.5">{group.description || "Study group"}</p>
-								</div>
-								<div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shrink-0">
-									<Users className="h-3.5 w-3.5" />
-								</div>
-							</div>
-							<div className="flex items-center justify-between gap-4 mt-1.5">
-								<div className="flex items-center gap-2">
-									<div className="flex -space-x-1.5">
-										{[1,2,3].map(i => (
-											<div key={i} className="h-5 w-5 rounded-full border border-card bg-muted text-[7px] flex items-center justify-center font-bold uppercase opacity-80">U{i}</div>
-										))}
-									</div>
-									<span className="text-[9px] font-bold text-muted-foreground uppercase">{group.memberCount} Members</span>
-								</div>
-								<Button
-									variant="ghost"
-									size="sm"
-									className="h-8 px-3 rounded-lg bg-primary/10 text-primary border border-primary/20 font-bold uppercase text-[8px] hover:bg-primary hover:text-primary-foreground transition-all"
-									onClick={() => handleJoin(group.id, group.name)}
-									disabled={joiningId === group.id}
-								>
-									{joiningId === group.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Join"}
-								</Button>
-							</div>
-						</div>
-					))
-				)}
-			</div>
+			<Tabs defaultValue="all" className="w-full flex-1 flex flex-col min-h-0">
+				<TabsList className="w-full grid grid-cols-2 bg-muted/50 p-1 rounded-xl mb-3">
+					<TabsTrigger value="all" className="text-xs font-bold uppercase tracking-wider rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">All</TabsTrigger>
+					<TabsTrigger value="recommended" className="text-xs font-bold uppercase tracking-wider rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center gap-1.5 text-primary">
+						<Sparkles className="h-3 w-3" /> For You
+					</TabsTrigger>
+				</TabsList>
 
-			<Button 
+				<TabsContent value="all" className="space-y-2.5 px-0.5 custom-scrollbar overflow-y-auto pr-1 flex-1 mt-0">
+					{loading ? (
+						<div className="flex flex-col items-center justify-center py-12 gap-3">
+							<Loader2 className="h-6 w-6 animate-spin text-primary/40" />
+							<p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase animate-pulse">Finding groups...</p>
+						</div>
+					) : groups.length === 0 ? (
+						<div className="flex flex-col items-center justify-center py-12 gap-3 border border-dashed border-border/30 rounded-2xl opacity-40">
+							<Users className="h-6 w-6" />
+							<p className="text-[10px] font-bold tracking-wider uppercase">No active groups</p>
+						</div>
+					) : (
+						groups.map(group => renderGroupCard(group))
+					)}
+				</TabsContent>
+
+				<TabsContent value="recommended" className="space-y-2.5 px-0.5 custom-scrollbar overflow-y-auto pr-1 flex-1 mt-0">
+					{loading ? (
+						<div className="flex flex-col items-center justify-center py-12 gap-3">
+							<Loader2 className="h-6 w-6 animate-spin text-primary/40" />
+							<p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase animate-pulse">Analyzing matches...</p>
+						</div>
+					) : recommendedGroups.length === 0 ? (
+						<div className="flex flex-col items-center justify-center py-12 gap-3 border border-dashed border-border/30 rounded-2xl opacity-40 text-center px-4">
+							<Sparkles className="h-6 w-6 mb-2 text-muted-foreground" />
+							<p className="text-[10px] font-bold tracking-wider uppercase">Fill your profile</p>
+							<p className="text-xs text-muted-foreground">Add your major and bio to get smart group recommendations.</p>
+						</div>
+					) : (
+						recommendedGroups.map(group => renderGroupCard(group))
+					)}
+				</TabsContent>
+			</Tabs>
+
+			<Button
 				variant="outline"
 				className="w-full h-11 rounded-xl bg-card border-border/30 font-bold uppercase tracking-wider text-[10px] shadow hover:border-primary/30 transition-colors"
 			>

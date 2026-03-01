@@ -88,15 +88,19 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
 
       const conversationIds = participants.map(p => p.conversationId);
 
-      // 2. Count unread messages in those conversations
+      // 2. Count unread messages in those conversations, excluding messages
+      //    that the current user deleted for themselves or were deleted for everyone
       const { data: messages, error } = await supabase
         .from('Message')
-        .select('id, readBy, senderId')
+        .select('id, readBy, senderId, isDeleted, deletedFor')
         .in('conversationId', conversationIds);
 
       if (messages) {
-        const count = messages.filter(m => 
-          m.senderId !== user.id && (!m.readBy || !m.readBy.includes(user.id))
+        const count = messages.filter(m =>
+          m.senderId !== user.id &&
+          (!m.readBy || !m.readBy.includes(user.id)) &&
+          !(m.isDeleted) &&
+          !((m.deletedFor || []).includes(user.id))
         ).length;
         setUnreadCount(count);
       }

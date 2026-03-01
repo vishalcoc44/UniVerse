@@ -7,7 +7,7 @@ import { FeaturedEvent } from "@/components/events/FeaturedEvent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar as CalendarIcon, Filter, LayoutGrid, List, Loader2, Search, PlusCircle, Sparkles } from "lucide-react";
+import { Calendar as CalendarIcon, Filter, LayoutGrid, List, Loader2, Search, PlusCircle, Sparkles, Bookmark, TrendingUp, Users } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { format, isFuture } from "date-fns";
@@ -43,7 +43,7 @@ export default function EventsPage() {
 	const [userRSVPs, setUserRSVPs] = useState<string[]>([]);
 	const { universityId, loading: uniLoading } = useUserUniversity();
 	const [searchTerm, setSearchTerm] = useState("");
-	const [activeScope, setActiveScope] = useState<'campus' | 'universe'>('campus');
+	const [activeScope, setActiveScope] = useState<'campus' | 'universe' | 'mine'>('campus');
 	const [selectedCategory, setSelectedCategory] = useState("All");
 
 	useEffect(() => {
@@ -72,8 +72,15 @@ export default function EventsPage() {
 					setLoading(false);
 					return;
 				}
-			} else {
+			} else if (activeScope === 'universe') {
 				query = query.eq('scope', 'UNIVERSE');
+			} else {
+				// 'mine' — fetch all campus + universe events, filter client-side by RSVPs
+				if (universityId) {
+					query = query.or(`scope.eq.UNIVERSE,and(scope.eq.CAMPUS,universityId.eq.${universityId})`);
+				} else {
+					query = query.eq('scope', 'UNIVERSE');
+				}
 			}
 
 			const { data, error } = await query;
@@ -130,9 +137,10 @@ export default function EventsPage() {
 			const matchesSearch = !searchTerm.trim() ||
 				`${event.title} ${event.location} ${event.type}`.toLowerCase().includes(searchTerm.toLowerCase());
 			const matchesCategory = selectedCategory === "All" || event.type?.toLowerCase() === selectedCategory.toLowerCase();
-			return matchesSearch && matchesCategory;
+			const matchesMine = activeScope !== 'mine' || userRSVPs.includes(event.id);
+			return matchesSearch && matchesCategory && matchesMine;
 		});
-	}, [events, searchTerm, selectedCategory]);
+	}, [events, searchTerm, selectedCategory, activeScope, userRSVPs]);
 
 	const featuredEvent = useMemo(() => {
 		// Prioritize pinned events
@@ -246,8 +254,16 @@ export default function EventsPage() {
 	};
 
 	useEffect(() => {
-		if (!uniLoading) fetchEvents();
+		if (!uniLoading && activeScope !== 'mine') fetchEvents();
+		if (activeScope === 'mine') fetchEvents();
 	}, [uniLoading, universityId, activeScope]);
+
+	// Quick stats
+	const stats = useMemo(() => ({
+		total: events.length,
+		upcoming: events.filter(e => e.status === 'upcoming').length,
+		rsvped: userRSVPs.length,
+	}), [events, userRSVPs]);
 
 	return (
 		<DashboardLayout
@@ -264,18 +280,24 @@ export default function EventsPage() {
 			subtitle="Where campus life happens."
 			breadcrumb={["UniVerse", "Events"]}
 		>
-			<div className="max-w-7xl mx-auto space-y-12 pb-20">
+			<div className="max-w-7xl mx-auto space-y-8 pb-20">
 				{/* Top Actions & Filters Banner */}
 				<div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
 					<div className="flex flex-col gap-4 w-full lg:w-auto">
 						<div className="flex items-center gap-3">
 							<Tabs value={activeScope} onValueChange={(v) => setActiveScope(v as any)} className="w-auto">
 								<TabsList className="h-12 bg-muted/50 p-1 rounded-2xl border border-border/20 backdrop-blur-md">
-									<TabsTrigger value="campus" className="rounded-xl px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+									<TabsTrigger value="campus" className="rounded-xl px-5 data-[state=active]:bg-background data-[state=active]:shadow-sm text-sm font-bold">
 										Campus
 									</TabsTrigger>
-									<TabsTrigger value="universe" className="rounded-xl px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+									<TabsTrigger value="universe" className="rounded-xl px-5 data-[state=active]:bg-background data-[state=active]:shadow-sm text-sm font-bold">
 										Universe
+									</TabsTrigger>
+									<TabsTrigger value="mine" className="rounded-xl px-5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm text-sm font-bold gap-1.5">
+										<Bookmark className="h-3.5 w-3.5" /> My Events
+										{userRSVPs.length > 0 && (
+											<span className="ml-1 bg-primary text-white text-[9px] font-black rounded-full h-4 w-4 flex items-center justify-center">{userRSVPs.length}</span>
+										)}
 									</TabsTrigger>
 								</TabsList>
 							</Tabs>
@@ -305,7 +327,7 @@ export default function EventsPage() {
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
 								placeholder="Search events, locations, categories..."
-								className="pl-11 h-12 bg-white/50 backdrop-blur-md border border-border/50 rounded-2xl focus:ring-primary shadow-sm"
+								className="pl-11 h-12 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md border border-border/50 rounded-2xl focus:ring-primary shadow-sm"
 							/>
 							<Search className="absolute left-4 top-4 h-4 w-4 text-muted-foreground" />
 						</div>
@@ -329,8 +351,33 @@ export default function EventsPage() {
 					</div>
 				</div>
 
+				{/* Stats Banner */}
+				{!loading && (
+					<motion.div
+						initial={{ opacity: 0, y: -10 }}
+						animate={{ opacity: 1, y: 0 }}
+						className="grid grid-cols-3 gap-4"
+					>
+						{[
+							{ label: 'Total Events', value: stats.total, icon: CalendarIcon, color: 'text-primary' },
+							{ label: 'Upcoming', value: stats.upcoming, icon: TrendingUp, color: 'text-green-500' },
+							{ label: 'My RSVPs', value: stats.rsvped, icon: Bookmark, color: 'text-amber-500' },
+						].map(({ label, value, icon: Icon, color }) => (
+							<div key={label} className="bg-card/50 backdrop-blur-xl border border-border/30 rounded-2xl px-5 py-4 flex items-center gap-4 shadow-sm">
+								<div className={cn("h-10 w-10 rounded-xl bg-muted/60 flex items-center justify-center", color)}>
+									<Icon className="h-5 w-5" />
+								</div>
+								<div>
+									<p className="text-2xl font-black">{value}</p>
+									<p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">{label}</p>
+								</div>
+							</div>
+						))}
+					</motion.div>
+				)}
+
 				{/* Featured Banner */}
-				{!loading && featuredEvent && !searchTerm && selectedCategory === "All" && (
+				{!loading && featuredEvent && !searchTerm && selectedCategory === "All" && activeScope !== 'mine' && (
 					<div className="max-w-5xl mx-auto w-full">
 						<FeaturedEvent
 							event={{

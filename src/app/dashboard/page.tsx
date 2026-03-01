@@ -6,6 +6,8 @@ import { EventCard } from "@/components/dashboard/EventCard";
 import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
 import { UpcomingItem } from "@/components/dashboard/UpcomingItem";
 import { MiniCalendar } from "@/components/dashboard/MiniCalendar";
+import { ProfileCompleteness } from "@/components/dashboard/ProfileCompleteness";
+import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
 import {
 	BookOpen,
 	Calendar,
@@ -302,6 +304,9 @@ export default function Dashboard() {
 
 				{/* Right Sidebar - 1 column */}
 				<div className="space-y-6">
+					{/* Profile Completeness */}
+					<ProfileCompleteness />
+
 					{/* Mini Calendar */}
 					<MiniCalendar eventDates={calendarEventDates} />
 
@@ -325,6 +330,9 @@ export default function Dashboard() {
 							)}
 						</div>
 					</section>
+
+					{/* Notifications Panel */}
+					<NotificationsPanel />
 
 					{/* Campus Feed Preview */}
 					<section className="bg-card rounded-xl border border-border p-4 shadow-card">

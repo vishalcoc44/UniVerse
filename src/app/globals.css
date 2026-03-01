@@ -116,6 +116,33 @@
 		--sidebar-accent-foreground: 0 0% 100%;
 		--sidebar-border: 240 8% 15%;
 		--sidebar-ring: 221 83% 58%;
+		--sidebar-muted: 240 5% 45%;
+
+		/* Pastel accents – muted for dark */
+		--pastel-rose: 350 40% 18%;
+		--pastel-rose-dark: 350 55% 55%;
+		--pastel-amber: 45 40% 18%;
+		--pastel-amber-dark: 35 65% 55%;
+		--pastel-mint: 150 30% 16%;
+		--pastel-mint-dark: 150 40% 50%;
+		--pastel-lavender: 270 30% 18%;
+		--pastel-lavender-dark: 270 40% 58%;
+		--pastel-sky: 200 35% 18%;
+		--pastel-sky-dark: 200 55% 55%;
+		--pastel-peach: 25 40% 18%;
+		--pastel-peach-dark: 25 60% 58%;
+
+		/* Status colors */
+		--status-success: 150 50% 40%;
+		--status-warning: 45 80% 50%;
+		--status-info: 200 65% 50%;
+		--status-pending: 270 40% 55%;
+
+		/* Shadows – lighter in dark */
+		--shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
+		--shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.25), 0 2px 4px -2px hsl(0 0% 0% / 0.15);
+		--shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -4px hsl(0 0% 0% / 0.2);
+		--shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.2), 0 1px 2px -1px hsl(0 0% 0% / 0.15);
 	}
 }
 
@@ -166,11 +193,11 @@
 	}
 
 	.sidebar-item {
-		@apply flex items-center gap-3 px-4 py-3 rounded-2xl text-sidebar-foreground transition-all duration-200 hover:bg-white/50 hover:text-sidebar-accent-foreground font-medium;
+		@apply flex items-center gap-3 px-4 py-3 rounded-2xl text-sidebar-foreground transition-all duration-200 hover:bg-white/50 dark:hover:bg-white/10 hover:text-sidebar-accent-foreground font-medium;
 	}
 
 	.sidebar-item-active {
-		@apply bg-white text-sidebar-accent-foreground shadow-sm font-semibold;
+		@apply bg-white dark:bg-sidebar-accent text-sidebar-accent-foreground shadow-sm font-semibold;
 	}
 
 	.animate-fade-in {

@@ -83,7 +83,7 @@ ${contextText}
 			}))
 		});
 
-	const msgResult = await chat.sendMessage(userMsg);
+		const msgResult = await chat.sendMessage(userMsg);
 		const response = msgResult.response.text();
 
 		return { success: true, response };
@@ -475,6 +475,58 @@ export async function deleteResource(resourceId: string) {
 		return { success: true };
 	} catch (error: any) {
 		console.error("Error deleting resource:", error);
+		return { success: false, error: error.message };
+	}
+}
+
+export async function getRecommendedStudyGroups(universityId: string) {
+	try {
+		const supabase = await createClient();
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) throw new Error("Unauthorized");
+
+		const { data: profile } = await supabase.from('Profile').select('major, bio').eq('id', user.id).single();
+
+		const { data: allGroups } = await supabase
+			.from('StudyGroup')
+			.select(`*, members:StudyGroupMember(count)`)
+			.eq('universityId', universityId);
+
+		if (!allGroups || allGroups.length === 0) return { success: true, recommendations: [] };
+
+		const groupsData = allGroups.map((g: any) => ({
+			id: g.id,
+			name: g.name,
+			description: g.description,
+			memberCount: g.members[0]?.count || 0
+		}));
+
+		const model = genAI.getGenerativeModel({
+			model: "gemini-2.5-flash",
+			generationConfig: { responseMimeType: "application/json" }
+		});
+
+		const prompt = `As an AI academic advisor, recommend the top 3 best study groups for a student with the following profile:
+Major: ${profile?.major || 'Unknown'}
+Bio: ${profile?.bio || 'Unknown'}
+
+Available Groups:
+${JSON.stringify(groupsData)}
+
+Return ONLY a JSON array of strings representing the recommended group IDs. Example: ["id1", "id2"]`;
+
+		const result = await model.generateContent(prompt);
+		let recommendedIds: string[] = [];
+		try {
+			recommendedIds = JSON.parse(result.response.text());
+		} catch (e) {
+			console.error("Failed to parse AI recommendation JSON", e);
+		}
+
+		const recommendations = groupsData.filter((g: any) => recommendedIds.includes(g.id));
+		return { success: true, recommendations };
+	} catch (error: any) {
+		console.error("Error generating recommendations:", error);
 		return { success: false, error: error.message };
 	}
 }

@@ -104,7 +104,7 @@ export function EventCard({
 				<div className="absolute top-4 right-4 z-20">
 					<Badge variant="secondary" className={cn(
 						"backdrop-blur-md shadow-sm border-none font-bold",
-						status === 'live' ? 'bg-red-500 text-white animate-pulse' : 'bg-white/90 text-foreground'
+						status === 'live' ? 'bg-red-500 text-white animate-pulse' : 'bg-white/90 dark:bg-zinc-800/90 text-foreground'
 					)}>
 						{status === 'live' ? 'LIVE NOW' : type}
 					</Badge>
@@ -114,7 +114,7 @@ export function EventCard({
 			</div>
 
 			{/* Main Info */}
-			<div className="p-5 flex-1 flex flex-col space-y-4">
+			<div className="p-5 flex-1 flex flex-col space-y-3">
 				<div className="space-y-1">
 					<h3 className="font-extrabold text-foreground text-xl leading-tight line-clamp-2 min-h-[3rem] group-hover:text-primary transition-colors">
 						{title}
@@ -130,6 +130,24 @@ export function EventCard({
 						</div>
 					</div>
 				</div>
+
+				{/* Attendance Progress Bar */}
+				{participantLimit && (
+					<div className="space-y-1">
+						<div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground">
+							<span>{attendees}/{participantLimit} spots</span>
+							<span className={cn(attendees / participantLimit >= 0.9 ? "text-red-500" : "text-primary")}>
+								{attendees >= participantLimit ? 'Full!' : `${participantLimit - attendees} left`}
+							</span>
+						</div>
+						<div className="h-1 rounded-full bg-muted overflow-hidden">
+							<div
+								className={cn("h-full rounded-full transition-all", attendees / participantLimit >= 0.9 ? "bg-red-500" : "bg-primary")}
+								style={{ width: `${Math.min(100, (attendees / participantLimit) * 100)}%` }}
+							/>
+						</div>
+					</div>
+				)}
 
 				{/* Action Area */}
 				<div className="flex items-center justify-between pt-2 border-t border-border/10">
@@ -153,7 +171,7 @@ export function EventCard({
 								<Button
 									variant="ghost"
 									size="icon"
-									className={cn("h-8 w-8 rounded-lg transition-all", isPinned ? "text-primary hover:bg-primary/10" : "hover:bg-white hover:shadow-sm")}
+									className={cn("h-8 w-8 rounded-lg transition-all", isPinned ? "text-primary hover:bg-primary/10" : "hover:bg-white dark:hover:bg-zinc-800 hover:shadow-sm")}
 									onClick={() => onTogglePin?.(id, isPinned)}
 								>
 									{isPinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
@@ -161,7 +179,7 @@ export function EventCard({
 								<Button
 									variant="ghost"
 									size="icon"
-									className="h-8 w-8 rounded-lg hover:bg-white hover:shadow-sm"
+							className="h-8 w-8 rounded-lg hover:bg-white dark:hover:bg-zinc-800 hover:shadow-sm"
 									onClick={() => onEdit?.(id)}
 								>
 									<Pencil className="h-3.5 w-3.5" />

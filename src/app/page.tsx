@@ -94,7 +94,8 @@ export default function Landing() {
 
 			{/* Background Dots Pattern & Progress Bar */}
 			<motion.div style={{ scaleX: scrollYProgress }} className="fixed top-0 left-0 right-0 h-1 bg-primary z-[60] origin-left" />
-			<div className="absolute inset-0 z-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-50 pointer-events-none" />
+			{/* dotted background limited to hero area so it doesn't continue into Features */}
+			<div className="absolute top-0 left-0 right-0 h-[68vh] max-h-[900px] z-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-50 pointer-events-none" />
 
 			{/* Navbar */}
 			<nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-border/40">
@@ -214,7 +215,7 @@ export default function Landing() {
 						<div className="bg-card p-5 rounded-2xl shadow-xl border border-border/50">
 							<div className="flex items-center justify-between mb-3">
 								<span className="font-bold text-sm">Tasks</span>
-								<span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">2/3 Done</span>
+								<span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full">2/3 Done</span>
 							</div>
 							{[1, 2, 3].map(i => (
 								<div key={i} className="flex items-center gap-2 mb-2">
@@ -508,7 +509,7 @@ export default function Landing() {
 			</section>
 
 			{/* 4. Utilities & Logistics */}
-			<section className="py-24 bg-gradient-to-b from-blue-50/50 to-transparent overflow-hidden">
+			<section className="py-24 bg-gradient-to-b from-blue-50/50 dark:from-blue-950/30 to-transparent overflow-hidden">
 				<div className="container mx-auto px-6">
 					<div className="flex flex-col lg:flex-row-reverse items-center gap-16">
 						<div className="lg:w-1/2">
@@ -534,7 +535,7 @@ export default function Landing() {
 									<div className="relative rotate-3 hover:rotate-0 transition-transform duration-300">
 										<ShuttleCard />
 
-										<div className="absolute top-[-20px] right-[-40px] bg-white p-3 rounded-xl shadow-lg border border-border/50 w-40 animate-bounce-slow">
+										<div className="absolute top-[-20px] right-[-40px] bg-white dark:bg-card p-3 rounded-xl shadow-lg border border-border/50 w-40 animate-bounce-slow">
 											<div className="flex items-center gap-2">
 												<div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
 												<span className="text-xs font-bold text-foreground">Shuttle Arriving</span>
@@ -588,7 +589,7 @@ export default function Landing() {
 												postedAt: "2h ago"
 											}}
 										/>
-										<div className="absolute -bottom-5 -right-5 bg-white p-4 rounded-xl shadow-lg border border-border/50">
+										<div className="absolute -bottom-5 -right-5 bg-white dark:bg-card p-4 rounded-xl shadow-lg border border-border/50">
 											<div className="flex items-center gap-2 text-green-600 font-bold">
 												<Check className="h-4 w-4" /> Verified Student
 											</div>
@@ -602,7 +603,7 @@ export default function Landing() {
 			</section>
 
 			{/* 6. Research & Innovation */}
-			<section className="py-24 bg-gradient-to-t from-cyan-50/30 to-transparent overflow-hidden">
+			<section className="py-24 bg-gradient-to-t from-cyan-50/30 dark:from-cyan-950/20 to-transparent overflow-hidden">
 				<div className="container mx-auto px-6">
 					<div className="flex flex-col lg:flex-row-reverse items-center gap-16">
 						<div className="lg:w-1/2">
@@ -700,7 +701,7 @@ function DeadlineCard() {
 			<h4 className="font-bold text-sm text-emerald-900 dark:text-emerald-100 mb-1">Data Structures</h4>
 			<div className="flex items-center gap-2 text-emerald-700/80 text-xs">
 				<span>Jan 15 • 10:00 AM</span>
-				<span className="font-bold text-emerald-600 bg-white/50 px-1.5 rounded">3 Days left</span>
+				<span className="font-bold text-emerald-600 bg-white/50 dark:bg-white/10 px-1.5 rounded">3 Days left</span>
 			</div>
 		</div>
 	)
@@ -745,7 +746,7 @@ function MoodRow() {
 	return (
 		<div className="bg-white dark:bg-card border border-border/50 p-3 rounded-2xl shadow-sm flex gap-2 w-auto inline-flex">
 			{['😖', '😕', '😐', '🙂', '🤩'].map((emoji, i) => (
-				<div key={i} className={`h-10 w-10 rounded-xl flex items-center justify-center text-xl grayscale-[0.5] hover:grayscale-0 hover:scale-110 transition-all cursor-pointer ${i === 3 ? 'bg-green-100 grayscale-0 ring-2 ring-green-500/20' : 'bg-secondary'}`}>
+				<div key={i} className={`h-10 w-10 rounded-xl flex items-center justify-center text-xl grayscale-[0.5] hover:grayscale-0 hover:scale-110 transition-all cursor-pointer ${i === 3 ? 'bg-green-100 dark:bg-green-900/30 grayscale-0 ring-2 ring-green-500/20' : 'bg-secondary'}`}>
 					{emoji}
 				</div>
 			))}

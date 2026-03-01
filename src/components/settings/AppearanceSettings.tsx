@@ -4,12 +4,15 @@ import { Switch } from "@/components/ui/switch";
 import { Moon, Sun, Monitor, Loader2 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useUserSettings } from "@/hooks/useUserSettings";
+import { useTheme } from "next-themes";
 import { toast } from "sonner";
 
 export function AppearanceSettings() {
 	const { settings, loading, updateSettings } = useUserSettings();
+	const { setTheme } = useTheme();
 
 	const onThemeChange = async (theme: string) => {
+		setTheme(theme); // Apply immediately via next-themes
 		const { error } = await updateSettings({ theme });
 		if (error) toast.error(String(error));
 	};
