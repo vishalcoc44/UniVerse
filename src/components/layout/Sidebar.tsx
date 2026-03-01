@@ -19,10 +19,13 @@ import {
   ShoppingBag,
   Map,
   Settings,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
+import { useTheme } from "next-themes";
 
 interface NavItem {
   icon: React.ElementType;
@@ -40,10 +43,16 @@ interface SidebarProps {
 export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [profile, setProfile] = useState<{ fullName: string, username: string, universityAbbr: string, avatarUrl: string } | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const mainMenuItems: NavItem[] = [
     { icon: LayoutDashboard, label: "Overview", href: "/dashboard", isActive: pathname === "/dashboard" },
@@ -311,6 +320,28 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
             </p>
           </div>
         </div>
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className={cn(
+            "relative mt-2 w-full flex items-center gap-2 p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sidebar-primary",
+            isDisplayCollapsed && "justify-center"
+          )}
+          title="Toggle theme"
+          aria-label="Toggle theme"
+        >
+          {mounted && (
+            <>
+              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            </>
+          )}
+          <span className={cn(
+            "text-xs font-medium transition-all duration-300 overflow-hidden whitespace-nowrap",
+            isDisplayCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+          )}>
+            Dark mode
+          </span>
+        </button>
       </div>
     </aside>
   );
