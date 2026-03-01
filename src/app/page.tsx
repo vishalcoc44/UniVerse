@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion, useScroll, useTransform, animate, useInView } from "framer-motion";
 import {
 	ArrowRight, Check, Clock, Sparkles, Zap, Globe, BookOpen,
-	Users, MessageCircle, Car, Shield, GraduationCap, Layout, MoreHorizontal, ChevronRight, MapPin
+	Users, MessageCircle, Car, Shield, GraduationCap, Layout, MoreHorizontal, ChevronRight, MapPin, Sun, Moon
 } from "lucide-react";
 import { useRef, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,6 +17,7 @@ import { ProductCard } from "@/components/marketplace/ProductCard";
 import { PreviewMarquee } from "@/components/landing/PreviewMarquee";
 import { LightboxModal } from "@/components/landing/LightboxModal";
 import { useState } from "react";
+import { useTheme } from "next-themes";
 
 const FALLBACK_PREVIEW_IMAGES = [
 	"/images/Screenshot%202026-02-21%20122427.png",
@@ -25,9 +26,15 @@ const FALLBACK_PREVIEW_IMAGES = [
 ];
 
 export default function Landing() {
+	const { theme, setTheme } = useTheme();
 	const { scrollY, scrollYProgress } = useScroll();
 	const [showMarquee, setShowMarquee] = useState(true);
 	const [isManuallyClosed, setIsManuallyClosed] = useState(false);
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
 
 	useEffect(() => {
 		return scrollY.onChange((latest) => {
@@ -132,6 +139,20 @@ export default function Landing() {
 					</div>
 
 					<div className="flex items-center gap-3">
+						<Button
+							variant="ghost"
+							size="icon"
+							className="h-9 w-9 text-muted-foreground hover:text-foreground"
+							onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+							title="Toggle theme"
+						>
+							{mounted && (
+								<>
+									<Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+									<Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+								</>
+							)}
+						</Button>
 						<Link href="/request-university">
 							<Button variant="ghost" className="hidden sm:flex font-medium text-muted-foreground hover:text-primary hover:bg-primary/5">
 								Add University
