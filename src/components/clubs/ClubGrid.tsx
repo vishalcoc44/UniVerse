@@ -26,6 +26,7 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 	const [clubs, setClubs] = useState<ClubRow[]>([]);
 	const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
 	const [joinedClubIds, setJoinedClubIds] = useState<Set<string>>(new Set());
+	const [pendingClubIds, setPendingClubIds] = useState<Set<string>>(new Set());
 	const [ownedClubIds, setOwnedClubIds] = useState<Set<string>>(new Set());
 	const [joinLoadingClubId, setJoinLoadingClubId] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
@@ -77,38 +78,42 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 					const clubIds = rows.map((club) => club.id);
 					const { data: memberships, error: membershipError } = await supabase
 						.from('ClubMember')
-						.select('clubId,userId,role')
+						.select('clubId,userId,role,status')
 						.in('clubId', clubIds);
 
 					if (!membershipError && memberships) {
 						const counts: Record<string, number> = {};
-						for (const row of memberships as Array<{ clubId: string; userId: string }>) {
-							counts[row.clubId] = (counts[row.clubId] || 0) + 1;
-						}
-						setMemberCounts(counts);
+						const joined = new Set<string>();
+						const pending = new Set<string>();
+						const owned = new Set<string>();
 
 						const { data: authData } = await supabase.auth.getUser();
 						const userId = authData.user?.id;
-						if (userId) {
-							const joined = new Set<string>();
-							const owned = new Set<string>();
 
-							(memberships as Array<{ clubId: string; userId: string; role: string }>).forEach((item) => {
-								if (item.userId === userId) {
-									joined.add(item.clubId);
-									if (item.role === 'OWNER') {
-										owned.add(item.clubId);
-									}
-								}
-							});
+						for (const row of memberships as Array<{ clubId: string; userId: string; role: string; status: string | null }>) {
+							// status may be null if migration hasn't run yet — treat null/APPROVED/OWNER as approved
+							const isApproved = row.status === 'APPROVED' || row.status === null || row.role === 'OWNER';
+							const isPending = row.status === 'PENDING';
 
-							setJoinedClubIds(joined);
-							setOwnedClubIds(owned);
+							if (isApproved) {
+								counts[row.clubId] = (counts[row.clubId] || 0) + 1;
+							}
+
+							if (userId && row.userId === userId) {
+								joined.add(row.clubId);
+								if (isPending) pending.add(row.clubId);
+								if (row.role === 'OWNER') owned.add(row.clubId);
+							}
 						}
+						setMemberCounts(counts);
+						setJoinedClubIds(joined);
+						setPendingClubIds(pending);
+						setOwnedClubIds(owned);
 					}
 				} else {
 					setMemberCounts({});
 					setJoinedClubIds(new Set());
+					setPendingClubIds(new Set());
 					setOwnedClubIds(new Set());
 				}
 			}
@@ -162,17 +167,31 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 					next.delete(clubId);
 					return next;
 				});
+				setPendingClubIds((prev) => {
+					const next = new Set(prev);
+					next.delete(clubId);
+					return next;
+				});
+				// Count only decreases if they were approved
 				setMemberCounts((prev) => ({ ...prev, [clubId]: Math.max(0, (prev[clubId] || 1) - 1) }));
-				toast.success("Left club successfully.");
+				toast.success("Withdrew application or left club.");
 			} else {
+				const newMemberId = crypto.randomUUID();
 				const { error } = await supabase
 					.from('ClubMember')
-					.insert({ clubId, userId });
+					.insert({
+						id: newMemberId,
+						clubId,
+						userId,
+						role: 'MEMBER'
+					});
 
 				if (error) throw error;
+				// Silently try to set PENDING status — only works after migration is applied
+				await supabase.from('ClubMember').update({ status: 'PENDING' }).eq('id', newMemberId);
 				setJoinedClubIds((prev) => new Set(prev).add(clubId));
-				setMemberCounts((prev) => ({ ...prev, [clubId]: (prev[clubId] || 0) + 1 }));
-				toast.success("Joined club! Welcome aboard.");
+				setPendingClubIds((prev) => new Set(prev).add(clubId));
+				toast.success("Application sent! Awaiting club approval.");
 			}
 		} catch (error: any) {
 			toast.error(`Operation failed: ${getErrorMessage(error)}`);
@@ -281,6 +300,7 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 								logoUrl={club.logoUrl}
 								scope={club.scope}
 								isJoined={joinedClubIds.has(club.id)}
+								isPending={pendingClubIds.has(club.id)}
 								isOwner={ownedClubIds.has(club.id)}
 								onToggleJoin={handleToggleJoin}
 								onDelete={handleDeleteClub}

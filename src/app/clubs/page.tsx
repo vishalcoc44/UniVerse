@@ -62,15 +62,15 @@ export default function ClubsPage() {
 				name: form.name.trim(),
 				description: `[${form.category.trim()}] ${form.description.trim()}`,
 				scope: form.scope,
-				ownerId: user.id,
 				universityId: form.scope === "CAMPUS" ? userUniversityId : null
 			});
 
 			if (clubError) throw clubError;
 
-			// Add as OWNER
+			// Add as OWNER — insert without status first, then try to update status if column exists
+			const ownerMemberId = crypto.randomUUID();
 			const { error: memberError } = await supabase.from("ClubMember").insert({
-				id: crypto.randomUUID(),
+				id: ownerMemberId,
 				clubId,
 				userId: user.id,
 				role: "OWNER"
@@ -78,6 +78,9 @@ export default function ClubsPage() {
 
 			if (memberError) {
 				console.error("Error adding owner member:", memberError.message);
+			} else {
+				// Silently try to set status=APPROVED — only works after migration is applied
+				await supabase.from("ClubMember").update({ status: "APPROVED" }).eq("id", ownerMemberId);
 			}
 
 			toast.success("Club created successfully.");

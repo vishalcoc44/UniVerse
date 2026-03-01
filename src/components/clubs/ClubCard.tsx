@@ -1,9 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, ArrowRight, Check, Loader2, Globe2, School, Crown, Sparkles, ExternalLink, Trash2 } from "lucide-react";
+import { Users, ArrowRight, Check, Loader2, Globe2, School, Crown, Sparkles, ExternalLink, Trash2, Settings, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { ClubManagementModal } from "./ClubManagementModal";
 
 interface ClubCardProps {
 	id: string;
@@ -14,6 +15,7 @@ interface ClubCardProps {
 	logoUrl?: string | null;
 	scope?: "CAMPUS" | "UNIVERSE";
 	isJoined?: boolean;
+	isPending?: boolean;
 	isOwner?: boolean;
 	onToggleJoin?: (clubId: string, joined: boolean) => void;
 	onDelete?: (clubId: string) => void;
@@ -37,6 +39,7 @@ export function ClubCard({
 	logoUrl,
 	scope = "CAMPUS",
 	isJoined = false,
+	isPending = false,
 	isOwner = false,
 	onToggleJoin,
 	onDelete,
@@ -89,7 +92,20 @@ export function ClubCard({
 							<h3 className="text-2xl font-black italic tracking-tighter text-foreground group-hover:text-primary transition-colors leading-none">
 								{name}
 							</h3>
-							{members > 500 && <Crown className="h-4 w-4 text-primary animate-pulse" />}
+							<div className="flex items-center gap-2">
+								{isOwner && (
+									<ClubManagementModal
+										clubId={id}
+										clubName={name}
+										trigger={
+											<Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
+												<Settings className="h-4 w-4" />
+											</Button>
+										}
+									/>
+								)}
+								{members > 500 && <Crown className="h-4 w-4 text-primary animate-pulse" />}
+							</div>
 						</div>
 
 						<p className="text-sm font-medium text-muted-foreground italic tracking-tight leading-relaxed line-clamp-2">
@@ -98,14 +114,11 @@ export function ClubCard({
 
 						<div className="flex items-center gap-6 pt-2">
 							<div className="flex flex-col">
-								<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 italic mb-1">Impact</span>
+								<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 italic mb-1">Unity</span>
 								<div className="flex items-center gap-2">
-									<div className="relative flex h-2 w-2">
-										<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-										<span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-									</div>
+									<Users className="h-3 w-3 text-primary" />
 									<span className="text-lg font-black italic tracking-tighter">{members}</span>
-									<span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Souls</span>
+									<span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Members</span>
 								</div>
 							</div>
 
@@ -141,12 +154,23 @@ export function ClubCard({
 						{isJoined ? (
 							<Button
 								variant="outline"
-								onClick={() => onToggleJoin?.(id, true)}
-								disabled={joinLoading}
-								className="h-12 px-8 rounded-2xl font-black italic tracking-tighter border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 flex-1 transition-all"
+								onClick={() => !isPending && onToggleJoin?.(id, true)}
+								disabled={joinLoading || isPending}
+								className={cn(
+									"h-12 px-8 rounded-2xl font-black italic tracking-tighter flex-1 transition-all",
+									isPending 
+										? "border-amber-500/20 bg-amber-500/5 text-amber-500 cursor-default" 
+										: "border-primary/20 bg-primary/5 text-primary hover:bg-primary/10"
+								)}
 							>
-								{joinLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
-								STATIONED
+								{joinLoading ? (
+									<Loader2 className="h-4 w-4 animate-spin" />
+								) : isPending ? (
+									<Clock className="h-4 w-4 mr-2" />
+								) : (
+									<Check className="h-4 w-4 mr-2" />
+								)}
+								{isPending ? "AWAITING CLEARANCE" : "STATIONED"}
 							</Button>
 						) : (
 							<Button
