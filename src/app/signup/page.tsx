@@ -33,7 +33,6 @@ export default function Signup() {
 			if (error) {
 				console.error('Error fetching universities:', error);
 			} else {
-				console.log('Fetched universities from DB (FULL):', JSON.stringify(data, null, 2));
 				setUniversities(data || []);
 			}
 		};
