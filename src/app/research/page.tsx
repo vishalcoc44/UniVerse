@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ProjectCard } from "@/components/research/ProjectCard";
+import ResearchProjectsCard from "@/components/research/ResearchProjectsCard";
 import { Button } from "@/components/ui/button";
 import {
 	Loader2,
@@ -44,7 +45,7 @@ type CollaboratorRecord = {
 };
 
 export default function ResearchPage() {
-	const [activeTab, setActiveTab] = useState<"open" | "my-projects" | "my-applications">("open");
+	const [activeTab, setActiveTab] = useState<"open" | "my-projects" | "my-applications" | "manage">("open");
 	const [loading, setLoading] = useState(true);
 	const [creating, setCreating] = useState(false);
 	const [applyLoadingProjectId, setApplyLoadingProjectId] = useState<string | null>(null);
@@ -373,18 +374,17 @@ export default function ResearchPage() {
 					{/* Tab Switcher */}
 					<div className="inline-flex p-1 bg-muted/50 rounded-xl border border-border/50">
 						{[
-							{ id: "open", label: "Open Projects", icon: Globe },
-							{ id: "my-projects", label: "My Projects", icon: Beaker },
-							{ id: "my-applications", label: "Applied", icon: Search },
-						].map((tab) => (
+								{ id: "open", label: "Open Projects", icon: Globe },
+								{ id: "my-projects", label: "My Projects", icon: Beaker },
+								{ id: "my-applications", label: "Applied", icon: Search },
+								// Manage tab will be rendered conditionally below
+							].map((tab) => (
 							<button
 								key={tab.id}
 								onClick={() => setActiveTab(tab.id as any)}
 								className={cn(
 									"relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-									activeTab === tab.id
-										? "text-primary-foreground"
-										: "text-muted-foreground hover:text-foreground"
+									activeTab === tab.id ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
 								)}
 							>
 								{activeTab === tab.id && (
@@ -398,6 +398,25 @@ export default function ResearchPage() {
 								<span className="relative z-10 hidden sm:inline">{tab.label}</span>
 							</button>
 						))}
+						{Array.from(collaboratorMap.values()).some((r) => r === "LEAD") ? (
+							<button
+								onClick={() => setActiveTab('manage')}
+								className={cn(
+									"relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+									activeTab === 'manage' ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+								)}
+							>
+								{activeTab === 'manage' && (
+									<motion.div
+										layoutId="researchTab"
+										className="absolute inset-0 bg-primary rounded-lg shadow-md"
+										transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+									/>
+								)}
+								<Zap className="h-4 w-4 relative z-10" />
+								<span className="relative z-10 hidden sm:inline">Manage Projects</span>
+							</button>
+						) : null}
 					</div>
 
 					{/* Search */}
@@ -426,20 +445,17 @@ export default function ResearchPage() {
 							transition={{ duration: 0.2 }}
 							className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
 						>
-							{filteredProjects.length === 0 ? (
+							{activeTab === 'manage' ? (
+								<div className="col-span-full">
+									<ResearchProjectsCard canManage={(id) => collaboratorMap.get(id) === "LEAD"} onChange={fetchData} />
+								</div>
+							) : filteredProjects.length === 0 ? (
 								<div className="col-span-full py-20 flex flex-col items-center justify-center text-center">
 									<div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
 										<Beaker className="h-8 w-8 text-muted-foreground/40" />
 									</div>
 									<h3 className="text-xl font-bold mb-2">No Projects Found</h3>
 									<p className="text-muted-foreground text-sm max-w-sm">No projects found in this category. Try switching tabs or create a new project.</p>
-									<Button
-										variant="outline"
-										className="mt-6"
-										onClick={() => setActiveTab('open')}
-									>
-										View Open Projects
-									</Button>
 								</div>
 							) : (
 								filteredProjects.map((project) => (
