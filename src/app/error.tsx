@@ -10,18 +10,7 @@ export default function Error({
 	reset: () => void
 }) {
 	useEffect(() => {
-		// Log the error to an error reporting service
 		console.error('Page Error Boundary caught:', error)
-
-		// Handle ChunkLoadError here as well for good measure
-		if (
-			error.name === 'ChunkLoadError' ||
-			error.message.includes('Loading chunk') ||
-			error.message.includes('Failed to load resource')
-		) {
-			console.warn('ChunkLoadError detected in page error boundary, forcing page reload...')
-			window.location.reload()
-		}
 	}, [error])
 
 	return (

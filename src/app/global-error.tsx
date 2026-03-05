@@ -10,36 +10,20 @@ export default function GlobalError({
   reset: () => void
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
     console.error('Global Error Boundary caught:', error)
-
-    // Check if it's a ChunkLoadError
-    const errorMessage = error.message || ''
-    const errorName = error.name || ''
-
-    if (
-      errorName === 'ChunkLoadError' ||
-      errorMessage.includes('Loading chunk') ||
-      errorMessage.includes('Failed to load resource') ||
-      errorMessage.includes('Unexpected token') // Often happens when a JS chunk returns a 404 HTML page
-    ) {
-      // Force a hard reload to get the latest assets
-      console.warn('ChunkLoadError detected, forcing page reload...')
-      window.location.reload()
-    }
   }, [error])
 
   return (
     <html>
       <body>
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
-          <h2 className="text-2xl font-bold mb-4">Something went wrong!</h2>
-          <p className="text-muted-foreground mb-6 max-w-md">
-            The application encountered a critical error. We've attempted to recover, but if the problem persists, please try refreshing the page manually.
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '1rem', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>Something went wrong!</h2>
+          <p style={{ color: '#666', marginBottom: '1.5rem', maxWidth: '28rem' }}>
+            The application encountered an error. Please try refreshing the page.
           </p>
           <button
             onClick={() => reset()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
+            style={{ padding: '0.5rem 1rem', background: '#000', color: '#fff', borderRadius: '0.375rem', border: 'none', cursor: 'pointer' }}
           >
             Try again
           </button>
