@@ -23,6 +23,7 @@ export default function RootLayout({
 					__html: `
 						(function () {
 							var RETRY_KEY = '__chunk_retry_once__';
+							var RETRY_PARAM = '__chunk_retry';
 
 							function hasAlreadyRetried() {
 								try {
@@ -44,24 +45,42 @@ export default function RootLayout({
 								} catch (_) {}
 							}
 
+							function hasRetryParam() {
+								try {
+									var url = new URL(window.location.href);
+									return url.searchParams.has(RETRY_PARAM);
+								} catch (_) {
+									return false;
+								}
+							}
+
+							function stripRetryParamFromUrl() {
+								try {
+									var url = new URL(window.location.href);
+									if (!url.searchParams.has(RETRY_PARAM)) return;
+									url.searchParams.delete(RETRY_PARAM);
+									window.history.replaceState(window.history.state, '', url.toString());
+								} catch (_) {}
+							}
+
 							function isChunkLoadErrorMessage(message) {
 								if (!message) return false;
 								return (
 									message.indexOf('ChunkLoadError') !== -1 ||
-									message.indexOf('Failed to load chunk') !== -1 ||
-									message.indexOf('Loading chunk') !== -1
+									message.indexOf('Failed to load chunk') !== -1
 								);
 							}
 
 							function retryWithCacheBust() {
-								if (hasAlreadyRetried()) return;
+								if (hasAlreadyRetried() || hasRetryParam()) return;
 								markRetried();
 								var url = new URL(window.location.href);
-								url.searchParams.set('__chunk_retry', String(Date.now()));
+								url.searchParams.set(RETRY_PARAM, String(Date.now()));
 								window.location.replace(url.toString());
 							}
 
 							window.addEventListener('load', function () {
+								stripRetryParamFromUrl();
 								clearRetried();
 							});
 
