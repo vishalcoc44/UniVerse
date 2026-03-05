@@ -18,6 +18,22 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en" suppressHydrationWarning>
+			<head>
+				<script dangerouslySetInnerHTML={{
+					__html: `
+						window.addEventListener('error', function(event) {
+							if (event.message && (
+								event.message.indexOf('ChunkLoadError') !== -1 || 
+								event.message.indexOf('Loading chunk') !== -1 ||
+								event.message.indexOf('Failed to load resource') !== -1
+							)) {
+								console.warn('ChunkLoadError detected in head, reloading page...', event.message);
+								window.location.reload();
+							}
+						}, true);
+					`
+				}} />
+			</head>
 			<body className={inter.className}>
 				<Providers>
 					<TopLoader />

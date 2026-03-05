@@ -14,10 +14,14 @@ export default function GlobalError({
     console.error('Global Error Boundary caught:', error)
 
     // Check if it's a ChunkLoadError
+    const errorMessage = error.message || ''
+    const errorName = error.name || ''
+
     if (
-      error.name === 'ChunkLoadError' ||
-      error.message.includes('Loading chunk') ||
-      error.message.includes('Failed to load resource')
+      errorName === 'ChunkLoadError' ||
+      errorMessage.includes('Loading chunk') ||
+      errorMessage.includes('Failed to load resource') ||
+      errorMessage.includes('Unexpected token') // Often happens when a JS chunk returns a 404 HTML page
     ) {
       // Force a hard reload to get the latest assets
       console.warn('ChunkLoadError detected, forcing page reload...')
