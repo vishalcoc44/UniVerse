@@ -21,16 +21,70 @@ export default function RootLayout({
 			<head>
 				<script dangerouslySetInnerHTML={{
 					__html: `
-						window.addEventListener('error', function(event) {
-							if (event.message && (
-								event.message.indexOf('ChunkLoadError') !== -1 || 
-								event.message.indexOf('Loading chunk') !== -1 ||
-								event.message.indexOf('Failed to load resource') !== -1
-							)) {
-								console.warn('ChunkLoadError detected in head, reloading page...', event.message);
-								window.location.reload();
+						(function () {
+							var RETRY_KEY = '__chunk_retry_once__';
+
+							function hasAlreadyRetried() {
+								try {
+									return sessionStorage.getItem(RETRY_KEY) === '1';
+								} catch (_) {
+									return false;
+								}
 							}
-						}, true);
+
+							function markRetried() {
+								try {
+									sessionStorage.setItem(RETRY_KEY, '1');
+								} catch (_) {}
+							}
+
+							function clearRetried() {
+								try {
+									sessionStorage.removeItem(RETRY_KEY);
+								} catch (_) {}
+							}
+
+							function isChunkLoadErrorMessage(message) {
+								if (!message) return false;
+								return (
+									message.indexOf('ChunkLoadError') !== -1 ||
+									message.indexOf('Failed to load chunk') !== -1 ||
+									message.indexOf('Loading chunk') !== -1
+								);
+							}
+
+							function retryWithCacheBust() {
+								if (hasAlreadyRetried()) return;
+								markRetried();
+								var url = new URL(window.location.href);
+								url.searchParams.set('__chunk_retry', String(Date.now()));
+								window.location.replace(url.toString());
+							}
+
+							window.addEventListener('load', function () {
+								clearRetried();
+							});
+
+							window.addEventListener('error', function (event) {
+								var target = event && event.target;
+								var src = target && target.src;
+								if (typeof src === 'string' && src.indexOf('/_next/static/chunks/') !== -1) {
+									retryWithCacheBust();
+									return;
+								}
+								if (isChunkLoadErrorMessage(event && event.message)) {
+									retryWithCacheBust();
+								}
+							}, true);
+
+							window.addEventListener('unhandledrejection', function (event) {
+								var reason = event && event.reason;
+								var message = reason && (reason.message || String(reason));
+								if (isChunkLoadErrorMessage(message)) {
+									retryWithCacheBust();
+								}
+							});
+						})();
 					`
 				}} />
 			</head>
