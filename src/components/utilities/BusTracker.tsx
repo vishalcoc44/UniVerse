@@ -167,6 +167,7 @@ const getRouteCenter = (routeMapData: RouteMapData | null | undefined) => {
 export function BusTracker() {
   const { universityId, userId, role, loading: userContextLoading } = useUserUniversity();
   const isAdmin = role === "ADMIN";
+  const [hasRouteMapDataColumn, setHasRouteMapDataColumn] = useState(true);
 
   const [routes, setRoutes] = useState<UtilityShuttle[]>([]);
   const [pendingSuggestions, setPendingSuggestions] = useState<UtilitySuggestion[]>([]);
@@ -222,6 +223,17 @@ export function BusTracker() {
   const loadRoutes = async () => {
     if (!universityId) return;
     setLoading(true);
+
+    if (hasRouteMapDataColumn) {
+      const probe = await supabase
+        .from("UtilityShuttle")
+        .select("routeMapData")
+        .eq("universityId", universityId)
+        .limit(1);
+      if (probe.error && `${probe.error.message ?? ""}`.includes("routeMapData")) {
+        setHasRouteMapDataColumn(false);
+      }
+    }
 
     const { data, error } = await supabase
       .from("UtilityShuttle")
@@ -311,7 +323,7 @@ export function BusTracker() {
       operatingHours: routeForm.operatingHours || null,
       serviceAlerts: routeForm.serviceAlerts || null,
       isAccessible: routeForm.isAccessible,
-      routeMapData: { stops: [], routePath: [] },
+      ...(hasRouteMapDataColumn ? { routeMapData: { stops: [], routePath: [] } } : {}),
     };
 
     const { error } = await supabase.from("UtilityShuttle").insert(payload);
@@ -403,7 +415,7 @@ export function BusTracker() {
       operatingHours: suggestion.operatingHours ?? null,
       serviceAlerts: suggestion.serviceAlerts ?? null,
       isAccessible: false,
-      routeMapData: { stops: [], routePath: [] },
+      ...(hasRouteMapDataColumn ? { routeMapData: { stops: [], routePath: [] } } : {}),
     };
 
     const insert = await supabase.from("UtilityShuttle").insert(payload);
@@ -660,9 +672,13 @@ export function BusTracker() {
 
     const nextStop = editorStops[0]?.name ?? selectedRoute.nextStop ?? null;
 
+    const updatePayload = hasRouteMapDataColumn
+      ? { routeMapData, nextStop, updatedAt: new Date().toISOString() }
+      : { nextStop, updatedAt: new Date().toISOString() };
+
     const { error } = await supabase
       .from("UtilityShuttle")
-      .update({ routeMapData, nextStop, updatedAt: new Date().toISOString() })
+      .update(updatePayload)
       .eq("id", selectedRoute.id);
 
     if (error) {
@@ -681,7 +697,8 @@ export function BusTracker() {
     setEditingRouteId(null);
     setAddStopMode(false);
     setIsSavingMap(false);
-    toast.success("Route map saved successfully.");
+    if (!hasRouteMapDataColumn) toast.success("Route updated. Map geometry is disabled until schema is synced.");
+    else toast.success("Route map saved successfully.");
   };
 
   const handlePlaceSearch = async () => {

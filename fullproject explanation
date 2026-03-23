@@ -1,0 +1,256 @@
+# UniVerse - Comprehensive Project Overview & Technical Deep Dive
+
+This document serves as the ultimate, deeply detailed guide to the **UniVerse** project. It expands on every single route, component, utility, hook, and architectural decision, providing a masterclass-level explanation for developers, maintainers, and beginners alike. Whether you are ramping up on the codebase or looking to understand the complex interactions between Next.js, Supabase, and Google Gemini AI, this guide covers it all.
+
+---
+
+## Table of Contents
+1. [Architectural Foundation](#1-architectural-foundation)
+2. [Folder Structure & Next.js App Router](#2-folder-structure--nextjs-app-router)
+3. [Deep Dive: Pages & Routes (`src/app/`)](#3-deep-dive-pages--routes-srcapp)
+4. [Deep Dive: Component Architecture (`src/components/`)](#4-deep-dive-component-architecture-srccomponents)
+5. [Deep Dive: Supabase Edge Functions (`supabase/functions/`)](#5-deep-dive-supabase-edge-functions-supabasefunctions)
+6. [Deep Dive: Next.js API Routes (`src/app/api/`)](#6-deep-dive-nextjs-api-routes-srcappapi)
+7. [Deep Dive: Custom React Hooks (`src/hooks/`)](#7-deep-dive-custom-react-hooks-srchooks)
+8. [Deep Dive: Core Utilities & Libraries (`src/lib/`)](#8-deep-dive-core-utilities--libraries-srclib)
+9. [Summary & Guide for React Beginners](#9-summary--guide-for-react-beginners)
+
+---
+
+## 1. Architectural Foundation
+
+**UniVerse** is a unified campus platform—often referred to as a "super app" for universities. Instead of students using 10 different apps for messaging, tutoring, job hunting, marketplace, and event management, UniVerse brings all of these into a single, cohesive interface.
+
+The tech stack is cutting-edge:
+- **Framework:** Next.js 16 (App Router paradigm)
+- **Language:** TypeScript for end-to-end type safety
+- **Database & Auth:** Supabase (PostgreSQL, GoTrue Auth, Realtime, Storage)
+- **AI Engine:** Google Gemini (Gemini 2.5 Flash for high-speed, cost-effective multimodal AI tasks)
+- **Styling:** Tailwind CSS integrated with `shadcn/ui` for beautiful, accessible, and customizable components
+- **State Management & Data Fetching:** React Query (for complex client state) and React context APIs
+- **Animations:** Framer Motion for fluid, native-feeling page transitions and micro-interactions
+
+### Why this Stack?
+- **Next.js 16 App Router** allows for a mix of Server Components (fast initial load, direct database access without exposing secrets) and Client Components (interactivity). 
+- **Supabase** acts as an open-source Firebase alternative, providing heavy-lifting on the backend with Row Level Security (RLS) ensuring strict access control.
+- **Google Gemini** provides the intelligence layer, powering the AI tutor, resume parsing, and predictive job matching.
+
+---
+
+## 2. Folder Structure & Next.js App Router
+
+Next.js 16 uses file-system-based routing where folders define paths. A `page.tsx` file inside a folder makes that path publicly accessible. A `layout.tsx` file provides a shared wrapper for that route and its children.
+
+```text
+universe-connect/
+├── src/
+│   ├── app/                # Application routes, pages, and layouts
+│   │   ├── api/            # Next.js Serverless API endpoints
+│   │   └── ...             # Feature directories (dashboard, feed, etc.)
+│   ├── components/         # Reusable React components (Modularized by feature)
+│   ├── hooks/              # Custom React hooks containing shared logic
+│   └── lib/                # Core utilities, DB clients, and AI wrappers
+├── supabase/
+│   ├── functions/          # Deno-based Edge Functions hosted on Supabase
+│   └── migrations/         # PostgreSQL database schemas
+└── public/                 # Static assets (images, fonts, icons)
+```
+
+---
+
+## 3. Deep Dive: Pages & Routes (`src/app/`)
+
+Every major feature in UniVerse is isolated into its own route segment within the `src/app/` directory.
+
+### 3.1 Core Navigation & Onboarding
+- **`/` (`page.tsx`)**: The **Landing/Home Page**. This is an unauthenticated marketing page designed to convert visitors into users. It likely features high-quality hero sections, feature highlights using Framer Motion scroll animations, and calls-to-action (CTAs) directing users to `/signup` or `/auth`.
+- **`/dashboard` (`dashboard/page.tsx`)**: The **Command Center**. Once authenticated, users land here. It aggregates data from all other modules—showing an upcoming event, unread messages, a snapshot of the AI tutor's latest tip, and quick links. It relies heavily on Server Components to fetch all this disparate data in parallel before sending the HTML to the client.
+- **`/auth` (`auth/page.tsx`)**: The **Login Page**. Handles user authentication flow using Supabase Auth UI or custom forms. 
+- **`/signup` (`signup/page.tsx`)**: The **Registration Page**. Specialized onboarding flow where students register, verify their `.edu` email address, and define their initial profile details (major, graduation year, interests).
+- **`/request-university` (`request-university/page.tsx`)**: For users whose university isn't supported yet. Submits a form to a database table to gauge interest and plan expansion.
+
+### 3.2 Social & Communication
+- **`/feed` (`feed/page.tsx`)**: The **Social Hub**. Features a dual-feed system. Users can toggle between "Campus" (posts specifically from their university) and "Universe" (global posts from all universities on the platform). It supports infinite scrolling, image uploads, and threaded comments.
+- **`/messages` (`messages/page.tsx`)**: **Real-time Direct Messaging**. Uses Supabase Realtime (WebSockets) to deliver instant messaging between students. Includes one-on-one chats and group capabilities.
+- **`/forums` (`forums/page.tsx`)**: **Course-Specific Discussion**. Anonymous or public threads tied directly to university courses (e.g., "CS101 Fall 2026"). Great for peer support without the pressure of a social feed.
+
+### 3.3 Academics & Productivity
+- **`/academic` (`academic/page.tsx`)**: The **AI Tutor & Study Hub**. The crown jewel of the platform's AI capability. Here, students interact with Google Gemini as a specialized tutor. It also acts as a repository for study resources, course management, and study group coordination.
+
+### 3.4 Career & Professional Development
+- **`/career` (`career/page.tsx`)**: The **Career Center**. A massive module encompassing a job board, AI resume analysis, mock interviews, and alumni networking. It transforms the student journey into a professional pathway.
+
+### 3.5 Campus Life & Utilities
+- **`/events` (`events/page.tsx`)**: **Event Discovery**. A unified calendar for university-sanctioned events, club meetings, and student parties. Includes RSVP functionality and ticketing logic.
+- **`/clubs` (`clubs/page.tsx`)**: **Student Organizations**. A directory of all campus clubs. Club admins can manage rosters, post updates, and recruit members.
+- **`/marketplace` (`marketplace/page.tsx`)**: **Student Commerce**. A specialized peer-to-peer Craigslist/eBay just for the campus. Buy, sell, or trade textbooks, mini-fridges, and electronics safely with other verified students.
+- **`/travel` (`travel/page.tsx`)**: **Ride-sharing**. Students going home for the holidays or heading to an away game can post open seats. Matches drivers with passengers to split gas costs.
+- **`/wellness` (`wellness/page.tsx`)**: **Mental Health Tracking**. Mood tracking, journaling, and data visualization. Helps students monitor their stress levels over the semester and provides resources if they need professional help.
+- **`/utilities` (`utilities/page.tsx`)**: **Campus Tools**. Integrates real-time bus tracking, interactive campus maps, and local student discount hubs. 
+- **`/news` (`news/page.tsx`)**: **Announcements**. Official university news, dean's office announcements, and student journalism.
+
+### 3.6 Platform Operations
+- **`/research` (`research/page.tsx`)**: **Academic Collaboration**. A space for professors and grad students to post research opportunities and recruit undergrads.
+- **`/updates` (`updates/page.tsx`)**: **Changelog**. Keeps the user base informed about new UniVerse features, bug fixes, and transparent roadmaps. Includes feedback submission.
+- **`/settings` (`settings/page.tsx`)**: **User Configuration**. Profile editing, privacy toggles, notification preferences, and visual theme choices.
+
+---
+
+## 4. Deep Dive: Component Architecture (`src/components/`)
+
+UniVerse organizes components by feature domain to prevent a massive, flat component directory. These exclude the generic UI components (like buttons, dialogs, inputs) found in `src/components/ui/` (likely generated by `shadcn/ui`).
+
+### 4.1 Structural Layout (`layout/`)
+- **`Sidebar.tsx` & `Header.tsx`**: The persistent navigation shells for the dashboard and internal pages.
+- **`DashboardLayout.tsx`**: A specific layout wrapper for authenticated experiences.
+- **`PageTransition.tsx`**: Wraps route changes in framer-motion animations (e.g., fade in/out).
+- **`TopLoader.tsx`**: A progress bar displayed at the top of the screen during Next.js route transitions.
+- **`PagePlaceholder.tsx`**: Skeleton loading states for pages while data is being fetched.
+
+### 4.2 The Social Feed (`feed/`)
+- **`PostCard.tsx`**: Displays a single post, handling media attachments, author info, and timestamps.
+- **`SharePostBox.tsx`**: The input area at the top of the feed to create new text, image, or poll posts.
+- **`CommentModal.tsx`**: A slide-out panel or dialog representing the thread of replies on a `PostCard`.
+- **`PollCard.tsx`**: A specialized post type rendering interactive voting options and result progress bars.
+
+### 4.3 Academic Suite (`academic/` & `academic/tools/`)
+- **`ChatInterface.tsx` & `ChatPreview.tsx`**: The UI for interacting with Google Gemini. Manages message history state, loading indicators (typing animations), and markdown rendering of AI responses.
+- **`ResourceGrid.tsx`**: Displays uploaded PDFs, syllabus files, and past exams in a responsive grid.
+- **`StudyCircles.tsx`**: UI for finding and joining localized study groups.
+- **`AddCourseDialog.tsx`**: Modal for users to select their current semester classes.
+- **`FocusTimer.tsx`**: A Pomodoro technique timer built into the browser.
+- **`FlashcardGenerator.tsx`**: Interface where a user pastes notes, and the UI polls the `generate-flashcards` Edge Function to produce interactive flip-cards.
+- **`GPACalculator.tsx`**: A client-side utility to simulate "what-if" grading scenarios.
+- **`SmartNotesEditor.tsx`**: A rich-text editor (likely using TipTap or Slate) with inline AI assistance capabilities.
+
+### 4.4 Career Ecosystem (`career/` and subfolders)
+- **`ResumeUploader.tsx`**: Handles Drag-and-Drop file uploads to Supabase Storage, then triggers the AI analysis pipeline.
+- **`AnalysisDashboard.tsx`**: Visualizes the AI's feedback on the resume (e.g., radar charts for skills, ATS match percentage).
+- **`MockInterviewer.tsx` & `MockInterviewerAI.tsx`**: Uses WebRTC or standard audio/video APIs to simulate an interview environment, sending transcripts to Gemini for real-time feedback.
+- **`JobBoard.tsx`, `JobCard.tsx`, `JobFilters.tsx`**: Standard SaaS-like job discovery interface.
+- **`SalaryInsights.tsx`**: Data visualization showing expected compensation based on major and location.
+- **`AlumniDirectory.tsx`**: A list of graduated users who have opted-in to mentor current students.
+
+### 4.5 Campus Life: Events, Clubs, Marketplace & Travel
+- **`EventCreationModal.tsx`**: Form to create events, managing date picking, location linking, and image uploads.
+- **`ClubGrid.tsx` & `ClubCard.tsx`**: Visual directory of organizations.
+- **`ProductGrid.tsx`, `ProductCard.tsx`, `SellModal.tsx`**: E-commerce style components tailored for student-to-student transactions.
+- **`RideFinder.tsx` & `RideCard.tsx`**: Displays available carpools, integrating with mapping libraries for origin/destination visualization.
+
+### 4.6 Wellness, Messages, and Utilities
+- **`TrendChart.tsx` & `MoodSelector.tsx`**: Recharts or Chart.js wrappers to plot a student's self-reported mental well-being over time.
+- **`ChatWindow.tsx` & `ConversationList.tsx`**: The complex UI required for messaging. Must handle unread counts, typing indicators, and optimistic message updates.
+- **`BusTracker.tsx` & `BusRouteMap.tsx`**: Integrates with external transit APIs or GTFS data to plot buses on a map.
+- **`CampusMap.tsx`**: Interactive Mapbox or Google Maps implementation tailored to highlight university buildings.
+
+---
+
+## 5. Deep Dive: Supabase Edge Functions (`supabase/functions/`)
+
+Edge functions are TypeScript scripts executed on Deno deploy right next to the Supabase database. They are fast, scalable, and perfect for keeping sensitive logic (like AI prompts or API keys) entirely off the client.
+
+### 5.1 `academic-ai`
+- **Purpose**: Powers the core AI Tutor. 
+- **How it works**: Takes the user's chat history and current prompt. It injects a "System Prompt" that tells Gemini: *"You are an expert university tutor. Guide the student to the answer, do not just give it to them."* It uses Gemini's streaming API to stream tokens back to the client for a highly responsive, ChatGPT-like feel.
+
+### 5.2 `generate-flashcards`
+- **Purpose**: Turns raw text into structured study aids.
+- **How it works**: The user uploads a PDF or pastes text. The function extracts the text, sends it to Gemini with a prompt specifying a strict JSON output format (`[{ "front": "question", "back": "answer" }]`). The function parses this JSON and saves it directly to the Supabase `flashcards` table before returning success to the client.
+
+### 5.3 `match-jobs`
+- **Purpose**: Personalized job recommendations.
+- **How it works**: A background or triggered function that compares a student's parsed skills vector against a database of open job descriptions. It may use Gemini to calculate semantic similarity or standard vector embeddings using pgvector in Supabase.
+
+### 5.4 `evaluate-interview`
+- **Purpose**: AI-driven mock interview feedback.
+- **How it works**: Receives the text transcript of a student's answer to an interview question. It asks Gemini to grade the response on criteria like "Clarity," "Technical Accuracy," and "Confidence," returning structured feedback and suggested improvements.
+
+---
+
+## 6. Deep Dive: Next.js API Routes (`src/app/api/`)
+
+While Edge Functions handle database-adjacent or heavy AI logic, Next.js API Routes (Serverless Functions in Node.js) handle integrations that sit better in the Next.js ecosystem.
+
+### 6.1 `/api/images/route.ts`
+- **Purpose**: File system scanning.
+- **How it works**: Safely reads the `public/images` directory on the server and returns a JSON array of available static image paths. Useful for randomizing banner images or populating avatar selection grids without hardcoding paths.
+
+### 6.2 `/api/career/analyze-resume/route.ts`
+- **Purpose**: Orchestrates the multi-step resume analysis.
+- **How it works**: Accepts a formidable/multipart form data upload. Uses a library like `pdf-parse` to turn the PDF into raw text, then sends that text to Gemini to extract metadata (skills, education, contact info) and generate critique points. It returns this massive data payload to the `AnalysisDashboard`.
+
+### 6.3 `/api/maps/places/route.ts` & `/api/maps/directions/route.ts`
+- **Purpose**: Secure proxy for Google Maps.
+- **How it works**: Client browsers should never directly call Google Maps APIs if it requires a secret API key. The client calls these internal API routes, which append the secure `GOOGLE_MAPS_API_KEY` from environment variables, make the request to Google, and pipe the secure response back to the client. Used heavily in the `travel` (ride-share) and `utilities` (campus map) modules.
+
+---
+
+## 7. Deep Dive: Custom React Hooks (`src/hooks/`)
+
+Custom hooks extract complex stateful logic into reusable, testable functions.
+
+### 7.1 `useUserUniversity.ts`
+- **Behavior**: Reads the authenticated session context, queries the `profiles` table, and returns localized data.
+- **Outputs**: `universityId` (used to filter the social feed and clubs), `role` (student, admin, professor), and `userId`.
+- **Why it matters**: Ensures that a user at "NYU" does not accidentally see marketplace listings for "UCLA".
+
+### 7.2 `useUserSettings.ts`
+- **Behavior**: Interfaces with local storage and the database to manage preferences.
+- **Outputs**: Theme (light/dark/system), push notification toggles, accessibility contrast modes.
+- **Why it matters**: Changes made here immediately propagate across the app via Context or React Query cache invalidation.
+
+### 7.3 `use-mobile.tsx`
+- **Behavior**: Uses the `window.matchMedia` API to detect viewport size.
+- **Outputs**: A boolean (e.g., `isMobile`), often triggering UI changes like swapping the `Sidebar` for a bottom tab navigation bar on phones.
+
+### 7.4 `use-toast.ts`
+- **Behavior**: A global notification dispatcher.
+- **Outputs**: A `toast()` function.
+- **Why it matters**: Allows any component to easily pop up a success/error message without managing its own modal state (e.g., `toast({ title: "Post published!", variant: "success" })`).
+
+---
+
+## 8. Deep Dive: Core Utilities & Libraries (`src/lib/`)
+
+These files form the connective tissue across the application.
+
+### 8.1 Supabase Clients
+- **`supabase.ts`**: Uses `@supabase/ssr`'s `createBrowserClient`. It creates a singleton connection to Supabase initialized with the public anon key. It is safe to use in Client Components (`"use client"`).
+- **`server-supabase.ts`**: Uses `createServerClient`. Next.js Server Components require specialized cookie handling (because they are essentially Node.js environments). This file securely reads and sets auth cookies to verify user identity before querying the database during server-side renders.
+
+### 8.2 AI Wrapper
+- **`ai.ts`**: Rather than copying `fetch()` calls all over the codebase, this abstracts the AI logic. 
+  - `chat(history, message)`: Calls the `academic-ai` endpoint.
+  - `generateFlashcards(text)`: Calls the flashcard endpoint.
+  - **Mock Fallbacks**: If the API key is missing or the endpoint is down, this file provides hardcoded dummy responses so the UI doesn't break during development.
+
+### 8.3 Tailwind Merge Utility
+- **`utils.ts`**: Contains the ubiquitous `cn()` function.
+  - Combines `clsx` (for writing conditional classes like `isActive && "bg-blue-500"`) and `tailwind-merge` (which intelligently resolves conflicts, so if you pass `p-4` and `p-2`, only `p-2` is applied). Every UI component relies on this for dynamic styling.
+
+---
+
+## 9. Summary & Guide for React Beginners
+
+If you are a beginner looking at this massive codebase, it can be intimidating. Here is how to navigate and understand it:
+
+### The Golden Flow
+Whenever you want to understand a feature in UniVerse, follow this flow:
+1. **The Page**: Start in `src/app/[feature]/page.tsx`. This is the entry point. Look at what data is being fetched here.
+2. **The Components**: See what components the page imports from `.src/components/[feature]/`. Go to those files to understand the UI and interactivty.
+3. **The Data Layer**: If a component needs to mutate data (like sending a message or liking a post), look for Supabase queries or API calls made via React Query mutations or server actions.
+4. **The Intelligence**: If the feature does something "smart", trace the call to `src/lib/ai.ts` and from there to `supabase/functions/`.
+
+### Key Concepts to Master
+- **Server vs. Client Components**: Next.js 16 defaults to Server Components. If a file does not have `"use client"` at the very top, it never runs in the browser. It runs on the server, generates HTML, and sends it down. You only use `"use client"` when you need `useState`, `onClick`, or browser APIs.
+- **RLS (Row Level Security)**: UniVerse's database isn't protected by a traditional backend server API. The database *is* the API. Security is handled natively in PostgreSQL via RLS policies (e.g., "A user can only delete a post if their `user_id` matches the post's `author_id`").
+- **Streaming**: AI responses are slow. Next.js and Supabase Edge functions use streams to send the generated text word-by-word to the browser, making the app feel incredibly fast even if the full response takes 10 seconds to generate.
+
+### Getting Started
+As a new developer joining the project:
+1. Modify a purely visual component in `src/components/ui/` to understand Tailwind.
+2. Add a new static route in `src/app/` to understand Next.js navigation.
+3. Fetch some public data from Supabase in a Server Component to understand data loading.
+4. Finally, wire up a new feature end-to-end: UI -> API Route -> Database.
+
+**UniVerse** is a complex, modern web application that perfectly demonstrates the power of the current React ecosystem. By combining Next.js, full-stack typed logic, managed backend services, and generative AI, a small team can build software that previously required entire engineering departments.

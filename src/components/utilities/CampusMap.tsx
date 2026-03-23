@@ -160,6 +160,7 @@ const emptySuggestionForm = { title: "", serviceCategory: "", description: "", l
 export function CampusMap() {
   const { universityId, userId, role, loading: userContextLoading } = useUserUniversity();
   const isAdmin = role === "ADMIN";
+  const [hasCampusMapDataColumn, setHasCampusMapDataColumn] = useState(true);
 
   // Refs
   const mapRef = useRef<HTMLDivElement>(null);
@@ -272,7 +273,12 @@ export function CampusMap() {
     if (svcRes.error) toast.error("Failed to load campus services.");
     else setServices(svcRes.data ?? []);
 
+     if (uniRes.error && `${uniRes.error.message ?? ""}`.includes("campusMapData")) {
+       setHasCampusMapDataColumn(false);
+     }
+
      if (!uniRes.error && uniRes.data) {
+       setHasCampusMapDataColumn(true);
        const mapData = uniRes.data.campusMapData ?? {};
        const b = Array.isArray(mapData?.buildings) ? mapData.buildings : [];
        const rawServiceShapes = mapData && typeof mapData === "object" && mapData.serviceShapes && typeof mapData.serviceShapes === "object"
@@ -385,16 +391,21 @@ export function CampusMap() {
       )
     );
     
-    // Save shadow boxes
-    const uniRes = await supabase.from("University").update({
-      campusMapData: {
-        buildings: localBuildings,
-        serviceShapes: Object.fromEntries(localServiceShapes),
-      }
-    }).eq("id", universityId);
+    // Save shadow boxes (if schema column exists)
+    let uniError: { message?: string } | null = null;
+    if (hasCampusMapDataColumn) {
+      const uniRes = await supabase.from("University").update({
+        campusMapData: {
+          buildings: localBuildings,
+          serviceShapes: Object.fromEntries(localServiceShapes),
+        }
+      }).eq("id", universityId);
+      if (uniRes.error) uniError = uniRes.error;
+    }
 
     const failed = results.filter(r => r.error);
-    if (failed.length > 0 || uniRes.error) toast.error("Some updates failed to save.");
+    if (failed.length > 0 || uniError) toast.error("Some updates failed to save.");
+    else if (!hasCampusMapDataColumn) toast.success("Map layout saved. Building shapes are disabled until schema is synced.");
     else toast.success("Map layout and buildings saved.");
     
     setIsSavingLayout(false);
@@ -405,7 +416,7 @@ export function CampusMap() {
     setHistory([]);
     setHasUnsavedChanges(false);
     loadServices();
-  }, [hasUnsavedChanges, localPositions, localBuildings, localServiceShapes, universityId, loadServices]);
+  }, [hasUnsavedChanges, localPositions, localBuildings, localServiceShapes, universityId, loadServices, hasCampusMapDataColumn]);
 
   cancelEditModeRef.current = cancelEditMode;
   saveLayoutRef.current = saveLayout;

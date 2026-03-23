@@ -21,12 +21,11 @@ type ResearchProject = {
   title: string;
   description?: string | null;
   status?: "IDEA" | "ACTIVE" | "PAUSED" | "COMPLETED";
-  members?: string[] | null;
   universityId?: string | null;
   createdAt?: string | null;
 };
 
-const emptyForm = { title: "", description: "", status: "IDEA", members: "" };
+const emptyForm = { title: "", description: "", status: "IDEA" };
 
 type ResearchProjectsCardProps = {
   canManage?: (projectId: string) => boolean;
@@ -78,7 +77,6 @@ export function ResearchProjectsCard({ canManage, onChange }: ResearchProjectsCa
       title: project.title || "",
       description: project.description || "",
       status: project.status || "IDEA",
-      members: (project.members || []).join(", ") || "",
     });
     setOpenDialog(true);
   };
@@ -98,7 +96,6 @@ export function ResearchProjectsCard({ canManage, onChange }: ResearchProjectsCa
         title: form.title.trim(),
         description: form.description.trim() || null,
         status: (form.status as ResearchProject["status"]) || "IDEA",
-        members: form.members ? form.members.split(",").map((s) => s.trim()).filter(Boolean) : null,
         universityId,
       };
 
@@ -274,7 +271,7 @@ export function ResearchProjectsCard({ canManage, onChange }: ResearchProjectsCa
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">{p.description ?? "—"}</p>
                         <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                          <Users className="h-3.5 w-3.5" /> <span>{(p.members || []).length} member{(p.members || []).length !== 1 ? "s" : ""}</span>
+                          <Users className="h-3.5 w-3.5" /> <span>Manage collaborators</span>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
@@ -324,10 +321,6 @@ export function ResearchProjectsCard({ canManage, onChange }: ResearchProjectsCa
                   <SelectItem value="COMPLETED">Completed</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label>Members (comma separated)</Label>
-              <Input value={form.members} onChange={(e) => setForm({ ...form, members: e.target.value })} />
             </div>
           </div>
 

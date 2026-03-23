@@ -5,7 +5,7 @@ import { Search, Filter, Loader2 } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { SellModal } from "./SellModal";
 import type { ListingToEdit } from "./SellModal";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { getListings } from "@/app/marketplace/actions";
 import { toast } from "sonner";
@@ -18,9 +18,17 @@ export function ProductGrid({ refreshKey, scope = "campus" }: { refreshKey?: num
 	const [products, setProducts] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [activeCategory, setActiveCategory] = useState("all");
 	const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 	const [editingProduct, setEditingProduct] = useState<ListingToEdit | null>(null);
 	const [editOpen, setEditOpen] = useState(false);
+
+	const categories = [
+		{ key: "all", label: "All" },
+		{ key: "textbooks", label: "Textbooks" },
+		{ key: "electronics", label: "Electronics" },
+		{ key: "furniture", label: "Furniture" },
+	];
 
 	useEffect(() => {
 		const fetchProducts = async () => {
@@ -39,7 +47,7 @@ export function ProductGrid({ refreshKey, scope = "campus" }: { refreshKey?: num
 				const mapped = data?.map((item: any) => {
 					// Extract category from description if present [Category] ...
 					const categoryMatch = item.description.match(/^\[(.*?)\]/);
-					const category = categoryMatch ? categoryMatch[1] : "General";
+					const category = categoryMatch ? categoryMatch[1].toLowerCase() : "other";
 					const cleanDesc = item.description.replace(/^\[.*?\]\s*/, '');
 
 					return {
@@ -74,6 +82,11 @@ export function ProductGrid({ refreshKey, scope = "campus" }: { refreshKey?: num
 		}, 300);
 		return () => clearTimeout(debounce);
 	}, [refreshKey, searchQuery, scope]);
+
+	const filteredProducts = useMemo(() => {
+		if (activeCategory === "all") return products;
+		return products.filter((product) => product.category === activeCategory);
+	}, [activeCategory, products]);
 
 	const handleEditProduct = (id: string) => {
 		const product = products.find(p => p.id === id);
@@ -124,21 +137,27 @@ export function ProductGrid({ refreshKey, scope = "campus" }: { refreshKey?: num
 					<Button variant="outline" className="gap-2 bg-card/50">
 						<Filter className="h-4 w-4" /> Filters
 					</Button>
-					<Button variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary">All</Button>
-					<Button variant="ghost">Textbooks</Button>
-					<Button variant="ghost">Electronics</Button>
-					<Button variant="ghost">Furniture</Button>
+					{categories.map((category) => (
+						<Button
+							key={category.key}
+							variant={activeCategory === category.key ? "secondary" : "ghost"}
+							className={activeCategory === category.key ? "bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary" : undefined}
+							onClick={() => setActiveCategory(category.key)}
+						>
+							{category.label}
+						</Button>
+					))}
 				</div>
 			</div>
 
 			{/* Grid */}
 			{loading ? (
 				<div className="flex justify-center p-12"><Loader2 className="animate-spin text-muted-foreground" /></div>
-			) : products.length === 0 ? (
+			) : filteredProducts.length === 0 ? (
 				<div className="text-center p-12 text-muted-foreground">No items found. List something!</div>
 			) : (
 				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-					{products.map((product) => (
+					{filteredProducts.map((product) => (
 						<ProductCard
 							key={product.id}
 							product={product}

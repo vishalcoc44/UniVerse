@@ -166,7 +166,7 @@ export function NotificationsPanel() {
 
 				// 4. Recent marketplace listings
 				const { data: listings } = await supabase
-					.from('Listing')
+					.from('MarketplaceListing')
 					.select('id, title, createdAt, price')
 					.neq('sellerId', user.id)
 					.eq('status', 'ACTIVE')

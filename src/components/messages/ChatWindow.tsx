@@ -76,6 +76,8 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 	const [searchQuery, setSearchQuery] = useState("");
 	const [hoveredMsgId, setHoveredMsgId] = useState<string | null>(null);
 	const [dropdownOpenId, setDropdownOpenId] = useState<string | null>(null);
+	const [isMuted, setIsMuted] = useState(false);
+	const [isBlocked, setIsBlocked] = useState(false);
 
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -102,6 +104,38 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 		}
 		setSelectedProfile(otherParticipant);
 		setIsProfileDialogOpen(true);
+	};
+
+	const handleCallClick = () => {
+		if (isBlocked) {
+			toast.error("Unblock this user to start a call.");
+			return;
+		}
+		toast.info("Voice calling will be available in a future update.");
+	};
+
+	const handleVideoClick = () => {
+		if (isBlocked) {
+			toast.error("Unblock this user to start a video call.");
+			return;
+		}
+		toast.info("Video calling will be available in a future update.");
+	};
+
+	const handleToggleMute = () => {
+		setIsMuted((prev) => {
+			const next = !prev;
+			toast.success(next ? "Notifications muted for this chat." : "Notifications unmuted.");
+			return next;
+		});
+	};
+
+	const handleToggleBlock = () => {
+		setIsBlocked((prev) => {
+			const next = !prev;
+			toast.success(next ? `${chat.name} has been blocked in this session.` : `${chat.name} has been unblocked.`);
+			return next;
+		});
 	};
 
 	const handleAcceptResponse = async (accept: boolean) => {
@@ -300,6 +334,10 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 	};
 
 	const handleSend = async () => {
+		if (isBlocked) {
+			toast.error("You cannot send messages while this user is blocked.");
+			return;
+		}
 		if (!inputValue.trim()) return;
 
 		const tempId = `temp-${Date.now()}`;
@@ -564,10 +602,10 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 					>
 						{searchOpen ? <SearchX className="h-[18px] w-[18px]" /> : <Search className="h-[18px] w-[18px]" />}
 					</Button>
-					<Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all">
+					<Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" onClick={handleCallClick}>
 						<Phone className="h-[18px] w-[18px]" />
 					</Button>
-					<Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all">
+					<Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" onClick={handleVideoClick}>
 						<Video className="h-[18px] w-[18px]" />
 					</Button>
 					<div className="w-px h-6 bg-border/50 mx-1" />
@@ -592,10 +630,12 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 									<Star className="h-4 w-4 mr-2 fill-amber-400 text-amber-400" />Starred ({starredIds.size})
 								</DropdownMenuItem>
 							)}
-							<DropdownMenuItem className="rounded-md py-2 px-3">Mute Notifications</DropdownMenuItem>
+							<DropdownMenuItem className="rounded-md py-2 px-3" onClick={handleToggleMute}>
+								{isMuted ? "Unmute Notifications" : "Mute Notifications"}
+							</DropdownMenuItem>
 							<DropdownMenuSeparator className="my-1" />
-							<DropdownMenuItem className="rounded-md py-2 px-3 text-destructive focus:bg-destructive/5">
-								Block {chat.name}
+							<DropdownMenuItem className="rounded-md py-2 px-3 text-destructive focus:bg-destructive/5" onClick={handleToggleBlock}>
+								{isBlocked ? `Unblock ${chat.name}` : `Block ${chat.name}`}
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
@@ -938,7 +978,7 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 			{/* Input Area */}
 			<div className={cn(
 				"p-6 pt-2 bg-card/40 backdrop-blur-xl border-t border-border/40 transition-all",
-				chat.status === 'PENDING' && "opacity-40 pointer-events-none grayscale-[0.3]"
+				(chat.status === 'PENDING' || isBlocked) && "opacity-40 pointer-events-none grayscale-[0.3]"
 			)}>
 				{/* Edit indicator */}
 				{editingMessage && (
@@ -994,20 +1034,20 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 					</div>
 
 					<Input
-						placeholder={chat.status === 'PENDING' ? "Accept request to reply..." : (editingMessage ? "Edit your message..." : replyingTo ? `Reply to ${replyingTo.senderName || chat.name}...` : "Type a message...")}
+						placeholder={isBlocked ? "Unblock this user to message..." : chat.status === 'PENDING' ? "Accept request to reply..." : (editingMessage ? "Edit your message..." : replyingTo ? `Reply to ${replyingTo.senderName || chat.name}...` : "Type a message...")}
 						className="border-none bg-transparent shadow-none focus-visible:ring-0 text-[14.5px] h-10 px-0"
 						value={inputValue}
 						onChange={handleInputChange}
 						onKeyDown={(e) => e.key === "Enter" && handleSend()}
-						disabled={chat.status === 'PENDING'}
+						disabled={chat.status === 'PENDING' || isBlocked}
 					/>
 
 					<Button
 						onClick={handleSend}
-						disabled={!inputValue.trim() && !isUploading || chat.status === 'PENDING'}
+						disabled={!inputValue.trim() && !isUploading || chat.status === 'PENDING' || isBlocked}
 						className={cn(
 							"h-10 px-4 rounded-xl gap-2 transition-all shadow-md active:scale-95",
-							inputValue.trim() && chat.status !== 'PENDING' ? "bg-primary text-primary-foreground shadow-primary/20" : "bg-muted text-muted-foreground"
+							inputValue.trim() && chat.status !== 'PENDING' && !isBlocked ? "bg-primary text-primary-foreground shadow-primary/20" : "bg-muted text-muted-foreground"
 						)}
 					>
 						<span className="font-semibold text-sm">Send</span>

@@ -27,9 +27,11 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
 	const [firstName, setFirstName] = useState("Student");
+	const router = useRouter();
 
 	useEffect(() => {
 		const fetchName = async () => {
@@ -209,24 +211,28 @@ export default function Dashboard() {
 			description: "Get instant help with doubts, access notes, and study resources",
 			icon: Brain,
 			variant: "lavender" as const,
+			href: "/academic",
 		},
 		{
 			title: "Resume Analyzer",
 			description: "Get your resume scored and receive AI-powered improvements",
 			icon: GraduationCap,
 			variant: "amber" as const,
+			href: "/career",
 		},
 		{
 			title: "Anonymous Forums",
 			description: "Discuss freely without revealing your identity",
 			icon: MessageCircle,
 			variant: "mint" as const,
+			href: "/forums",
 		},
 		{
 			title: "Cab Pooling",
 			description: "Find travel buddies and split costs for your next trip",
 			icon: Car,
 			variant: "sky" as const,
+			href: "/travel",
 		},
 	];
 
@@ -269,7 +275,11 @@ export default function Dashboard() {
 						</div>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							{quickActions.map((action, index) => (
-								<QuickActionCard key={index} {...action} />
+								<QuickActionCard
+									key={index}
+									{...action}
+									onClick={() => router.push(action.href)}
+								/>
 							))}
 						</div>
 					</section>

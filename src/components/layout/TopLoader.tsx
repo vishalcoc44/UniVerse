@@ -1,17 +1,20 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 const MIN_DISPLAY_MS = 1000; // minimum time the bar stays visible
+const MAX_LOADING_MS = 8000; // fail-safe: force complete if route completion signal is missed
 
 export function TopLoader() {
 	const [progress, setProgress] = useState(0);
 	const [visible, setVisible] = useState(false);
 	const loadingRef = useRef(false);
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	const maxTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const startTimeRef = useRef<number>(0);
 	const pathname = usePathname();
+	const searchParams = useSearchParams();
 
 	const startLoading = useCallback(() => {
 		if (loadingRef.current) return;
@@ -19,6 +22,27 @@ export function TopLoader() {
 		startTimeRef.current = Date.now();
 		setVisible(true);
 		setProgress(0);
+
+		if (maxTimerRef.current) {
+			clearTimeout(maxTimerRef.current);
+			maxTimerRef.current = null;
+		}
+
+		maxTimerRef.current = setTimeout(() => {
+			if (!loadingRef.current) return;
+			loadingRef.current = false;
+
+			if (timerRef.current) {
+				clearInterval(timerRef.current);
+				timerRef.current = null;
+			}
+
+			setProgress(100);
+			setTimeout(() => {
+				setVisible(false);
+				setProgress(0);
+			}, 400);
+		}, MAX_LOADING_MS);
 
 		// Animate progress
 		timerRef.current = setInterval(() => {
@@ -33,6 +57,11 @@ export function TopLoader() {
 		if (timerRef.current) {
 			clearInterval(timerRef.current);
 			timerRef.current = null;
+		}
+
+		if (maxTimerRef.current) {
+			clearTimeout(maxTimerRef.current);
+			maxTimerRef.current = null;
 		}
 
 		setProgress(100);
@@ -53,25 +82,23 @@ export function TopLoader() {
 		setTimeout(() => finishBar(), remaining);
 	}, [finishBar]);
 
-	// Complete loading when pathname changes (new page loaded)
+	// Complete loading when route/search changes (new page loaded)
 	useEffect(() => {
 		completeLoading();
-	}, [pathname, completeLoading]);
+	}, [pathname, searchParams, completeLoading]);
 
-	// Intercept clicks on sidebar buttons and links
+	// Intercept clicks on internal links
 	useEffect(() => {
 		const handleClick = (e: MouseEvent) => {
 			const target = e.target as HTMLElement;
 			const link = target.closest('a[href]');
-			const sidebarButton = target.closest('.sidebar-item');
 
 			if (link) {
 				const href = link.getAttribute('href');
-				if (href && href.startsWith('/') && href !== pathname) {
+				const currentRoute = `${window.location.pathname}${window.location.search}`;
+				if (href && href.startsWith('/') && href !== currentRoute && !href.startsWith('#')) {
 					startLoading();
 				}
-			} else if (sidebarButton) {
-				startLoading();
 			}
 		};
 
@@ -84,9 +111,16 @@ export function TopLoader() {
 		const originalPushState = history.pushState.bind(history);
 
 		history.pushState = function (...args) {
-			// Defer the loading trigger to next microtask to avoid
-			// "useInsertionEffect must not schedule updates" error
-			setTimeout(() => startLoading(), 0);
+			const nextUrlValue = args[2];
+			const nextUrl = nextUrlValue != null ? new URL(String(nextUrlValue), window.location.href) : null;
+			const currentRoute = `${window.location.pathname}${window.location.search}`;
+			const nextRoute = nextUrl ? `${nextUrl.pathname}${nextUrl.search}` : currentRoute;
+
+			if (nextRoute !== currentRoute) {
+				// Defer the loading trigger to next macrotask to avoid
+				// "useInsertionEffect must not schedule updates" error
+				setTimeout(() => startLoading(), 0);
+			}
 			return originalPushState(...args);
 		};
 
@@ -97,6 +131,16 @@ export function TopLoader() {
 		window.addEventListener('popstate', handlePopState);
 
 		return () => {
+			if (timerRef.current) {
+				clearInterval(timerRef.current);
+				timerRef.current = null;
+			}
+
+			if (maxTimerRef.current) {
+				clearTimeout(maxTimerRef.current);
+				maxTimerRef.current = null;
+			}
+
 			history.pushState = originalPushState;
 			window.removeEventListener('popstate', handlePopState);
 		};

@@ -283,7 +283,21 @@ export default function Feed() {
 
 	const handleComment = (postId: string) => {
 		// Increment view count when opening post thread
-		if (currentUser) supabase.from('Post').update({ viewCount: supabase.rpc as any }).eq('id', postId).then(() => { });
+		if (currentUser) {
+			supabase
+				.from('Post')
+				.select('viewCount')
+				.eq('id', postId)
+				.single()
+				.then(({ data }) => {
+					const nextViewCount = (data?.viewCount ?? 0) + 1;
+					return supabase
+						.from('Post')
+						.update({ viewCount: nextViewCount })
+						.eq('id', postId);
+				})
+				.then(() => { });
+		}
 		setCommentPostId(postId); setIsCommentModalOpen(true);
 	};
 
