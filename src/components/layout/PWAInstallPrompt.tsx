@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -13,6 +14,7 @@ const DISMISS_KEY = 'pwa-install-dismissed';
 export function PWAInstallPrompt() {
 	const [isVisible, setIsVisible] = useState(false);
 	const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+	const pathname = usePathname();
 
 	const isIOS = useMemo(() => {
 		if (typeof navigator === 'undefined') return false;
@@ -68,6 +70,9 @@ export function PWAInstallPrompt() {
 		}
 		setDeferredPrompt(null);
 	};
+
+	const publicInstallRoutes = ['/', '/auth', '/signup', '/request-university'];
+	if (!publicInstallRoutes.includes(pathname)) return null;
 
 	if (!isVisible) return null;
 

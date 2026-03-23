@@ -7,7 +7,6 @@ import {
 	ArrowRight, Check, Clock, Sparkles, Zap, Globe, BookOpen,
 	Users, MessageCircle, Car, Shield, GraduationCap, Layout, MoreHorizontal, ChevronRight, MapPin, Sun, Moon
 } from "lucide-react";
-import { useRef, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { EventCard } from "@/components/dashboard/EventCard";
@@ -16,8 +15,9 @@ import { PostCard } from "@/components/feed/PostCard";
 import { ProductCard } from "@/components/marketplace/ProductCard";
 import { PreviewMarquee } from "@/components/landing/PreviewMarquee";
 import { LightboxModal } from "@/components/landing/LightboxModal";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTheme } from "next-themes";
+import { Footer } from "@/components/layout/Footer";
 
 const FALLBACK_PREVIEW_IMAGES = [
 	"/images/Screenshot%202026-02-21%20122427.png",
@@ -679,24 +679,7 @@ export default function Landing() {
 				</div>
 			</section>
 
-			{/* Footer */}
-			<footer className="py-12 border-t border-border bg-card/50">
-				<div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-					<div className="flex items-center gap-2">
-						<div className="h-6 w-6 rounded overflow-hidden">
-							<img src="/universe_logo.png" alt="UniVerse Logo" className="w-full h-full object-cover" />
-						</div>
-						<span className="font-bold">UniVerse</span>
-					</div>
-					<div className="flex gap-8 text-sm text-muted-foreground">
-						<a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-						<a href="#" className="hover:text-foreground transition-colors">Terms</a>
-						<a href="#" className="hover:text-foreground transition-colors">Twitter</a>
-						<a href="#" className="hover:text-foreground transition-colors">Instagram</a>
-					</div>
-					<p className="text-sm text-muted-foreground">© 2025 UniVerse Connect. All rights reserved.</p>
-				</div>
-			</footer>
+			<Footer />
 
 			<LightboxModal
 				isOpen={isModalOpen}
