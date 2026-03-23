@@ -34,6 +34,10 @@ export function PWAInstallPrompt() {
 			return;
 		}
 
+		const fallbackTimer = window.setTimeout(() => {
+			setIsVisible(true);
+		}, 5000);
+
 		const onBeforeInstallPrompt = (event: Event) => {
 			event.preventDefault();
 			setDeferredPrompt(event as BeforeInstallPromptEvent);
@@ -43,6 +47,7 @@ export function PWAInstallPrompt() {
 		window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
 
 		return () => {
+			window.clearTimeout(fallbackTimer);
 			window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
 		};
 	}, [isIOS]);
@@ -89,6 +94,11 @@ export function PWAInstallPrompt() {
 				<div className="mt-2">
 					<Button size="sm" onClick={install}>Install app</Button>
 				</div>
+			)}
+			{!isIOS && !deferredPrompt && (
+				<p className="mt-2 text-xs text-muted-foreground">
+					Open your browser menu and tap Add to Home screen.
+				</p>
 			)}
 		</div>
 	);
