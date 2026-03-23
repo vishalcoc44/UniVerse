@@ -1,7 +1,7 @@
 const CACHE_NAME = 'universe-v1';
 const STATIC_ASSETS = [
   '/',
-  '/manifest.json',
+  '/manifest.webmanifest',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
 ];
