@@ -134,3 +134,6 @@ Thumbs.db
 supabase/.temp/
 supabase/current_schema/
 supabase/migrations/
+ 
+# Claude agent workspace
+.claude/
