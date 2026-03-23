@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { TopLoader } from "@/components/layout/TopLoader";
+import { PWAInstallPrompt } from "@/components/layout/PWAInstallPrompt";
 import Script from 'next/script';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -10,6 +11,10 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
 	title: 'UniVerse',
 	description: 'Your Campus Super App',
+	icons: {
+		icon: [{ url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
+		apple: [{ url: '/icons/icon-192x192.png', sizes: '192x192' }],
+	},
 	appleWebApp: {
 		capable: true,
 		statusBarStyle: 'default',
@@ -31,6 +36,7 @@ export default function RootLayout({
 			<body className={inter.className}>
 				<Providers>
 					<TopLoader />
+					<PWAInstallPrompt />
 					{children}
 				</Providers>
 				<Script
