@@ -30,18 +30,14 @@ export async function createListing(data: CreateListingData) {
 
 		if (!profile?.universityId) throw new Error("University profile not found");
 
-		// Append category to description if present, since schema doesn't have it yet
-		const finalDescription = data.category
-			? `[${data.category}] ${data.description}`
-			: data.description;
-
 		const { error } = await supabase.from('MarketplaceListing').insert({
 			id: crypto.randomUUID(),
 			title: data.title,
 			price: data.price,
-			description: finalDescription,
+			description: data.description,
 			type: data.type,
 			imageUrl: data.imageUrl,
+			category: data.category || null,
 			scope: data.scope || 'CAMPUS',
 			universityId: profile.universityId,
 			sellerId: user.id,
@@ -130,11 +126,8 @@ export async function updateListing(id: string, data: {
 		if (data.price !== undefined) updates.price = data.price;
 		if (data.imageUrl !== undefined) updates.imageUrl = data.imageUrl;
 		if (data.scope !== undefined) updates.scope = data.scope;
-		if (data.description !== undefined) {
-			updates.description = data.category
-				? `[${data.category}] ${data.description}`
-				: data.description;
-		}
+		if (data.description !== undefined) updates.description = data.description;
+		if (data.category !== undefined) updates.category = data.category;
 
 		const { error } = await supabase
 			.from('MarketplaceListing')

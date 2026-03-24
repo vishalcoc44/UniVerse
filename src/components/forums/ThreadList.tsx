@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowBigDown, ArrowBigUp, Flag, MessageSquare, Share2, Loader2, Trash2, Eye, Tag, MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -18,15 +19,23 @@ import {
 
 import { useUserUniversity } from "@/hooks/useUserUniversity";
 
+const PAGE_SIZE = 25;
+
 export function ThreadList({ activeCategory, scope = 'campus', sortBy = 'latest' }: { activeCategory?: string, scope?: 'campus' | 'universe', sortBy?: 'latest' | 'trending' }) {
   const [threads, setThreads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const [userVotes, setUserVotes] = useState<Record<string, number>>({});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { universityId, loading: uniLoading } = useUserUniversity();
+  const router = useRouter();
 
-  const fetchThreads = async () => {
-    setLoading(true);
+  const fetchThreads = async (pageNum = 0, append = false) => {
+    if (append) { setLoadingMore(true); } else { setLoading(true); }
+    const from = pageNum * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
 
     const { data: { user } } = await supabase.auth.getUser();
     if (user) setCurrentUserId(user.id);
@@ -61,11 +70,15 @@ export function ThreadList({ activeCategory, scope = 'campus', sortBy = 'latest'
       query = query.eq('category', activeCategory);
     }
 
+    query = query.range(from, to);
+
     const { data, error } = await query;
 
     if (error) {
       console.error("Error fetching threads:", error.message || error);
     } else {
+      setHasMore((data?.length ?? 0) === PAGE_SIZE);
+
       const processedThreads = data?.map(thread => {
         const totalVotes = thread.votes?.reduce((acc: number, v: any) => acc + v.value, 0) || 0;
         const userVote = thread.votes?.find((v: any) => v.userId === user?.id)?.value || 0;
@@ -84,15 +97,28 @@ export function ThreadList({ activeCategory, scope = 'campus', sortBy = 'latest'
         });
       }
 
-      setThreads(processedThreads || []);
+      if (append) {
+        setThreads(prev => [...prev, ...(processedThreads || [])]);
+      } else {
+        setThreads(processedThreads || []);
+      }
     }
     setLoading(false);
+    setLoadingMore(false);
+  };
+
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchThreads(nextPage, true);
   };
 
   useEffect(() => {
     if (uniLoading) return;
-    fetchThreads();
-  }, [activeCategory, scope, universityId, uniLoading]);
+    setPage(0);
+    setHasMore(true);
+    fetchThreads(0, false);
+  }, [activeCategory, scope, universityId, uniLoading, sortBy]);
 
   const handleVote = async (threadId: string, value: number) => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -163,7 +189,7 @@ export function ThreadList({ activeCategory, scope = 'campus', sortBy = 'latest'
               key={thread.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              transition={{ delay: Math.min(index, 10) * 0.05 }}
             >
               <Card className={cn(
                 "group relative flex overflow-hidden transition-all duration-500 hover:border-primary/50 bg-card/40 backdrop-blur-xl border-border/50 rounded-[2rem] shadow-xl hover:shadow-primary/5 hover:-translate-y-1",
@@ -253,7 +279,7 @@ export function ThreadList({ activeCategory, scope = 'campus', sortBy = 'latest'
                     )}
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-3 cursor-pointer" onClick={() => router.push(`/forums/${thread.id}`)}>
                     <h3 className="text-2xl font-black italic tracking-tighter text-foreground group-hover:text-primary transition-colors leading-tight">
                       {thread.title}
                     </h3>
@@ -275,6 +301,7 @@ export function ThreadList({ activeCategory, scope = 'campus', sortBy = 'latest'
                       <button
                         className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors focus-visible:text-primary outline-none focus-visible:underline"
                         aria-label={`${thread.replies ? thread.replies[0]?.count : 0} responses`}
+                        onClick={() => router.push(`/forums/${thread.id}`)}
                       >
                         <MessageSquare className="h-4 w-4" aria-hidden="true" />
                         <span className="text-xs font-black italic tracking-widest uppercase">
@@ -304,6 +331,19 @@ export function ThreadList({ activeCategory, scope = 'campus', sortBy = 'latest'
               </Card>
             </motion.div>
           ))}
+          {hasMore && (
+            <div className="flex justify-center pt-4">
+              <Button
+                variant="outline"
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="rounded-full px-8"
+              >
+                {loadingMore ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Load More
+              </Button>
+            </div>
+          )}
         </div>
       )
       }

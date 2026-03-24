@@ -21,6 +21,7 @@ import {
   Settings,
   Sun,
   Moon,
+  ShieldCheck,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +45,7 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [profile, setProfile] = useState<{ fullName: string, username: string, universityAbbr: string, avatarUrl: string } | null>(null);
+  const [profile, setProfile] = useState<{ fullName: string, username: string, universityAbbr: string, avatarUrl: string, role: string } | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
   const pathname = usePathname();
@@ -76,6 +77,7 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
     { icon: Newspaper, label: "Campus News", href: "/news", isActive: pathname === "/news" },
     { icon: ShoppingBag, label: "Marketplace", href: "/marketplace", isActive: pathname === "/marketplace" },
     { icon: Sparkles, label: "What's New", href: "/updates", isActive: pathname === "/updates" },
+    ...(profile?.role === "ADMIN" ? [{ icon: ShieldCheck, label: "Admin Panel", href: "/admin", isActive: pathname === "/admin" }] : []),
     { icon: Settings, label: "Settings", href: "/settings", isActive: pathname === "/settings" },
   ];
 
@@ -147,7 +149,7 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         // Capitalize University to match table name if lowercase fails
-        const { data } = await supabase.from('Profile').select('fullName, username, avatarUrl, University(abbreviation)').eq('id', user.id).single();
+        const { data } = await supabase.from('Profile').select('fullName, username, avatarUrl, role, University(abbreviation)').eq('id', user.id).single();
         if (data) {
           // Supabase join query return key matches the select capitalization
           const uni: any = data.University;
@@ -157,7 +159,8 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
             fullName: data.fullName || "Student",
             username: data.username || "",
             universityAbbr: uniAbbr || "Uni",
-            avatarUrl: data.avatarUrl || ""
+            avatarUrl: data.avatarUrl || "",
+            role: data.role || "STUDENT",
           });
         }
       }

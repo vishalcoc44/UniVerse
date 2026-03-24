@@ -27,9 +27,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useUserUniversity } from "@/hooks/useUserUniversity";
 
+const PAGE_SIZE = 25;
+
 export default function Feed() {
 	const [posts, setPosts] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [loadingMore, setLoadingMore] = useState(false);
+	const [page, setPage] = useState(0);
+	const [hasMore, setHasMore] = useState(true);
 	const [activeTab, setActiveTab] = useState("campus");
 	const { universityId, loading: uniLoading } = useUserUniversity();
 	const [currentUser, setCurrentUser] = useState<any>(null);
@@ -58,8 +63,11 @@ export default function Feed() {
 		if (dismissed) setBannerDismissed(true);
 	}, []);
 
-	const fetchPosts = async () => {
-		setLoading(true);
+	const fetchPosts = async (pageNum = 0, append = false) => {
+		if (append) { setLoadingMore(true); } else { setLoading(true); }
+		const from = pageNum * PAGE_SIZE;
+		const to = from + PAGE_SIZE - 1;
+
 		let query = supabase
 			.from('Post')
 			.select(`
@@ -71,7 +79,8 @@ export default function Feed() {
 				poll:PostPoll(*, options:PostPollOption(*)),
 				quotedPost:Post!quotedPostId(*)
 			`)
-			.order('createdAt', { ascending: false });
+			.order('createdAt', { ascending: false })
+			.range(from, to);
 
 		if (selectedCategory) query = query.eq('category', selectedCategory);
 
@@ -97,7 +106,7 @@ export default function Feed() {
 						reactions:PostReaction(id, emoji, userId),
 						poll:PostPoll(*, options:PostPollOption(*)),
 						quotedPost:Post!quotedPostId(*)
-					`).in('id', ids).order('createdAt', { ascending: false });
+					`).in('id', ids).order('createdAt', { ascending: false }).range(from, to);
 				} else { setPosts([]); setLoading(false); return; }
 			} else { setPosts([]); setLoading(false); return; }
 		}
@@ -108,6 +117,8 @@ export default function Feed() {
 		if (error) {
 			console.error('Error fetching posts:', error?.message || error?.code || JSON.stringify(error));
 		} else {
+			setHasMore((data?.length ?? 0) === PAGE_SIZE);
+
 			let likedPostIds = new Set<string>();
 			let bookmarkedPostIds = new Set<string>();
 
@@ -125,7 +136,6 @@ export default function Feed() {
 				const raw = post.createdAt;
 				const dateStr = raw.includes('+') || raw.endsWith('Z') ? raw : (raw.includes('T') ? raw : raw.replace(' ', 'T')) + 'Z';
 
-				// Aggregate reactions
 				const reactionMap: Record<string, { count: number; userReacted: boolean }> = {};
 				(post.reactions || []).forEach((r: any) => {
 					if (!reactionMap[r.emoji]) reactionMap[r.emoji] = { count: 0, userReacted: false };
@@ -162,9 +172,20 @@ export default function Feed() {
 				};
 			}) || [];
 
-			setPosts(mappedPosts);
+			if (append) {
+				setPosts(prev => [...prev, ...mappedPosts]);
+			} else {
+				setPosts(mappedPosts);
+			}
 		}
 		setLoading(false);
+		setLoadingMore(false);
+	};
+
+	const loadMore = () => {
+		const nextPage = page + 1;
+		setPage(nextPage);
+		fetchPosts(nextPage, true);
 	};
 
 	const fetchTrendingTags = async () => {
@@ -196,9 +217,13 @@ export default function Feed() {
 	};
 
 	useEffect(() => {
-		if (!uniLoading) fetchPosts();
+		setPage(0);
+		setHasMore(true);
+		if (!uniLoading) fetchPosts(0, false);
 		const channel = supabase.channel('public:Post').on('postgres_changes', { event: '*', schema: 'public', table: 'Post' }, () => {
-			fetchPosts();
+			setPage(0);
+			setHasMore(true);
+			fetchPosts(0, false);
 			fetchTrendingTags();
 		}).subscribe();
 		return () => { supabase.removeChannel(channel); };
@@ -401,7 +426,7 @@ export default function Feed() {
 					<div className="mt-6">
 						{activeTab !== 'bookmarks' && (
 							<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
-								<SharePostBox onPostCreated={fetchPosts} />
+								<SharePostBox onPostCreated={() => { setPage(0); setHasMore(true); fetchPosts(0, false); }} />
 							</motion.div>
 						)}
 
@@ -435,24 +460,39 @@ export default function Feed() {
 									<p className="text-muted-foreground italic">No posts found in this section yet.</p>
 								</motion.div>
 							) : (
-								filteredPosts.map((post, idx) => (
-									<motion.div key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: idx * 0.04 }}>
-										<PostCard
-											{...post}
-											onLike={handleLike}
-											onBookmark={handleBookmark}
-											onDelete={handleDeleteClick}
-											onComment={handleComment}
-											onConnect={handleConnect}
-											onReact={handleReact}
-											onRepost={handleRepost}
-											onHashtagClick={(tag) => { setSelectedHashtag(selectedHashtag === tag ? null : tag); }}
-											onPollVoted={fetchPosts}
-											isPinned={post.isPinned}
-											onPin={handlePin}
-										/>
-									</motion.div>
-								))
+								<>
+									{filteredPosts.map((post, idx) => (
+										<motion.div key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: Math.min(idx, 10) * 0.04 }}>
+											<PostCard
+												{...post}
+												onLike={handleLike}
+												onBookmark={handleBookmark}
+												onDelete={handleDeleteClick}
+												onComment={handleComment}
+												onConnect={handleConnect}
+												onReact={handleReact}
+												onRepost={handleRepost}
+												onHashtagClick={(tag) => { setSelectedHashtag(selectedHashtag === tag ? null : tag); }}
+												onPollVoted={() => fetchPosts(0, false)}
+												isPinned={post.isPinned}
+												onPin={handlePin}
+											/>
+										</motion.div>
+									))}
+									{hasMore && !selectedHashtag && (
+										<div className="flex justify-center pt-4">
+											<Button
+												variant="outline"
+												onClick={loadMore}
+												disabled={loadingMore}
+												className="rounded-full px-8"
+											>
+												{loadingMore ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+												Load More
+											</Button>
+										</div>
+									)}
+								</>
 							)}
 						</div>
 					</div>

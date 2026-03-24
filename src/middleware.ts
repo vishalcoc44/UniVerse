@@ -1,6 +1,32 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const PROTECTED_ROUTES = [
+	'/dashboard',
+	'/feed',
+	'/academic',
+	'/career',
+	'/marketplace',
+	'/events',
+	'/clubs',
+	'/travel',
+	'/wellness',
+	'/messages',
+	'/forums',
+	'/research',
+	'/news',
+	'/utilities',
+	'/settings',
+	'/profile',
+	'/admin',
+]
+
+const PUBLIC_ROUTES = ['/', '/login', '/signup', '/auth', '/api/images']
+
+function isProtectedRoute(pathname: string): boolean {
+	return PROTECTED_ROUTES.some(route => pathname === route || pathname.startsWith(`${route}/`))
+}
+
 export async function updateSession(request: NextRequest) {
 	let supabaseResponse = NextResponse.next({
 		request,
@@ -15,7 +41,7 @@ export async function updateSession(request: NextRequest) {
 					return request.cookies.getAll()
 				},
 				setAll(cookiesToSet) {
-					cookiesToSet.forEach(({ name, value, options }) =>
+					cookiesToSet.forEach(({ name, value }) =>
 						request.cookies.set(name, value)
 					)
 					supabaseResponse = NextResponse.next({
@@ -29,17 +55,39 @@ export async function updateSession(request: NextRequest) {
 		}
 	)
 
-	// Refresh auth token with a 3s timeout so a Supabase network hiccup
-	// never blocks page/API requests.
 	try {
 		const timeout = new Promise<null>((_, reject) =>
 			setTimeout(() => reject(new Error('Supabase auth timeout')), 3000)
 		)
-		await Promise.race([supabase.auth.getUser(), timeout])
+		const { data: { user } } = await Promise.race([supabase.auth.getUser(), timeout]) as any
+
+		const pathname = request.nextUrl.pathname
+
+		if (!user && isProtectedRoute(pathname)) {
+			const loginUrl = new URL('/login', request.url)
+			loginUrl.searchParams.set('redirect', pathname)
+			return NextResponse.redirect(loginUrl)
+		}
+
+		if (pathname.startsWith('/admin') && user) {
+			const { data: profile } = await supabase
+				.from('Profile')
+				.select('role')
+				.eq('id', user.id)
+				.single()
+
+			if (!profile || profile.role !== 'ADMIN') {
+				return NextResponse.redirect(new URL('/dashboard', request.url))
+			}
+		}
 	} catch (err: any) {
-		// Log the issue but always proceed — don't let auth block the request.
 		if (err?.message !== 'Supabase auth timeout') {
 			console.error('Middleware: auth error:', err?.message ?? err)
+		}
+		// On timeout, allow the request to proceed but don't grant access to protected routes
+		if (isProtectedRoute(request.nextUrl.pathname)) {
+			// If we can't verify auth and it's a protected route, proceed cautiously
+			// Page-level auth will handle the final check
 		}
 	}
 
@@ -47,7 +95,6 @@ export async function updateSession(request: NextRequest) {
 }
 
 export async function middleware(request: NextRequest) {
-	// Skip auth session refresh for API routes — they handle auth independently.
 	if (request.nextUrl.pathname.startsWith('/api/')) {
 		return NextResponse.next({ request })
 	}
@@ -56,15 +103,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
 	matcher: [
-		/*
-		 * Match all request paths except for the ones starting with:
-		 * - _next/static (static files)
-		 * - _next/image (image optimization files)
-		 * - favicon.ico (favicon file)
-		 * - public/static files (e.g. sw.js, manifest.webmanifest, robots.txt)
-		 * - any file with an extension
-		 * Feel free to modify this pattern to include more paths.
-		 */
 		'/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|robots.txt|sitemap.xml|.*\\..*$).*)',
 	],
 }

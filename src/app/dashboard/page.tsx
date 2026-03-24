@@ -62,14 +62,22 @@ export default function Dashboard() {
 		const fetchData = async () => {
 			try {
 				setLoading(true);
-				const { data: { user } } = await supabase.auth.getUser();
-				if (!user) return;
+			const { data: { user } } = await supabase.auth.getUser();
+			if (!user) return;
 
-				// 1. Active Events (Future events in user's university)
-				const { count: eventsCount } = await supabase
-					.from('Event')
-					.select('*', { count: 'exact', head: true })
-					.gt('date', new Date().toISOString());
+			const { data: profile } = await supabase
+				.from('Profile')
+				.select('universityId')
+				.eq('id', user.id)
+				.single();
+			const universityId = profile?.universityId;
+
+			// 1. Active Events (Future events in user's university)
+			let eventsQuery = supabase
+				.from('Event')
+				.select('*', { count: 'exact', head: true });
+			if (universityId) eventsQuery = eventsQuery.eq('universityId', universityId);
+			const { count: eventsCount } = await eventsQuery.gt('date', new Date().toISOString());
 
 				// 2. Study Groups (Club memberships)
 				const { count: groupsCount } = await supabase
@@ -102,13 +110,15 @@ export default function Dashboard() {
 					wellnessStreak: wellnessCount || 0
 				});
 
-				// 5. Upcoming Events List
-				const { data: upcomingData } = await supabase
-					.from('Event')
-					.select('*')
-					.gt('date', new Date().toISOString())
-					.order('date', { ascending: true })
-					.limit(3);
+			// 5. Upcoming Events List
+			let upcomingQuery = supabase
+				.from('Event')
+				.select('*');
+			if (universityId) upcomingQuery = upcomingQuery.eq('universityId', universityId);
+			const { data: upcomingData } = await upcomingQuery
+				.gt('date', new Date().toISOString())
+				.order('date', { ascending: true })
+				.limit(3);
 
 				if (upcomingData) {
 					setCalendarEventDates(upcomingData.map(event => event.date));
@@ -136,17 +146,19 @@ export default function Dashboard() {
 				// 6. Campus Feed (Recent posts)
 				// Note: Join syntax depends on exact relation names. Using author:Profile(...) alias attempt.
 				// If it fails, we fall back to just fetching posts.
-				const { data: feedData } = await supabase
-					.from('Post')
-					.select(`
+			let feedQuery = supabase
+				.from('Post')
+				.select(`
                     content, 
                     createdAt, 
                     scope,
                     Profile!authorId ( fullName )
                 `)
-					.eq('scope', 'CAMPUS')
-					.order('createdAt', { ascending: false })
-					.limit(3);
+				.eq('scope', 'CAMPUS');
+			if (universityId) feedQuery = feedQuery.eq('universityId', universityId);
+			const { data: feedData } = await feedQuery
+				.order('createdAt', { ascending: false })
+				.limit(3);
 
 				if (feedData) {
 					setFeedPosts(feedData.map(post => {
@@ -269,9 +281,9 @@ export default function Dashboard() {
 							<h2 className="text-lg font-semibold text-foreground">
 								Quick Actions
 							</h2>
-							<Button variant="ghost" size="sm" className="text-primary">
-								View all
-							</Button>
+						<Button variant="ghost" size="sm" className="text-primary" onClick={() => router.push('/academic')}>
+							View all
+						</Button>
 						</div>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							{quickActions.map((action, index) => (
@@ -295,10 +307,10 @@ export default function Dashboard() {
 									{upcomingEvents.length} this week
 								</Badge>
 							</div>
-							<Button size="sm" className="gap-1.5">
-								<Plus className="h-4 w-4" />
-								Add Event
-							</Button>
+						<Button size="sm" className="gap-1.5" onClick={() => router.push('/events')}>
+							<Plus className="h-4 w-4" />
+							Add Event
+						</Button>
 						</div>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							{upcomingEvents.length > 0 ? (
@@ -326,9 +338,9 @@ export default function Dashboard() {
 							<h2 className="font-semibold text-foreground">
 								Upcoming Deadlines
 							</h2>
-							<Button variant="ghost" size="sm" className="text-xs text-primary h-7">
-								View all
-							</Button>
+						<Button variant="ghost" size="sm" className="text-xs text-primary h-7" onClick={() => router.push('/events')}>
+							View all
+						</Button>
 						</div>
 						<div className="space-y-3">
 							{upcomingEvents.length > 0 ? (
@@ -379,13 +391,14 @@ export default function Dashboard() {
 								<div className="text-sm text-muted-foreground text-center py-4">No recent activity.</div>
 							)}
 						</div>
-						<Button
-							variant="outline"
-							className="w-full mt-4 text-sm"
-							size="sm"
-						>
-							Open Campus Feed
-						</Button>
+					<Button
+						variant="outline"
+						className="w-full mt-4 text-sm"
+						size="sm"
+						onClick={() => router.push('/feed')}
+					>
+						Open Campus Feed
+					</Button>
 					</section>
 				</div>
 			</div>

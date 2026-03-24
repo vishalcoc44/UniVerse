@@ -81,8 +81,8 @@ Return ONLY valid JSON that strictly matches this structure without any markdown
 		};
 
 	} catch (error: any) {
-		console.error("Error generating quiz:", error);
-		return { success: false, error: error.message };
+		console.error("Error generating quiz:", error?.message || error);
+		return { success: false, error: "Failed to generate quiz." };
 	}
 }
 
@@ -106,8 +106,8 @@ export async function saveQuizAttemptAction(quizId: string, score: number, total
 		revalidatePath('/academic');
 		return { success: true };
 	} catch (error: any) {
-		console.error("Error saving quiz attempt:", error);
-		return { success: false, error: error.message };
+		console.error("Error saving quiz attempt:", error?.message || error);
+		return { success: false, error: "Failed to save quiz attempt." };
 	}
 }
 
@@ -137,7 +137,7 @@ export async function getQuizzesAction(courseId?: string) {
 
 		return { success: true, quizzes: data };
 	} catch (error: any) {
-		console.error("Error fetching quizzes:", error);
-		return { success: false, error: error.message };
+		console.error("Error fetching quizzes:", error?.message || error);
+		return { success: false, error: "Failed to fetch quizzes." };
 	}
 }

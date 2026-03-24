@@ -54,6 +54,7 @@ export default function ResearchPage() {
 	const [projects, setProjects] = useState<Project[]>([]);
 	const [collaborators, setCollaborators] = useState<CollaboratorRecord[]>([]);
 	const [createOpen, setCreateOpen] = useState(false);
+	const [searchQuery, setSearchQuery] = useState("");
 	const [form, setForm] = useState({
 		title: "",
 		description: "",
@@ -254,13 +255,22 @@ export default function ResearchPage() {
 	const myApplications = projects.filter((project) => collaboratorMap.get(project.id) === "APPLICANT");
 
 	const filteredProjects = useMemo(() => {
+		let list: Project[];
 		switch (activeTab) {
-			case "open": return openProjects;
-			case "my-projects": return myProjects;
-			case "my-applications": return myApplications;
-			default: return openProjects;
+			case "open": list = openProjects; break;
+			case "my-projects": list = myProjects; break;
+			case "my-applications": list = myApplications; break;
+			default: list = openProjects;
 		}
-	}, [activeTab, openProjects, myProjects, myApplications]);
+		if (searchQuery.trim()) {
+			const q = searchQuery.toLowerCase();
+			list = list.filter(p => 
+				p.title.toLowerCase().includes(q) || 
+				p.description.toLowerCase().includes(q)
+			);
+		}
+		return list;
+	}, [activeTab, openProjects, myProjects, myApplications, searchQuery]);
 
 	// Create Project Dialog
 	const createProjectDialog = (
@@ -425,6 +435,8 @@ export default function ResearchPage() {
 						<Input
 							placeholder="Search projects..."
 							className="w-full sm:w-[250px] h-9 pl-9 bg-muted/50 border-border/50 rounded-lg"
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
 						/>
 					</div>
 				</div>

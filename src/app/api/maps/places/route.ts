@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/server-supabase";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET(req: NextRequest) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
+  const { allowed, resetInSeconds } = rateLimit(`maps-places:${user.id}`, { maxRequests: 30, windowMs: 60_000 });
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Try again later." },
+      { status: 429, headers: { "Retry-After": String(resetInSeconds) } }
+    );
+  }
+
   const { searchParams } = new URL(req.url);
   const query = searchParams.get("query");
 
@@ -10,7 +26,7 @@ export async function GET(req: NextRequest) {
 
   const apiKey = process.env.GOOGLE_MAPS_SERVER_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: "GOOGLE_MAPS_SERVER_KEY env var not configured" }, { status: 500 });
+    return NextResponse.json({ error: "Maps service not configured" }, { status: 500 });
   }
 
   const url = new URL("https://maps.googleapis.com/maps/api/place/textsearch/json");
@@ -21,10 +37,9 @@ export async function GET(req: NextRequest) {
     const response = await fetch(url.toString());
     const data = await response.json();
 
-    // Surface Google API-level errors (e.g. REQUEST_DENIED = API not enabled, INVALID_REQUEST)
     if (data.status && data.status !== "OK" && data.status !== "ZERO_RESULTS") {
       return NextResponse.json(
-        { error: `Google Places API error: ${data.status} — ${data.error_message ?? "no details"}` },
+        { error: `Google Places API error: ${data.status}` },
         { status: 502 }
       );
     }

@@ -1,6 +1,7 @@
 'use client';
 
-import { Bell, MessageSquare, Search, Command, Home, LogOut, Sun, Moon } from "lucide-react";
+import { MessageSquare, Search, Command, Home, LogOut, Sun, Moon } from "lucide-react";
+import { NotificationCenter } from "./NotificationCenter";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
 
 interface HeaderProps {
   title: React.ReactNode;
@@ -19,6 +21,60 @@ interface HeaderProps {
 export function Header({ title, subtitle, breadcrumb, action }: HeaderProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const [messageUnreadCount, setMessageUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setMessageUnreadCount(0);
+        return;
+      }
+
+      const { data: participants } = await supabase
+        .from('ConversationParticipant')
+        .select('conversationId')
+        .eq('userId', user.id);
+
+      if (!participants || participants.length === 0) {
+        setMessageUnreadCount(0);
+        return;
+      }
+
+      const conversationIds = participants.map((p) => p.conversationId);
+      const { data: messages } = await supabase
+        .from('Message')
+        .select('id, readBy, senderId, isDeleted, deletedFor')
+        .in('conversationId', conversationIds);
+
+      if (!messages) {
+        setMessageUnreadCount(0);
+        return;
+      }
+
+      const count = messages.filter((m: any) =>
+        m.senderId !== user.id &&
+        (!m.readBy || !m.readBy.includes(user.id)) &&
+        !m.isDeleted &&
+        !((m.deletedFor || []).includes(user.id))
+      ).length;
+
+      setMessageUnreadCount(count);
+    };
+
+    fetchUnreadCount();
+
+    const channel = supabase
+      .channel('header-unread-count')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Message' }, () => {
+        fetchUnreadCount();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
@@ -75,17 +131,22 @@ export function Header({ title, subtitle, breadcrumb, action }: HeaderProps) {
           </Button>
 
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative h-9 w-9">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
-          </Button>
+          <NotificationCenter />
 
           {/* Messages */}
-          <Button variant="ghost" size="icon" className="relative h-9 w-9">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative h-9 w-9"
+            onClick={() => router.push("/messages")}
+            title="Messages"
+          >
             <MessageSquare className="h-5 w-5" />
-            <Badge className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center text-[10px] px-1">
-              3
-            </Badge>
+            {messageUnreadCount > 0 && (
+              <Badge className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center text-[10px] px-1">
+                {messageUnreadCount > 99 ? "99+" : messageUnreadCount}
+              </Badge>
+            )}
           </Button>
 
           {/* Logout */}

@@ -1,9 +1,15 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') || '').split(',').filter(Boolean)
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('Origin') || ''
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : (ALLOWED_ORIGINS[0] || '')
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  }
 }
 
 interface EvaluateRequest {
@@ -22,15 +28,49 @@ interface Evaluation {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
+    // Authenticate the request
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+
+    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    })
+
+    const { data: { user }, error: userError } = await supabaseUser.auth.getUser()
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const { question, answer, category, sessionId, questionIndex }: EvaluateRequest = await req.json()
 
     if (!question || !answer) {
       return new Response(JSON.stringify({ error: 'question and answer are required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    if (question.length > 5000 || answer.length > 10000) {
+      return new Response(JSON.stringify({ error: 'Input too long' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
@@ -42,7 +82,7 @@ serve(async (req) => {
 
     if (openAIKey) {
       const systemPrompt = `You are an expert career coach evaluating mock interview answers.
-Evaluate the following ${category} interview answer on a scale of 1-100.
+Evaluate the following ${category || 'general'} interview answer on a scale of 1-100.
 Return a JSON object with:
 - score: number (0-100)
 - strengths: string[] (2-3 bullet points of what was done well)
@@ -57,7 +97,7 @@ Be constructive and specific. Only return valid JSON.`
           model: 'gpt-4o-mini',
           messages: [
             { role: 'system', content: systemPrompt },
-            { role: 'user', content: `Question: ${question}\n\nAnswer: ${answer}` },
+            { role: 'user', content: `Question: ${question.slice(0, 2000)}\n\nAnswer: ${answer.slice(0, 5000)}` },
           ],
           temperature: 0.3,
           max_tokens: 500,
@@ -66,9 +106,15 @@ Be constructive and specific. Only return valid JSON.`
 
       const json = await res.json()
       const content = json.choices?.[0]?.message?.content ?? ''
-      evaluation = JSON.parse(content)
+      try {
+        evaluation = JSON.parse(content)
+      } catch {
+        return new Response(JSON.stringify({ error: 'Failed to parse AI evaluation' }), {
+          status: 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
     } else {
-      // Fallback mock evaluation
       const words = answer.trim().split(/\s+/).length
       const score = Math.min(100, Math.max(20, 40 + words * 0.5))
       evaluation = {
@@ -85,25 +131,24 @@ Be constructive and specific. Only return valid JSON.`
       }
     }
 
-    // Optionally update session with feedback for this question
-    if (sessionId && questionIndex !== undefined) {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
-      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      if (supabaseUrl && supabaseKey) {
-        const supabase = createClient(supabaseUrl, supabaseKey)
-        const { data: session } = await supabase
-          .from('InterviewSession')
-          .select('feedback')
-          .eq('id', sessionId)
-          .single()
+    if (sessionId && questionIndex !== undefined && supabaseServiceKey) {
+      const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-        const existingFeedback = (session?.feedback as Record<string, unknown>) ?? {}
+      // Verify the session belongs to the authenticated user
+      const { data: session } = await supabase
+        .from('InterviewSession')
+        .select('id, feedback, userId')
+        .eq('id', sessionId)
+        .single()
+
+      if (session && session.userId === user.id) {
+        const existingFeedback = (session.feedback as Record<string, unknown>) ?? {}
         await supabase.from('InterviewSession').update({
           feedback: {
             ...existingFeedback,
             [`q${questionIndex}`]: evaluation,
           },
-        }).eq('id', sessionId)
+        }).eq('id', sessionId).eq('userId', user.id)
       }
     }
 
@@ -112,9 +157,10 @@ Be constructive and specific. Only return valid JSON.`
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), {
+    console.error('evaluate-interview error:', err)
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     })
   }
 })

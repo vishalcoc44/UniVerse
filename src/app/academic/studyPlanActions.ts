@@ -90,8 +90,8 @@ Return ONLY valid JSON that strictly matches this structure without markdown bac
 			}
 		};
 	} catch (error: any) {
-		console.error("Error generating study plan:", error);
-		return { success: false, error: error.message };
+		console.error("Error generating study plan:", error?.message || error);
+		return { success: false, error: "Failed to generate study plan." };
 	}
 }
 
@@ -114,8 +114,8 @@ export async function getStudyPlansAction() {
 
 		return { success: true, plans: data };
 	} catch (error: any) {
-		console.error("Error fetching study plans:", error);
-		return { success: false, error: error.message };
+		console.error("Error fetching study plans:", error?.message || error);
+		return { success: false, error: "Failed to fetch study plans." };
 	}
 }
 
@@ -124,6 +124,17 @@ export async function markSessionCompleteAction(sessionId: string, completed: bo
 		const supabase = await createClient();
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) throw new Error("Unauthorized");
+
+		// Verify the session belongs to a plan owned by this user
+		const { data: session } = await supabase
+			.from('StudyPlanSession')
+			.select('id, planId, plan:StudyPlan!inner(userId)')
+			.eq('id', sessionId)
+			.single();
+
+		if (!session || (session as any).plan?.userId !== user.id) {
+			return { success: false, error: "Session not found" };
+		}
 
 		const { error } = await supabase
 			.from('StudyPlanSession')
@@ -135,7 +146,7 @@ export async function markSessionCompleteAction(sessionId: string, completed: bo
 		revalidatePath('/academic');
 		return { success: true };
 	} catch (error: any) {
-		console.error("Error updating session:", error);
-		return { success: false, error: error.message };
+		console.error("Error updating session:", error?.message || error);
+		return { success: false, error: "Failed to update session." };
 	}
 }

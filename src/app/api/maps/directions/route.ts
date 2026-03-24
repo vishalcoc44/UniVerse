@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/server-supabase";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET(req: NextRequest) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
+  const { allowed, resetInSeconds } = rateLimit(`maps-directions:${user.id}`, { maxRequests: 30, windowMs: 60_000 });
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Try again later." },
+      { status: 429, headers: { "Retry-After": String(resetInSeconds) } }
+    );
+  }
+
   const { searchParams } = new URL(req.url);
   const origin = searchParams.get("origin");
   const destination = searchParams.get("destination");
@@ -12,7 +28,7 @@ export async function GET(req: NextRequest) {
 
   const apiKey = process.env.GOOGLE_MAPS_SERVER_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: "GOOGLE_MAPS_SERVER_KEY env var not configured" }, { status: 500 });
+    return NextResponse.json({ error: "Maps service not configured" }, { status: 500 });
   }
 
   const url = new URL("https://maps.googleapis.com/maps/api/directions/json");

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/server-supabase";
 
 export const runtime = "nodejs";
 
@@ -98,11 +99,22 @@ Constraints:
 
 export async function POST(req: Request) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    }
+
     const formData = await req.formData();
     const file = formData.get("file");
 
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "Missing file." }, { status: 400 });
+    }
+
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: "File too large. Maximum size is 10MB." }, { status: 400 });
     }
 
     const geminiApiKey = process.env.GEMINI_API_KEY;
@@ -166,7 +178,7 @@ export async function POST(req: Request) {
     const feedback = parseAiJson(rawText);
     return NextResponse.json({ feedback, score: feedback.impactScore });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unexpected analysis error.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("Resume analysis error:", error instanceof Error ? error.message : error);
+    return NextResponse.json({ error: "An unexpected error occurred during analysis." }, { status: 500 });
   }
 }

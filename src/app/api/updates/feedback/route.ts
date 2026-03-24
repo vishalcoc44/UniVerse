@@ -40,12 +40,13 @@ export async function POST(req: Request) {
     });
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error("Feedback insert error:", error.message);
+      return NextResponse.json({ error: "Failed to save feedback." }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unexpected error.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("Feedback route error:", error instanceof Error ? error.message : error);
+    return NextResponse.json({ error: "An unexpected error occurred." }, { status: 500 });
   }
 }

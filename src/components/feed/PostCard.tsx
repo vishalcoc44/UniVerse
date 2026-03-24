@@ -148,16 +148,21 @@ export function PostCard({
 
   const topReaction = reactions.sort((a, b) => b.count - a.count)[0];
 
-  const renderContent = (text: string) => ({
-    __html: text.replace(/(#[a-z0-9_]+)/gi, (match) =>
-      `<span class="text-primary font-bold hover:underline cursor-pointer" data-hashtag="${match.slice(1)}">${match}</span>`
-    )
-  });
-
-  const handleContentClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    const tag = target.dataset.hashtag;
-    if (tag) { e.stopPropagation(); onHashtagClick?.(`#${tag}`); }
+  const renderContentParts = (text: string) => {
+    const parts = text.split(/(#[a-z0-9_]+)/gi);
+    return parts.map((part, i) =>
+      /^#[a-z0-9_]+$/i.test(part) ? (
+        <span
+          key={i}
+          className="text-primary font-bold hover:underline cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); onHashtagClick?.(`#${part.slice(1)}`); }}
+        >
+          {part}
+        </span>
+      ) : (
+        <span key={i}>{part}</span>
+      )
+    );
   };
 
   return (
@@ -225,11 +230,9 @@ export function PostCard({
 
         <div className="px-3 pb-3 pl-3">
           {/* Content with clickable hashtags */}
-          <p
-            className="text-foreground/90 leading-snug font-medium text-[13px] whitespace-pre-wrap mb-2 tracking-tight"
-            dangerouslySetInnerHTML={renderContent(content)}
-            onClick={handleContentClick}
-          />
+          <p className="text-foreground/90 leading-snug font-medium text-[13px] whitespace-pre-wrap mb-2 tracking-tight">
+            {renderContentParts(content)}
+          </p>
 
           {/* Quoted Post (Repost) */}
           {quotedPost && quotedPost.author && (
