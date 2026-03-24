@@ -270,10 +270,10 @@ export function PostCard({
                     className="w-full h-auto object-cover max-h-[300px]"
                   />
                 </AnimatePresence>
-                <button onClick={() => setCarouselIndex(i => (i - 1 + images.length) % images.length)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover/carousel:opacity-100 transition-opacity">
+                <button onClick={() => setCarouselIndex(i => (i - 1 + images.length) % images.length)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1 opacity-70 md:opacity-0 md:group-hover/carousel:opacity-100 transition-opacity">
                   <ChevronLeft className="h-4 w-4" />
                 </button>
-                <button onClick={() => setCarouselIndex(i => (i + 1) % images.length)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover/carousel:opacity-100 transition-opacity">
+                <button onClick={() => setCarouselIndex(i => (i + 1) % images.length)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1 opacity-70 md:opacity-0 md:group-hover/carousel:opacity-100 transition-opacity">
                   <ChevronRight className="h-4 w-4" />
                 </button>
               </div>

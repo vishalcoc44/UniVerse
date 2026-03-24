@@ -455,9 +455,9 @@ export default function Wellness() {
 							</motion.div>
 						</div>
 
-						<div className="bg-card/40 backdrop-blur-xl border border-border/50 rounded-[2.5rem] p-7">
-							<div className="flex items-center justify-between mb-4">
-								<h3 className="font-black text-sm italic tracking-tight uppercase">Sunday Recap</h3>
+					<div className="bg-card/40 backdrop-blur-xl border border-border/50 rounded-2xl md:rounded-[2.5rem] p-4 md:p-7">
+						<div className="flex items-center justify-between mb-4">
+							<h3 className="font-black text-sm italic tracking-tight uppercase">Sunday Recap</h3>
 								<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Weekly Summary</span>
 							</div>
 							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
@@ -502,8 +502,8 @@ export default function Wellness() {
 
 						<MoodSelector onLogComplete={() => setRefreshKey(prev => prev + 1)} />
 
-						<div className="bg-card/40 backdrop-blur-xl border border-border/50 rounded-[2.5rem] p-7">
-							<div className="flex items-center justify-between mb-5">
+					<div className="bg-card/40 backdrop-blur-xl border border-border/50 rounded-2xl md:rounded-[2.5rem] p-4 md:p-7">
+						<div className="flex items-center justify-between mb-5">
 								<h3 className="font-black text-sm italic tracking-tight uppercase">Recent Check-ins</h3>
 								<span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Last 5 entries</span>
 							</div>
@@ -547,7 +547,7 @@ export default function Wellness() {
 					<div className="w-full lg:w-[300px] shrink-0 space-y-6">
 
 						{/* Streak Card */}
-						<div className="bg-gradient-to-br from-orange-500/15 via-card/40 to-card/40 backdrop-blur-xl border border-orange-500/20 rounded-[2.5rem] p-7 relative overflow-hidden group">
+						<div className="bg-gradient-to-br from-orange-500/15 via-card/40 to-card/40 backdrop-blur-xl border border-orange-500/20 rounded-2xl md:rounded-[2.5rem] p-4 md:p-7 relative overflow-hidden group">
 							<div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
 								<Flame className="h-28 w-28 fill-current text-orange-500" />
 							</div>
@@ -578,7 +578,7 @@ export default function Wellness() {
 						</div>
 
 						{/* Crisis Support */}
-						<div className="bg-gradient-to-br from-red-500/10 via-card/40 to-card/40 backdrop-blur-xl border border-red-500/20 rounded-[2.5rem] p-7 relative overflow-hidden">
+						<div className="bg-gradient-to-br from-red-500/10 via-card/40 to-card/40 backdrop-blur-xl border border-red-500/20 rounded-2xl md:rounded-[2.5rem] p-4 md:p-7 relative overflow-hidden">
 							<div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
 								<Shield className="h-24 w-24 text-red-500" />
 							</div>
@@ -670,7 +670,7 @@ export default function Wellness() {
 						</div>
 
 						{showAdminSupport && (
-							<div className="bg-gradient-to-br from-amber-500/10 via-card/40 to-card/40 backdrop-blur-xl border border-amber-500/30 rounded-[2.5rem] p-7 relative overflow-hidden">
+							<div className="bg-gradient-to-br from-amber-500/10 via-card/40 to-card/40 backdrop-blur-xl border border-amber-500/30 rounded-2xl md:rounded-[2.5rem] p-4 md:p-7 relative overflow-hidden">
 								<div className="relative">
 									<div className="flex items-center gap-3 mb-4">
 										<div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-500">

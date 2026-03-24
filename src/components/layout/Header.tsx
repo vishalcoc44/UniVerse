@@ -1,6 +1,6 @@
 'use client';
 
-import { MessageSquare, Search, Command, Home, LogOut, Sun, Moon } from "lucide-react";
+import { Menu, MessageSquare, Search, Command, Home, LogOut, Sun, Moon } from "lucide-react";
 import { NotificationCenter } from "./NotificationCenter";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,9 +16,10 @@ interface HeaderProps {
   subtitle?: string;
   breadcrumb?: string[];
   action?: React.ReactNode;
+  onMobileMenuToggle?: () => void;
 }
 
-export function Header({ title, subtitle, breadcrumb, action }: HeaderProps) {
+export function Header({ title, subtitle, breadcrumb, action, onMobileMenuToggle }: HeaderProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [messageUnreadCount, setMessageUnreadCount] = useState(0);
@@ -78,11 +79,22 @@ export function Header({ title, subtitle, breadcrumb, action }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
-      <div className="flex items-center justify-between h-16 px-6">
-        {/* Left: Breadcrumb & Title */}
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between h-14 md:h-16 px-3 md:px-6">
+        {/* Left: Mobile menu + Breadcrumb */}
+        <div className="flex items-center gap-2 md:gap-3">
+          {onMobileMenuToggle && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 md:hidden"
+              onClick={onMobileMenuToggle}
+              aria-label="Open navigation menu"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          )}
           {breadcrumb && breadcrumb.length > 0 && (
-            <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+            <nav className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
               {breadcrumb.map((item, index) => (
                 <span key={index} className="flex items-center gap-2">
                   {index > 0 && <span className="text-border">/</span>}
@@ -96,15 +108,14 @@ export function Header({ title, subtitle, breadcrumb, action }: HeaderProps) {
         </div>
 
         {/* Right: Search & Actions */}
-        <div className="flex items-center gap-3">
-          {/* Home Button */}
+        <div className="flex items-center gap-1.5 md:gap-3">
           <Link href="/">
             <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
               <Home className="h-5 w-5" />
             </Button>
           </Link>
 
-          {/* Search */}
+          {/* Search - desktop only */}
           <div className="relative hidden md:block">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -118,11 +129,11 @@ export function Header({ title, subtitle, breadcrumb, action }: HeaderProps) {
             </div>
           </div>
 
-          {/* Dark Mode Toggle */}
+          {/* Dark Mode Toggle - hide on mobile since it's in MobileNav */}
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 text-muted-foreground hover:text-foreground"
+            className="hidden md:inline-flex h-9 w-9 text-muted-foreground hover:text-foreground"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             title="Toggle theme"
           >
@@ -130,10 +141,8 @@ export function Header({ title, subtitle, breadcrumb, action }: HeaderProps) {
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           </Button>
 
-          {/* Notifications */}
           <NotificationCenter />
 
-          {/* Messages */}
           <Button
             variant="ghost"
             size="icon"
@@ -149,7 +158,6 @@ export function Header({ title, subtitle, breadcrumb, action }: HeaderProps) {
             )}
           </Button>
 
-          {/* Logout */}
           <Button
             variant="ghost"
             size="icon"
@@ -167,16 +175,15 @@ export function Header({ title, subtitle, breadcrumb, action }: HeaderProps) {
 
       {/* Page Title */}
       {title && (
-        <div className="px-6 pb-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
+        <div className="px-3 md:px-6 pb-3 md:pb-4 flex items-center justify-between">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl md:text-2xl font-semibold text-foreground truncate">{title}</h1>
             {subtitle && (
-              <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+              <p className="text-sm text-muted-foreground mt-0.5 md:mt-1">{subtitle}</p>
             )}
           </div>
-          {/* Page Action */}
           {action && (
-            <div>
+            <div className="ml-2 shrink-0">
               {action}
             </div>
           )}

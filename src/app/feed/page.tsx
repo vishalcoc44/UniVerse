@@ -377,7 +377,7 @@ export default function Feed() {
 			subtitle="Connect with your campus and the universe."
 			breadcrumb={["UniVerse", "Feed"]}
 		>
-			<div className="flex flex-col lg:flex-row gap-8 max-w-6xl mx-auto w-full pb-20">
+			<div className="flex flex-col lg:flex-row gap-4 lg:gap-8 max-w-6xl mx-auto w-full pb-20">
 				{/* Main Content Area */}
 				<div className="flex-1 min-w-0">
 					{/* Pinned Announcement Banner */}

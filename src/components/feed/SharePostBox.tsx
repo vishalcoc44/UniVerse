@@ -124,7 +124,7 @@ export function SharePostBox({ onPostCreated }: { onPostCreated?: () => void }) 
 
 	return (
 		<Card className={cn(
-			"mb-10 border-border/40 bg-card/60 backdrop-blur-2xl rounded-[2.5rem] transition-all duration-500 overflow-hidden group shadow-sm hover:shadow-xl hover:shadow-primary/5",
+			"mb-6 sm:mb-10 border-border/40 bg-card/60 backdrop-blur-2xl rounded-2xl sm:rounded-[2.5rem] transition-all duration-500 overflow-hidden group shadow-sm hover:shadow-xl hover:shadow-primary/5",
 			isExpanded ? "ring-2 ring-primary/20 shadow-2xl shadow-primary/10" : "hover:border-primary/20"
 		)}>
 			<div className="p-6 sm:p-8">
@@ -182,76 +182,76 @@ export function SharePostBox({ onPostCreated }: { onPostCreated?: () => void }) 
 							)}
 						</AnimatePresence>
 
-						<div className="flex items-center justify-between pt-6 border-t border-border/10 mt-2">
-							<div className="flex gap-1.5 items-center">
-								<Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground/50 hover:text-primary hover:bg-primary/5 rounded-full transition-all">
-									<ImageIcon className="h-5 w-5" />
-								</Button>
-								<Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground/50 hover:text-violet-500 hover:bg-violet-500/5 rounded-full transition-all">
-									<Video className="h-5 w-5" />
-								</Button>
-								<Button variant="ghost" size="icon" onClick={() => setShowPoll(v => !v)} className={cn("h-10 w-10 rounded-full transition-all", showPoll ? "text-primary bg-primary/10" : "text-muted-foreground/50 hover:text-amber-500 hover:bg-amber-500/5")}>
-									<BarChart2 className="h-5 w-5" />
-								</Button>
+					<div className="flex flex-wrap items-center justify-between gap-2 pt-4 sm:pt-6 border-t border-border/10 mt-2">
+						<div className="flex flex-wrap gap-1.5 items-center">
+							<Button variant="ghost" size="icon" className="h-9 w-9 sm:h-10 sm:w-10 text-muted-foreground/50 hover:text-primary hover:bg-primary/5 rounded-full transition-all">
+								<ImageIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+							</Button>
+							<Button variant="ghost" size="icon" className="h-9 w-9 sm:h-10 sm:w-10 text-muted-foreground/50 hover:text-violet-500 hover:bg-violet-500/5 rounded-full transition-all">
+								<Video className="h-4 w-4 sm:h-5 sm:w-5" />
+							</Button>
+							<Button variant="ghost" size="icon" onClick={() => setShowPoll(v => !v)} className={cn("h-9 w-9 sm:h-10 sm:w-10 rounded-full transition-all", showPoll ? "text-primary bg-primary/10" : "text-muted-foreground/50 hover:text-amber-500 hover:bg-amber-500/5")}>
+								<BarChart2 className="h-4 w-4 sm:h-5 sm:w-5" />
+							</Button>
 
-								<div className="h-6 w-px bg-border/20 mx-2 hidden sm:block" />
+							<div className="h-6 w-px bg-border/20 mx-1 sm:mx-2 hidden sm:block" />
 
-								<div className="flex bg-muted/30 backdrop-blur-md rounded-full p-1 h-10 items-center ring-1 ring-border/5">
-									<button
-										onClick={() => setFeedType("campus")}
-										className={cn(
-											"text-[10px] uppercase font-black tracking-widest px-4 py-1.5 rounded-full transition-all duration-300",
-											feedType === 'campus'
-												? 'bg-background shadow-lg text-primary scale-95'
-												: 'text-muted-foreground/60 hover:text-foreground'
-										)}
-									>
-										Campus
-									</button>
-									<button
-										onClick={() => setFeedType("universe")}
-										className={cn(
-											"text-[10px] uppercase font-black tracking-widest px-4 py-1.5 rounded-full transition-all duration-300",
-											feedType === 'universe'
-												? 'bg-background shadow-lg text-violet-500 scale-95'
-												: 'text-muted-foreground/60 hover:text-foreground'
-										)}
-									>
-										Universe
-									</button>
-								</div>
-							</div>
-
-							<div className="flex items-center gap-3">
-								{isExpanded && (
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={() => {
-											setIsExpanded(false);
-											if (!content.trim()) setContent("");
-										}}
-										className="h-10 w-10 text-muted-foreground/40 hover:text-foreground rounded-full"
-									>
-										<X className="h-5 w-5" />
-									</Button>
-								)}
-								<Button
+							<div className="flex bg-muted/30 backdrop-blur-md rounded-full p-0.5 sm:p-1 h-8 sm:h-10 items-center ring-1 ring-border/5">
+								<button
+									onClick={() => setFeedType("campus")}
 									className={cn(
-										"h-12 px-8 gap-2 bg-primary hover:bg-primary/90 text-white rounded-full font-black italic tracking-tighter shadow-xl shadow-primary/20 transition-all active:scale-95 group/submit",
-										(!content.trim() || isPosting) && "opacity-50 grayscale"
+										"text-[9px] sm:text-[10px] uppercase font-black tracking-widest px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full transition-all duration-300",
+										feedType === 'campus'
+											? 'bg-background shadow-lg text-primary scale-95'
+											: 'text-muted-foreground/60 hover:text-foreground'
 									)}
-									disabled={!content.trim() || isPosting}
-									onClick={handlePost}
 								>
-									{isPosting ? (
-										<Sparkles className="h-4 w-4 animate-spin" />
-									) : (
-										<>Deploy <Send className="h-4 w-4 group-hover/submit:translate-x-1 group-hover/submit:-translate-y-1 transition-transform" /></>
+									Campus
+								</button>
+								<button
+									onClick={() => setFeedType("universe")}
+									className={cn(
+										"text-[9px] sm:text-[10px] uppercase font-black tracking-widest px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full transition-all duration-300",
+										feedType === 'universe'
+											? 'bg-background shadow-lg text-violet-500 scale-95'
+											: 'text-muted-foreground/60 hover:text-foreground'
 									)}
-								</Button>
+								>
+									Universe
+								</button>
 							</div>
 						</div>
+
+						<div className="flex items-center gap-2 sm:gap-3">
+							{isExpanded && (
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={() => {
+										setIsExpanded(false);
+										if (!content.trim()) setContent("");
+									}}
+									className="h-9 w-9 sm:h-10 sm:w-10 text-muted-foreground/40 hover:text-foreground rounded-full"
+								>
+									<X className="h-5 w-5" />
+								</Button>
+							)}
+							<Button
+								className={cn(
+									"h-10 px-5 sm:h-12 sm:px-8 gap-2 bg-primary hover:bg-primary/90 text-white rounded-full font-black italic tracking-tighter shadow-xl shadow-primary/20 transition-all active:scale-95 group/submit text-sm sm:text-base",
+									(!content.trim() || isPosting) && "opacity-50 grayscale"
+								)}
+								disabled={!content.trim() || isPosting}
+								onClick={handlePost}
+							>
+								{isPosting ? (
+									<Sparkles className="h-4 w-4 animate-spin" />
+								) : (
+									<>Deploy <Send className="h-4 w-4 group-hover/submit:translate-x-1 group-hover/submit:-translate-y-1 transition-transform" /></>
+								)}
+							</Button>
+						</div>
+					</div>
 					</div>
 				</div>
 			</div>

@@ -284,43 +284,43 @@ export default function EventsPage() {
 				{/* Top Actions & Filters Banner */}
 				<div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
 					<div className="flex flex-col gap-4 w-full lg:w-auto">
-						<div className="flex items-center gap-3">
-							<Tabs value={activeScope} onValueChange={(v) => setActiveScope(v as any)} className="w-auto">
-								<TabsList className="h-12 bg-muted/50 p-1 rounded-2xl border border-border/20 backdrop-blur-md">
-									<TabsTrigger value="campus" className="rounded-xl px-5 data-[state=active]:bg-background data-[state=active]:shadow-sm text-sm font-bold">
-										Campus
-									</TabsTrigger>
-									<TabsTrigger value="universe" className="rounded-xl px-5 data-[state=active]:bg-background data-[state=active]:shadow-sm text-sm font-bold">
-										Universe
-									</TabsTrigger>
-									<TabsTrigger value="mine" className="rounded-xl px-5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm text-sm font-bold gap-1.5">
-										<Bookmark className="h-3.5 w-3.5" /> My Events
-										{userRSVPs.length > 0 && (
-											<span className="ml-1 bg-primary text-white text-[9px] font-black rounded-full h-4 w-4 flex items-center justify-center">{userRSVPs.length}</span>
-										)}
-									</TabsTrigger>
-								</TabsList>
-							</Tabs>
+					<div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+						<Tabs value={activeScope} onValueChange={(v) => setActiveScope(v as any)} className="w-auto">
+							<TabsList className="h-10 sm:h-12 bg-muted/50 p-1 rounded-2xl border border-border/20 backdrop-blur-md">
+								<TabsTrigger value="campus" className="rounded-xl px-3 sm:px-5 data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm font-bold">
+									Campus
+								</TabsTrigger>
+								<TabsTrigger value="universe" className="rounded-xl px-3 sm:px-5 data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm font-bold">
+									Universe
+								</TabsTrigger>
+								<TabsTrigger value="mine" className="rounded-xl px-3 sm:px-5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm text-xs sm:text-sm font-bold gap-1 sm:gap-1.5">
+									<Bookmark className="h-3.5 w-3.5" /> <span className="hidden sm:inline">My </span>Events
+									{userRSVPs.length > 0 && (
+										<span className="ml-1 bg-primary text-white text-[9px] font-black rounded-full h-4 w-4 flex items-center justify-center">{userRSVPs.length}</span>
+									)}
+								</TabsTrigger>
+							</TabsList>
+						</Tabs>
 
-							<div className="bg-muted/50 p-1 rounded-2xl border border-border/20 flex backdrop-blur-md">
-								<Button
-									variant={view === "grid" ? "secondary" : "ghost"}
-									size="icon"
-									className="h-10 w-10 rounded-xl"
-									onClick={() => setView("grid")}
-								>
-									<LayoutGrid className="h-5 w-5" />
-								</Button>
-								<Button
-									variant={view === "list" ? "secondary" : "ghost"}
-									size="icon"
-									className="h-10 w-10 rounded-xl"
-									onClick={() => setView("list")}
-								>
-									<List className="h-5 w-5" />
-								</Button>
-							</div>
+						<div className="bg-muted/50 p-1 rounded-2xl border border-border/20 flex backdrop-blur-md">
+							<Button
+								variant={view === "grid" ? "secondary" : "ghost"}
+								size="icon"
+								className="h-10 w-10 rounded-xl"
+								onClick={() => setView("grid")}
+							>
+								<LayoutGrid className="h-5 w-5" />
+							</Button>
+							<Button
+								variant={view === "list" ? "secondary" : "ghost"}
+								size="icon"
+								className="h-10 w-10 rounded-xl"
+								onClick={() => setView("list")}
+							>
+								<List className="h-5 w-5" />
+							</Button>
 						</div>
+					</div>
 
 						<div className="relative w-full md:min-w-[400px]">
 							<Input
@@ -356,20 +356,20 @@ export default function EventsPage() {
 					<motion.div
 						initial={{ opacity: 0, y: -10 }}
 						animate={{ opacity: 1, y: 0 }}
-						className="grid grid-cols-3 gap-4"
+						className="grid grid-cols-3 gap-2 sm:gap-4"
 					>
 						{[
 							{ label: 'Total Events', value: stats.total, icon: CalendarIcon, color: 'text-primary' },
 							{ label: 'Upcoming', value: stats.upcoming, icon: TrendingUp, color: 'text-green-500' },
 							{ label: 'My RSVPs', value: stats.rsvped, icon: Bookmark, color: 'text-amber-500' },
 						].map(({ label, value, icon: Icon, color }) => (
-							<div key={label} className="bg-card/50 backdrop-blur-xl border border-border/30 rounded-2xl px-5 py-4 flex items-center gap-4 shadow-sm">
-								<div className={cn("h-10 w-10 rounded-xl bg-muted/60 flex items-center justify-center", color)}>
-									<Icon className="h-5 w-5" />
+							<div key={label} className="bg-card/50 backdrop-blur-xl border border-border/30 rounded-2xl px-3 py-3 sm:px-5 sm:py-4 flex flex-col sm:flex-row items-center gap-2 sm:gap-4 shadow-sm text-center sm:text-left">
+								<div className={cn("h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-muted/60 flex items-center justify-center", color)}>
+									<Icon className="h-4 w-4 sm:h-5 sm:w-5" />
 								</div>
 								<div>
-									<p className="text-2xl font-black">{value}</p>
-									<p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">{label}</p>
+									<p className="text-lg sm:text-2xl font-black">{value}</p>
+									<p className="text-[10px] sm:text-xs text-muted-foreground font-semibold uppercase tracking-wider">{label}</p>
 								</div>
 							</div>
 						))}
@@ -429,7 +429,7 @@ export default function EventsPage() {
 						<motion.div
 							initial={{ opacity: 0 }}
 							animate={{ opacity: 1 }}
-							className="text-center py-24 bg-card/20 rounded-[3rem] border-2 border-dashed border-border/50"
+							className="text-center py-12 sm:py-24 bg-card/20 rounded-2xl sm:rounded-[3rem] border-2 border-dashed border-border/50"
 						>
 							<CalendarIcon className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
 							<h3 className="text-xl font-bold mb-2">No events found</h3>

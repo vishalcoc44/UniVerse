@@ -218,7 +218,7 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        "flex flex-col h-screen bg-sidebar transition-all duration-300 ease-in-out relative z-20",
+        "hidden md:flex flex-col h-screen bg-sidebar transition-all duration-300 ease-in-out relative z-20",
         isDisplayCollapsed ? "w-[85px]" : "w-[280px]"
       )}
     >

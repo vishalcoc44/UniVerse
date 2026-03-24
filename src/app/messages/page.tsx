@@ -453,36 +453,36 @@ export default function Messages() {
 							onChatUpdated={handleConversationUpdate}
 						/>
 					) : (
-						<div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in-95 duration-700">
-							<div className="relative group/icon mb-8">
+						<div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 text-center animate-in fade-in zoom-in-95 duration-700">
+							<div className="relative group/icon mb-6 md:mb-8">
 								<div className="absolute -inset-8 rounded-full bg-primary/5 blur-3xl group-hover/icon:bg-primary/10 transition-colors" />
-								<div className="relative h-24 w-24 bg-primary/10 rounded-[2rem] flex items-center justify-center rotate-6 group-hover/icon:rotate-0 transition-transform duration-500 shadow-inner">
-									<MessageSquare className="h-12 w-12 text-primary drop-shadow-sm" />
-									<Sparkle className="absolute -top-1 -right-1 h-6 w-6 text-primary animate-pulse" />
+								<div className="relative h-20 w-20 md:h-24 md:w-24 bg-primary/10 rounded-[2rem] flex items-center justify-center rotate-6 group-hover/icon:rotate-0 transition-transform duration-500 shadow-inner">
+									<MessageSquare className="h-10 w-10 md:h-12 md:w-12 text-primary drop-shadow-sm" />
+									<Sparkle className="absolute -top-1 -right-1 h-5 w-5 md:h-6 md:w-6 text-primary animate-pulse" />
 								</div>
 							</div>
 
-							<div className="max-w-md space-y-4">
-								<h3 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text text-transparent italic">
+							<div className="max-w-md space-y-3 md:space-y-4">
+								<h3 className="text-xl md:text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text text-transparent italic">
 									Your Universe Awaits
 								</h3>
-								<p className="text-muted-foreground text-sm leading-relaxed px-4">
+								<p className="text-muted-foreground text-xs md:text-sm leading-relaxed px-2 md:px-4">
 									Collaborate with peers, ask questions to faculty, or start a study group.
 									Select a contact from the left to start your journey.
 								</p>
 							</div>
 
-							<div className="mt-10 flex items-center gap-4 animate-in slide-in-from-bottom-4 duration-1000 delay-300">
+							<div className="mt-6 md:mt-10 flex flex-wrap items-center justify-center gap-3 md:gap-4 animate-in slide-in-from-bottom-4 duration-1000 delay-300">
 								<Button
 									onClick={handleNewChat}
-									className="rounded-full px-8 h-12 shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all"
+									className="rounded-full px-5 h-10 md:px-8 md:h-12 shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all text-sm md:text-base"
 								>
 									<Plus className="mr-2 h-4 w-4" /> Start Messaging
 								</Button>
 								<Button
 									variant="outline"
 									onClick={handleNewGroup}
-									className="rounded-full px-8 h-12 bg-background/50 backdrop-blur-sm border-border/50 hover:bg-muted active:scale-95 transition-all"
+									className="rounded-full px-5 h-10 md:px-8 md:h-12 bg-background/50 backdrop-blur-sm border-border/50 hover:bg-muted active:scale-95 transition-all text-sm md:text-base"
 								>
 									<Users className="mr-2 h-4 w-4" /> New Group
 								</Button>

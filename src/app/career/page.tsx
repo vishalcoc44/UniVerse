@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ResumeUploader } from "@/components/career/ResumeUploader";
@@ -362,24 +362,24 @@ export default function Career() {
 											>
 												<div className="bg-card/30 border border-blue-500/30 rounded-2xl p-4 space-y-3">
 													<p className="text-[10px] font-black uppercase tracking-widest text-blue-400">New Company</p>
-													<div className="grid grid-cols-2 gap-2">
-														<input placeholder="Company name *" value={companyForm.name} onChange={e => setCompanyForm(p => ({ ...p, name: e.target.value }))}
-															className="col-span-2 h-9 bg-card/40 border border-border/40 rounded-xl px-3 text-xs font-medium text-foreground placeholder:text-muted-foreground outline-none focus:border-blue-500/50" />
-														<input placeholder="Industry" value={companyForm.industry} onChange={e => setCompanyForm(p => ({ ...p, industry: e.target.value }))}
-															className="h-9 bg-card/40 border border-border/40 rounded-xl px-3 text-xs font-medium text-foreground placeholder:text-muted-foreground outline-none focus:border-blue-500/50" />
-														<input placeholder="Headquarters (city)" value={companyForm.headquarters} onChange={e => setCompanyForm(p => ({ ...p, headquarters: e.target.value }))}
-															className="h-9 bg-card/40 border border-border/40 rounded-xl px-3 text-xs font-medium text-foreground placeholder:text-muted-foreground outline-none focus:border-blue-500/50" />
-														<input placeholder="Website URL" value={companyForm.website} onChange={e => setCompanyForm(p => ({ ...p, website: e.target.value }))}
-															className="h-9 bg-card/40 border border-border/40 rounded-xl px-3 text-xs font-medium text-foreground placeholder:text-muted-foreground outline-none focus:border-blue-500/50" />
-														<input placeholder="Logo URL" value={companyForm.logoUrl} onChange={e => setCompanyForm(p => ({ ...p, logoUrl: e.target.value }))}
-															className="h-9 bg-card/40 border border-border/40 rounded-xl px-3 text-xs font-medium text-foreground placeholder:text-muted-foreground outline-none focus:border-blue-500/50" />
-														<select value={companyForm.size} onChange={e => setCompanyForm(p => ({ ...p, size: e.target.value }))}
-															className="h-9 bg-card/40 border border-border/40 rounded-xl px-3 text-xs text-foreground">
-															{['STARTUP', 'SME', 'ENTERPRISE'].map(s => <option key={s} value={s}>{s}</option>)}
-														</select>
-														<textarea placeholder="Description" value={companyForm.description} onChange={e => setCompanyForm(p => ({ ...p, description: e.target.value }))}
-															rows={2} className="col-span-2 bg-card/40 border border-border/40 rounded-xl px-3 py-2 text-xs resize-none text-foreground placeholder:text-muted-foreground outline-none focus:border-blue-500/50" />
-													</div>
+												<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+													<input placeholder="Company name *" value={companyForm.name} onChange={e => setCompanyForm(p => ({ ...p, name: e.target.value }))}
+														className="sm:col-span-2 h-9 bg-card/40 border border-border/40 rounded-xl px-3 text-xs font-medium text-foreground placeholder:text-muted-foreground outline-none focus:border-blue-500/50" />
+													<input placeholder="Industry" value={companyForm.industry} onChange={e => setCompanyForm(p => ({ ...p, industry: e.target.value }))}
+														className="h-9 bg-card/40 border border-border/40 rounded-xl px-3 text-xs font-medium text-foreground placeholder:text-muted-foreground outline-none focus:border-blue-500/50" />
+													<input placeholder="Headquarters (city)" value={companyForm.headquarters} onChange={e => setCompanyForm(p => ({ ...p, headquarters: e.target.value }))}
+														className="h-9 bg-card/40 border border-border/40 rounded-xl px-3 text-xs font-medium text-foreground placeholder:text-muted-foreground outline-none focus:border-blue-500/50" />
+													<input placeholder="Website URL" value={companyForm.website} onChange={e => setCompanyForm(p => ({ ...p, website: e.target.value }))}
+														className="h-9 bg-card/40 border border-border/40 rounded-xl px-3 text-xs font-medium text-foreground placeholder:text-muted-foreground outline-none focus:border-blue-500/50" />
+													<input placeholder="Logo URL" value={companyForm.logoUrl} onChange={e => setCompanyForm(p => ({ ...p, logoUrl: e.target.value }))}
+														className="h-9 bg-card/40 border border-border/40 rounded-xl px-3 text-xs font-medium text-foreground placeholder:text-muted-foreground outline-none focus:border-blue-500/50" />
+													<select value={companyForm.size} onChange={e => setCompanyForm(p => ({ ...p, size: e.target.value }))}
+														className="h-9 bg-card/40 border border-border/40 rounded-xl px-3 text-xs text-foreground">
+														{['STARTUP', 'SME', 'ENTERPRISE'].map(s => <option key={s} value={s}>{s}</option>)}
+													</select>
+													<textarea placeholder="Description" value={companyForm.description} onChange={e => setCompanyForm(p => ({ ...p, description: e.target.value }))}
+														rows={2} className="sm:col-span-2 bg-card/40 border border-border/40 rounded-xl px-3 py-2 text-xs resize-none text-foreground placeholder:text-muted-foreground outline-none focus:border-blue-500/50" />
+												</div>
 													<Button size="sm" className="h-8 text-[11px] font-black rounded-xl w-full" onClick={submitCompany} disabled={addingCompany || !companyForm.name}>
 														{addingCompany ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Save Company'}
 													</Button>

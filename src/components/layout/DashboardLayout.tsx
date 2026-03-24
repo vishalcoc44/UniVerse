@@ -1,8 +1,9 @@
 'use client';
 
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
+import { MobileNav } from "./MobileNav";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -24,14 +25,17 @@ export function DashboardLayout({
   action,
   noPadding = false,
 }: DashboardLayoutProps) {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar activeItem={activeNav} onNavigate={onNavigate} />
+      <MobileNav open={mobileNavOpen} onOpenChange={setMobileNavOpen} activeItem={activeNav} onNavigate={onNavigate} />
       <main className={`flex-1 overflow-x-hidden ${noPadding ? 'overflow-hidden flex flex-col' : 'overflow-y-auto'}`}>
-        <Header title={title} subtitle={subtitle} breadcrumb={breadcrumb} action={action} />
+        <Header title={title} subtitle={subtitle} breadcrumb={breadcrumb} action={action} onMobileMenuToggle={() => setMobileNavOpen(true)} />
         {noPadding
           ? <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
-          : <div className="p-6 animate-fade-in">{children}</div>
+          : <div className="p-3 sm:p-4 md:p-6 animate-fade-in">{children}</div>
         }
       </main>
     </div>
