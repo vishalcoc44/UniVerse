@@ -136,13 +136,19 @@ export default function AdminDashboard() {
       }
       const { data: profile } = await supabase
         .from("Profile")
-        .select("role")
+        .select("role, universityId")
         .eq("id", user.id)
         .single();
 
       if (profile?.role !== "ADMIN") {
         toast.error("Access denied — admin privileges required.");
         router.replace("/dashboard");
+        return;
+      }
+
+      if (profile?.universityId) {
+        toast.error("Use University Admins page for campus admin management.");
+        router.replace("/settings/university-admins");
         return;
       }
       setIsAdmin(true);

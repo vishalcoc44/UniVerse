@@ -15,6 +15,7 @@ const PROTECTED_ROUTES = [
 	'/forums',
 	'/research',
 	'/news',
+	'/departments',
 	'/utilities',
 	'/settings',
 	'/profile',
@@ -72,11 +73,11 @@ export async function updateSession(request: NextRequest) {
 		if (pathname.startsWith('/admin') && user) {
 			const { data: profile } = await supabase
 				.from('Profile')
-				.select('role')
+				.select('role, universityId')
 				.eq('id', user.id)
 				.single()
 
-			if (!profile || profile.role !== 'ADMIN') {
+			if (!profile || profile.role !== 'ADMIN' || profile.universityId) {
 				return NextResponse.redirect(new URL('/dashboard', request.url))
 			}
 		}

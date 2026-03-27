@@ -296,43 +296,6 @@ export default function Wellness() {
 		setIsUpdatingCrisis(false);
 	};
 
-	const handleAddAdminContact = async () => {
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user || !universityData) return;
-		setIsUpdatingCrisis(true);
-
-		const { error } = await supabase
-			.from('Profile')
-			.update({ role: 'ADMIN', universityId: universityData.id })
-			.eq('id', user.id);
-
-		if (error) {
-			console.error("Error setting admin role:", error);
-		} else {
-			// Refresh stats to update admin list
-			setRefreshKey(prev => prev + 1);
-		}
-		setIsUpdatingCrisis(false);
-	};
-
-	const handleDeleteAdminContact = async (adminId: string) => {
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user || user.id !== adminId) return; // Only allow deleting yourself for now to avoid complexity
-		setIsUpdatingCrisis(true);
-
-		const { error } = await supabase
-			.from('Profile')
-			.update({ role: 'STUDENT' })
-			.eq('id', adminId);
-
-		if (error) {
-			console.error("Error removing admin role:", error);
-		} else {
-			setRefreshKey(prev => prev + 1);
-		}
-		setIsUpdatingCrisis(false);
-	};
-
 	const showAdminSupport = weeklyAverage !== null && weeklyAverage < LOW_WEEKLY_SCORE_THRESHOLD;
 
 	return (
@@ -695,35 +658,9 @@ export default function Wellness() {
 																<Mail className="h-4 w-4 mr-2" /> {admin.fullName || 'Admin'}
 															</a>
 														</Button>
-														{userRole === "ADMIN" && (
-															<Button
-																variant="ghost"
-																size="icon"
-																className="h-10 w-10 text-muted-foreground hover:text-red-500"
-																onClick={() => handleDeleteAdminContact(admin.id)}
-																disabled={isUpdatingCrisis}
-															>
-																<Trash2 className="h-4 w-4" />
-															</Button>
-														)}
 													</div>
 												);
 											})
-										)}
-
-										{/* Admin controls to add self as contact */}
-										{userRole === "ADMIN" && !adminContacts.some(a => universityData?.id && a.id === universityData.id) && (
-											<div className="pt-4 border-t border-amber-500/10">
-												<Button
-													variant="ghost"
-													onClick={handleAddAdminContact}
-													disabled={isUpdatingCrisis}
-													className="w-full text-[10px] font-black uppercase tracking-widest text-amber-500/60 hover:text-amber-500 hover:bg-amber-500/5 group"
-												>
-													{isUpdatingCrisis ? <Loader2 className="h-3 w-3 animate-spin mr-1.5" /> : <Plus className="h-3 w-3 mr-1.5 group-hover:scale-110 transition-transform" />}
-													Add Yourself as Contact
-												</Button>
-											</div>
 										)}
 									</div>
 								</div>

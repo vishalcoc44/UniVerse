@@ -8,6 +8,7 @@ import {
   BookOpen,
   Calendar,
   Users,
+  Building2,
   MessageSquare,
   Briefcase,
   Heart,
@@ -45,7 +46,7 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [profile, setProfile] = useState<{ fullName: string, username: string, universityAbbr: string, avatarUrl: string, role: string } | null>(null);
+  const [profile, setProfile] = useState<{ fullName: string, username: string, universityAbbr: string, avatarUrl: string, role: string, universityId: string | null } | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
   const pathname = usePathname();
@@ -67,6 +68,7 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
   ];
 
   const collaborationItems: NavItem[] = [
+    { icon: Building2, label: "Departments", href: "/departments", isActive: pathname === "/departments" },
     { icon: Car, label: "Cab Pooling", href: "/travel", isActive: pathname === "/travel" },
     { icon: FlaskConical, label: "Research Hub", href: "/research", isActive: pathname === "/research" },
     { icon: MessageCircle, label: "Anonymous Forums", href: "/forums", isActive: pathname === "/forums" },
@@ -77,7 +79,15 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
     { icon: Newspaper, label: "Campus News", href: "/news", isActive: pathname === "/news" },
     { icon: ShoppingBag, label: "Marketplace", href: "/marketplace", isActive: pathname === "/marketplace" },
     { icon: Sparkles, label: "What's New", href: "/updates", isActive: pathname === "/updates" },
-    ...(profile?.role === "ADMIN" ? [{ icon: ShieldCheck, label: "Admin Panel", href: "/admin", isActive: pathname === "/admin" }] : []),
+    ...(profile?.role === "ADMIN" && !profile?.universityId
+      ? [
+          { icon: ShieldCheck, label: "Admin Panel", href: "/admin", isActive: pathname === "/admin" },
+          { icon: ShieldCheck, label: "Platform Admins", href: "/admin/platform-admins", isActive: pathname === "/admin/platform-admins" },
+        ]
+      : []),
+    ...(profile?.role === "ADMIN" && !!profile?.universityId
+      ? [{ icon: ShieldCheck, label: "University Admins", href: "/settings/university-admins", isActive: pathname === "/settings/university-admins" }]
+      : []),
     { icon: Settings, label: "Settings", href: "/settings", isActive: pathname === "/settings" },
   ];
 
@@ -149,7 +159,7 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         // Capitalize University to match table name if lowercase fails
-        const { data } = await supabase.from('Profile').select('fullName, username, avatarUrl, role, University(abbreviation)').eq('id', user.id).single();
+        const { data } = await supabase.from('Profile').select('fullName, username, avatarUrl, role, universityId, University(abbreviation)').eq('id', user.id).single();
         if (data) {
           // Supabase join query return key matches the select capitalization
           const uni: any = data.University;
@@ -161,6 +171,7 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
             universityAbbr: uniAbbr || "Uni",
             avatarUrl: data.avatarUrl || "",
             role: data.role || "STUDENT",
+            universityId: data.universityId || null,
           });
         }
       }

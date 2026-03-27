@@ -48,11 +48,6 @@ export default function RequestUniversity() {
 		// Parse domains
 		const domainList = formData.domains.split(',').map(d => d.trim()).filter(d => d.length > 0);
 
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) {
-			throw new Error("Please sign in before submitting a university request.");
-		}
-
 		try {
 			const { error: insertError } = await supabase
 				.from('University')
@@ -150,7 +145,8 @@ export default function RequestUniversity() {
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<div className="space-y-2">
 										<Label htmlFor="website">Website Domain *</Label>
-										<Input id="website" placeholder="e.g. dsu.edu.in" value={formData.website} onChange={handleChange} required />
+										<Input id="website" placeholder="e.g. dsucollege.in (domain only)" value={formData.website} onChange={handleChange} required />
+										<p className="text-xs text-muted-foreground">Enter only the domain (e.g. dsucollege.in), not a full URL like https://www.dsucollege.in.</p>
 									</div>
 									<div className="space-y-2">
 										<Label htmlFor="logoUrl">Logo URL (Optional)</Label>

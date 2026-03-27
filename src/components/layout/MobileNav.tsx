@@ -8,6 +8,7 @@ import {
   BookOpen,
   Calendar,
   Users,
+  Building2,
   MessageSquare,
   Briefcase,
   Heart,
@@ -50,7 +51,7 @@ interface MobileNavProps {
 
 export function MobileNav({ open, onOpenChange, activeItem, onNavigate }: MobileNavProps) {
   const [mounted, setMounted] = useState(false);
-  const [profile, setProfile] = useState<{ fullName: string; username: string; universityAbbr: string; avatarUrl: string; role: string } | null>(null);
+  const [profile, setProfile] = useState<{ fullName: string; username: string; universityAbbr: string; avatarUrl: string; role: string; universityId: string | null } | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
   const pathname = usePathname();
@@ -70,6 +71,7 @@ export function MobileNav({ open, onOpenChange, activeItem, onNavigate }: Mobile
   ];
 
   const collaborationItems: NavItem[] = [
+    { icon: Building2, label: "Departments", href: "/departments" },
     { icon: Car, label: "Cab Pooling", href: "/travel" },
     { icon: FlaskConical, label: "Research Hub", href: "/research" },
     { icon: MessageCircle, label: "Anonymous Forums", href: "/forums" },
@@ -80,7 +82,15 @@ export function MobileNav({ open, onOpenChange, activeItem, onNavigate }: Mobile
     { icon: Newspaper, label: "Campus News", href: "/news" },
     { icon: ShoppingBag, label: "Marketplace", href: "/marketplace" },
     { icon: Sparkles, label: "What's New", href: "/updates" },
-    ...(profile?.role === "ADMIN" ? [{ icon: ShieldCheck, label: "Admin Panel", href: "/admin" }] : []),
+    ...(profile?.role === "ADMIN" && !profile?.universityId
+      ? [
+          { icon: ShieldCheck, label: "Admin Panel", href: "/admin" },
+          { icon: ShieldCheck, label: "Platform Admins", href: "/admin/platform-admins" },
+        ]
+      : []),
+    ...(profile?.role === "ADMIN" && !!profile?.universityId
+      ? [{ icon: ShieldCheck, label: "University Admins", href: "/settings/university-admins" }]
+      : []),
     { icon: Settings, label: "Settings", href: "/settings" },
   ];
 
@@ -132,7 +142,7 @@ export function MobileNav({ open, onOpenChange, activeItem, onNavigate }: Mobile
     const fetchProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data } = await supabase.from('Profile').select('fullName, username, avatarUrl, role, University(abbreviation)').eq('id', user.id).single();
+        const { data } = await supabase.from('Profile').select('fullName, username, avatarUrl, role, universityId, University(abbreviation)').eq('id', user.id).single();
         if (data) {
           const uni: any = data.University;
           const uniAbbr = Array.isArray(uni) ? uni[0]?.abbreviation : uni?.abbreviation;
@@ -142,6 +152,7 @@ export function MobileNav({ open, onOpenChange, activeItem, onNavigate }: Mobile
             universityAbbr: uniAbbr || "Uni",
             avatarUrl: data.avatarUrl || "",
             role: data.role || "STUDENT",
+            universityId: data.universityId || null,
           });
         }
       }
