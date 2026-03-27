@@ -48,6 +48,11 @@ export default function RequestUniversity() {
 		// Parse domains
 		const domainList = formData.domains.split(',').map(d => d.trim()).filter(d => d.length > 0);
 
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) {
+			throw new Error("Please sign in before submitting a university request.");
+		}
+
 		try {
 			const { error: insertError } = await supabase
 				.from('University')

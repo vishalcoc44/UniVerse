@@ -257,13 +257,16 @@ export default function AdminDashboard() {
     action: "APPROVED" | "REJECTED"
   ) => {
     setProcessingUni(id);
-    const { error } = await supabase
-      .from("University")
-      .update({ status: action })
-      .eq("id", id);
+    const { error } = await supabase.rpc("review_university_request", {
+      p_university_id: id,
+      p_new_status: action,
+      p_review_note: null,
+    });
 
     if (error) {
-      toast.error(`Failed to ${action.toLowerCase()} university.`);
+      toast.error(
+        error.message || `Failed to ${action.toLowerCase()} university.`
+      );
     } else {
       toast.success(
         `University ${action === "APPROVED" ? "approved" : "rejected"} successfully.`
