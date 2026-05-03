@@ -9,6 +9,8 @@ import { motion } from 'framer-motion';
 interface Achievement {
   id: string;
   type: string;
+  // title/description aren't columns on CareerAchievement — they're derived
+  // from the type via the local ALL_POSSIBLE catalog below.
   title: string;
   description: string | null;
   earnedAt: string;
@@ -51,10 +53,24 @@ export function Achievements() {
 
       const { data } = await supabase
         .from('CareerAchievement')
-        .select('id, type, title, description, earnedAt, metadata')
+        .select('id, type, earnedAt, metadata')
         .eq('userId', user.id)
         .order('earnedAt', { ascending: false });
-      setAchievements((data as Achievement[]) ?? []);
+
+      // Hydrate title/description from the local catalog (they aren't stored).
+      const catalog = new Map(ALL_POSSIBLE.map(a => [a.type, a]));
+      const hydrated: Achievement[] = (data ?? []).map((row: any) => {
+        const entry = catalog.get(row.type);
+        return {
+          id: row.id,
+          type: row.type,
+          title: entry?.title ?? row.type,
+          description: entry?.description ?? null,
+          earnedAt: row.earnedAt,
+          metadata: row.metadata ?? null,
+        };
+      });
+      setAchievements(hydrated);
       setLoading(false);
     })();
   }, []);

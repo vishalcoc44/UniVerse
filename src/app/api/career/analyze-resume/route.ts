@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/server-supabase";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -55,6 +56,11 @@ function normalizeFeedback(value: unknown): ResumeFeedback {
     ? Math.max(0, Math.min(100, Math.round(numericScore)))
     : 0;
 
+  // FC-17: clamp summary to 1000 chars. Bounds prompt-injection-controlled output
+  // before it reaches the client. Other AI fields (impactScore, arrays) are
+  // already bounded above; summary was unbounded.
+  const summary = String(candidate.summary ?? "No summary returned by model.").slice(0, 1000);
+
   return {
     quickFixes: cleanedQuickFixes,
     keywords: {
@@ -62,7 +68,7 @@ function normalizeFeedback(value: unknown): ResumeFeedback {
       missing: missing.slice(0, 20)
     },
     impactScore,
-    summary: String(candidate.summary ?? "No summary returned by model.")
+    summary
   };
 }
 
@@ -105,11 +111,36 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
 
+    // FC-16: rate-limit AI calls. Gemini quota is shared across the app; an
+    // authenticated attacker can otherwise spam this endpoint to drain the
+    // budget. 5 requests / 10 min is enough for legitimate review iteration.
+    const { allowed, resetInSeconds } = rateLimit(`analyze-resume:${user.id}`, {
+      maxRequests: 5,
+      windowMs: 10 * 60_000,
+    });
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many resume analyses. Please wait before trying again." },
+        { status: 429, headers: { "Retry-After": String(resetInSeconds) } }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get("file");
 
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "Missing file." }, { status: 400 });
+    }
+
+    const fileName = file.name.toLowerCase();
+    const isPdf = file.type.includes("pdf") || fileName.endsWith(".pdf");
+    const isPlainText = file.type === "text/plain" || fileName.endsWith(".txt");
+
+    if (!isPdf && !isPlainText) {
+      return NextResponse.json(
+        { error: "Only PDF or plain text resumes are supported." },
+        { status: 415 }
+      );
     }
 
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -122,7 +153,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Server AI key is not configured." }, { status: 500 });
     }
 
-    const isPdf = file.type.includes("pdf") || file.name.toLowerCase().endsWith(".pdf");
     let parts: Array<Record<string, unknown>>;
 
     if (isPdf) {
@@ -161,9 +191,16 @@ export async function POST(req: Request) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      // FC-18: don't pass Gemini's error message through to the client. Log
+      // server-side; return a generic message that doesn't leak provider state.
+      try {
+        const errorData = await response.json();
+        console.error("Gemini API error:", JSON.stringify(errorData));
+      } catch {
+        console.error("Gemini API non-JSON error, status:", response.status);
+      }
       return NextResponse.json(
-        { error: errorData?.error?.message || "AI provider request failed." },
+        { error: "AI provider request failed. Please try again later." },
         { status: 502 }
       );
     }

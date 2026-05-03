@@ -135,8 +135,17 @@ Thumbs.db
 
 # Supabase
 supabase/.temp/
-supabase/current_schema/
 supabase/migrations/
- 
+
 # Claude agent workspace
 .claude/
+audit/
+
+# Audit + huddle (private — never push)
+security-audit-plan.md
+final_huddle.md
+.github/instructions/final-huddle.instructions.md
+
+# Transient audit / build output (regenerated each run)
+lighthouse-*.json
+build_output.txt

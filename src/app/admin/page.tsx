@@ -350,6 +350,7 @@ export default function AdminDashboard() {
   if (!authChecked) {
     return (
       <DashboardLayout
+        icon={ShieldCheck}
         title="Admin Panel"
         breadcrumb={["UniVerse", "Admin"]}
       >
@@ -417,16 +418,8 @@ export default function AdminDashboard() {
 
   return (
     <DashboardLayout
-      title={
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 shadow-lg shadow-red-500/5">
-            <ShieldCheck className="h-6 w-6" />
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Admin <span className="text-red-500">Panel</span>
-          </h1>
-        </div>
-      }
+      icon={ShieldCheck}
+      title={<>Admin <span className="text-red-500">Panel</span></>}
       subtitle="Platform administration — users, universities, and content moderation."
       breadcrumb={["UniVerse", "Admin"]}
     >

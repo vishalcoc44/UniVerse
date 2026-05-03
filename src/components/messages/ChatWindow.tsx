@@ -51,6 +51,7 @@ interface ChatWindowProps {
 		avatar: string;
 		online?: boolean;
 		status?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+		peerStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
 		isGroup?: boolean;
 		participants?: any[];
 	};
@@ -78,6 +79,8 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 	const [dropdownOpenId, setDropdownOpenId] = useState<string | null>(null);
 	const [isMuted, setIsMuted] = useState(false);
 	const [isBlocked, setIsBlocked] = useState(false);
+	const currentParticipant = chat.participants?.find((participant: any) => participant?.user?.id === currentUserId);
+	const canModerateGroupMessages = Boolean(chat.isGroup && currentParticipant?.role === "ADMIN");
 
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -305,17 +308,12 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 
 			if (unreadMessages.length === 0) return;
 
-			const results = await Promise.all(unreadMessages.map(msg =>
-				supabase
-					.from('Message')
-					.update({ readBy: [...(msg.readBy || []), currentUserId] })
-					.eq('id', msg.id)
-			));
+			const { error } = await supabase.rpc('mark_conversation_messages_read', {
+				p_conversation_id: chat.id,
+			});
 
-			const errors = results.filter((r: any) => r.error).map((r: any) => r.error);
-			if (errors.length > 0) {
-				console.error('Errors marking messages read:', errors);
-				// If updates failed (likely RLS), refetch messages to reflect true state
+			if (error) {
+				console.error('Errors marking messages read:', error);
 				fetchMessages();
 			}
 		};
@@ -664,6 +662,21 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 			)}
 
 			<div className="flex-1 relative flex flex-col min-h-0">
+				{/* Sender-side queued-request banner */}
+				{!chat.isGroup && chat.status === 'ACCEPTED' && chat.peerStatus === 'PENDING' && (
+					<div className="px-6 py-2.5 bg-amber-500/10 border-b border-amber-500/20 flex items-center gap-3 animate-in slide-in-from-top-1">
+						<Clock className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+						<div className="flex-1 min-w-0">
+							<p className="text-[12px] font-semibold text-amber-700 dark:text-amber-300 leading-tight">
+								Chat request pending
+							</p>
+							<p className="text-[11px] text-amber-700/80 dark:text-amber-300/80 leading-tight">
+								<span className="font-semibold">{chat.name}</span> hasn’t accepted yet — your messages are queued and will be delivered once they accept.
+							</p>
+						</div>
+					</div>
+				)}
+
 				{/* Messages Area */}
 				<ScrollArea className="flex-1 px-6">
 					{loading ? (
@@ -774,7 +787,7 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 															<DropdownMenuItem onClick={() => handleDeleteForMe(msg.id)}>
 																<Trash2 className="h-3 w-3 mr-2" /> Delete for me
 															</DropdownMenuItem>
-															{msg.sender === "me" && (
+															{(msg.sender === "me" || canModerateGroupMessages) && (
 																<DropdownMenuItem className="text-destructive" onClick={() => handleDeleteForEveryone(msg.id)}>
 																	<Trash2 className="h-3 w-3 mr-2" /> Delete for everyone
 																</DropdownMenuItem>
@@ -912,8 +925,13 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 													{msg.isEdited && " • Edited"}
 												</span>
 												{msg.sender === "me" && (
-													<div className="flex items-center">
-														{msg.readBy.length > 0 ? (
+													<div className="flex items-center gap-1">
+														{!chat.isGroup && chat.peerStatus === 'PENDING' ? (
+															<>
+																<Clock className="h-3 w-3 text-amber-500" />
+																<span className="text-[9px] font-bold uppercase tracking-wider text-amber-500">Queued</span>
+															</>
+														) : msg.readBy.length > 0 ? (
 															<CheckCheck className="h-3 w-3 text-primary" />
 														) : (
 															<Check className="h-3 w-3 text-muted-foreground/40" />
@@ -1034,7 +1052,7 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 					</div>
 
 					<Input
-						placeholder={isBlocked ? "Unblock this user to message..." : chat.status === 'PENDING' ? "Accept request to reply..." : (editingMessage ? "Edit your message..." : replyingTo ? `Reply to ${replyingTo.senderName || chat.name}...` : "Type a message...")}
+						placeholder={isBlocked ? "Unblock this user to message..." : chat.status === 'PENDING' ? "Accept request to reply..." : (editingMessage ? "Edit your message..." : replyingTo ? `Reply to ${replyingTo.senderName || chat.name}...` : (!chat.isGroup && chat.peerStatus === 'PENDING' ? "Type a message — it will be queued until they accept..." : "Type a message..."))}
 						className="border-none bg-transparent shadow-none focus-visible:ring-0 text-[14.5px] h-10 px-0"
 						value={inputValue}
 						onChange={handleInputChange}

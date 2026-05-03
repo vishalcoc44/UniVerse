@@ -1,24 +1,32 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Search, MessageCircle, UserPlus, Check } from "lucide-react";
+import { Loader2, Search, MessageCircle, UserPlus, UserCheck, Clock } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { toast } from "sonner"; // Using sonner as per previous context
 
 interface UserSearchModalProps {
 	isOpen: boolean;
 	onClose: () => void;
-	onSelectUser: (userId: string) => void;
+	onSelectUser: (userId: string, isFriend: boolean) => void;
+	currentUserId?: string;
 }
 
-export function UserSearchModal({ isOpen, onClose, onSelectUser }: UserSearchModalProps) {
+export function UserSearchModal({ isOpen, onClose, onSelectUser, currentUserId }: UserSearchModalProps) {
 	const [query, setQuery] = useState("");
 	const [results, setResults] = useState<any[]>([]);
-	const [loading, setLoading] = useState(false);
 	const [searching, setSearching] = useState(false);
+	const [selectingUserId, setSelectingUserId] = useState<string | null>(null);
+	const [friendIds, setFriendIds] = useState<Set<string>>(new Set());
+
+	useEffect(() => {
+		if (!isOpen) {
+			setQuery("");
+			setResults([]);
+			setSelectingUserId(null);
+		}
+	}, [isOpen]);
 
 	useEffect(() => {
 		const searchUsers = async () => {
@@ -36,7 +44,28 @@ export function UserSearchModal({ isOpen, onClose, onSelectUser }: UserSearchMod
 					.limit(10);
 
 				if (error) throw error;
-				setResults(data || []);
+				const list = data || [];
+				setResults(list);
+
+				if (currentUserId && list.length > 0) {
+					const ids = list.map((u: any) => u.id).filter((id: string) => id !== currentUserId);
+					if (ids.length > 0) {
+						const inList = `(${ids.join(',')})`;
+						const { data: friendships } = await supabase
+							.from('Friendship')
+							.select('requesterId, addresseeId, status')
+							.eq('status', 'ACCEPTED')
+							.or(`and(requesterId.eq.${currentUserId},addresseeId.in.${inList}),and(addresseeId.eq.${currentUserId},requesterId.in.${inList})`);
+
+						const next = new Set<string>();
+						(friendships || []).forEach((f: any) => {
+							next.add(f.requesterId === currentUserId ? f.addresseeId : f.requesterId);
+						});
+						setFriendIds(next);
+					} else {
+						setFriendIds(new Set());
+					}
+				}
 			} catch (err) {
 				console.error("Error searching users:", err);
 			} finally {
@@ -46,10 +75,20 @@ export function UserSearchModal({ isOpen, onClose, onSelectUser }: UserSearchMod
 
 		const timeoutId = setTimeout(searchUsers, 500);
 		return () => clearTimeout(timeoutId);
-	}, [query]);
+	}, [query, currentUserId]);
+
+	const handleSelect = async (userId: string) => {
+		if (selectingUserId) return;
+		setSelectingUserId(userId);
+		try {
+			await Promise.resolve(onSelectUser(userId, friendIds.has(userId)));
+		} finally {
+			setSelectingUserId(null);
+		}
+	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={onClose}>
+		<Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
 			<DialogContent className="sm:max-w-[450px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl">
 				<div className="bg-primary/5 p-8 pb-6 bg-gradient-to-br from-primary/10 via-background to-background">
 					<DialogTitle className="text-2xl font-bold italic tracking-tight flex items-center gap-3">
@@ -98,11 +137,14 @@ export function UserSearchModal({ isOpen, onClose, onSelectUser }: UserSearchMod
 							</div>
 						) : (
 							<div className="grid grid-cols-1 gap-2 pb-4">
-								{results.map((user) => (
+								{results.map((user) => {
+									const isFriend = friendIds.has(user.id);
+									return (
 									<button
 										key={user.id}
 										className="w-full flex items-center justify-between p-3.5 hover:bg-primary/[0.04] active:bg-primary/[0.08] border border-transparent hover:border-primary/10 rounded-[1.25rem] transition-all group"
-										onClick={() => onSelectUser(user.id)}
+										onClick={() => handleSelect(user.id)}
+										disabled={!!selectingUserId}
 									>
 										<div className="flex items-center gap-4">
 											<div className="relative">
@@ -119,13 +161,29 @@ export function UserSearchModal({ isOpen, onClose, onSelectUser }: UserSearchMod
 													<span className="w-1 h-1 rounded-full bg-muted-foreground/20" />
 													<p className="text-[10px] uppercase font-bold text-primary/60 tracking-tighter">{user.role}</p>
 												</div>
+												<div className="mt-1 flex items-center gap-1">
+													{isFriend ? (
+														<span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+															<UserCheck className="h-3 w-3" /> Friend
+														</span>
+													) : (
+														<span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+															<Clock className="h-3 w-3" /> Not connected — request will be queued
+														</span>
+													)}
+												</div>
 											</div>
 										</div>
 										<div className="h-8 w-8 rounded-full bg-background border border-border/50 shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100">
-											<UserPlus className="h-4 w-4 text-primary" />
+											{selectingUserId === user.id ? (
+												<Loader2 className="h-4 w-4 text-primary animate-spin" />
+											) : (
+												<UserPlus className="h-4 w-4 text-primary" />
+											)}
 										</div>
 									</button>
-								))}
+									);
+								})}
 							</div>
 						)}
 					</ScrollArea>

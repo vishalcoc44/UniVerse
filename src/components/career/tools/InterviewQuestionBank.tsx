@@ -148,8 +148,9 @@ export function InterviewQuestionBank() {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
-        const { data: profile } = await supabase.from('Profile').select('role').eq('id', user.id).single();
-        setIsAdmin(profile?.role === 'ADMIN');
+        // FC-1 fix: InterviewQuestion admin RLS is is_platform_admin().
+        const { data: profile } = await supabase.from('Profile').select('role, universityId').eq('id', user.id).single();
+        setIsAdmin(profile?.role === 'ADMIN' && !profile?.universityId);
       }
 
       const { data: qData } = await supabase

@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/server-supabase";
 import { revalidatePath } from "next/cache";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { rateLimit } from "@/lib/rate-limit";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -14,6 +15,10 @@ export async function generateQuizAction(topic: string, courseId?: string) {
 		if (!user) {
 			return { success: false, error: "Unauthorized" };
 		}
+
+		// FC-19: 10 quiz generations per 5 minutes per user
+		const r = rateLimit(`ai-quiz:${user.id}`, { maxRequests: 10, windowMs: 5 * 60_000 });
+		if (!r.allowed) return { success: false, error: `Too many requests. Try again in ${r.resetInSeconds}s.` };
 
 		const model = genAI.getGenerativeModel({
 			model: "gemini-2.5-flash",

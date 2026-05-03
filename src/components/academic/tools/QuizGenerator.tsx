@@ -28,6 +28,7 @@ export function QuizGenerator() {
 	const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 	const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
 	const [score, setScore] = useState(0);
+	const [completedScore, setCompletedScore] = useState<number | null>(null);
 	const [isFinished, setIsFinished] = useState(false);
 
 	const handleGenerate = async () => {
@@ -45,6 +46,7 @@ export function QuizGenerator() {
 					setQuiz(result.quiz as Quiz);
 					setCurrentQuestionIndex(0);
 					setScore(0);
+					setCompletedScore(null);
 					setSelectedAnswer(null);
 					setIsFinished(false);
 					toast.success("Quiz generated successfully!");
@@ -81,6 +83,7 @@ export function QuizGenerator() {
 		} else {
 			setIsFinished(true);
 			const finalScore = score + (selectedAnswer === quiz.questions[currentQuestionIndex].correctAnswer ? 1 : 0);
+			setCompletedScore(finalScore);
 			const result = await saveQuizAttemptAction(quiz.id, finalScore, quiz.questions.length);
 			if (!result.success) {
 				toast.error("Could not save your attempt to the database.");
@@ -91,11 +94,12 @@ export function QuizGenerator() {
 	const resetQuiz = () => {
 		setQuiz(null);
 		setTopic("");
+		setCompletedScore(null);
 		setIsFinished(false);
 	};
 
 	if (isFinished && quiz) {
-		const finalScore = score;
+		const finalScore = completedScore ?? score;
 		const percentage = Math.round((finalScore / quiz.questions.length) * 100);
 
 		return (

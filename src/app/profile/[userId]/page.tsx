@@ -154,13 +154,10 @@ export default function PublicProfile() {
 
   return (
     <DashboardLayout
-      title={
-        <span className="flex items-center gap-2">
-          <GraduationCap className="h-5 w-5" />
-          {profile.fullName}&apos;s Profile
-        </span>
-      }
+      icon={GraduationCap}
+      title={`${profile.fullName}'s Profile`}
       subtitle={uni?.name || undefined}
+      breadcrumb={["UniVerse", "Profile"]}
     >
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Hero Card */}

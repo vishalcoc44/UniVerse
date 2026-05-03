@@ -978,6 +978,7 @@ export default function DepartmentsPage() {
   if (loading) {
     return (
       <DashboardLayout
+        icon={Building2}
         title="Uni Dashboard"
         subtitle="Loading department hierarchy..."
         breadcrumb={["UniVerse", "Departments"]}
@@ -995,17 +996,8 @@ export default function DepartmentsPage() {
 
   return (
     <DashboardLayout
-      title={
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-            <Building2 className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Uni Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Departments to sections to students with scoped announcements</p>
-          </div>
-        </div>
-      }
+      icon={Building2}
+      title="Uni Dashboard"
       subtitle={
         currentUser
           ? `${currentUser.fullName || 'User'} • ${currentUser.role}${isSuperAdmin ? ' • Super Admin' : ''}`

@@ -4,6 +4,7 @@ import { ReactNode, useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { MobileNav } from "./MobileNav";
+import { LucideIcon } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -13,6 +14,7 @@ interface DashboardLayoutProps {
   activeNav?: string;
   onNavigate?: (href: string) => void;
   action?: React.ReactNode;
+  icon?: LucideIcon;
   noPadding?: boolean;
 }
 export function DashboardLayout({
@@ -23,6 +25,7 @@ export function DashboardLayout({
   activeNav,
   onNavigate,
   action,
+  icon,
   noPadding = false,
 }: DashboardLayoutProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -32,7 +35,7 @@ export function DashboardLayout({
       <Sidebar activeItem={activeNav} onNavigate={onNavigate} />
       <MobileNav open={mobileNavOpen} onOpenChange={setMobileNavOpen} activeItem={activeNav} onNavigate={onNavigate} />
       <main className={`flex-1 overflow-x-hidden ${noPadding ? 'overflow-hidden flex flex-col' : 'overflow-y-auto'}`}>
-        <Header title={title} subtitle={subtitle} breadcrumb={breadcrumb} action={action} onMobileMenuToggle={() => setMobileNavOpen(true)} />
+        <Header title={title} subtitle={subtitle} breadcrumb={breadcrumb} action={action} icon={icon} onMobileMenuToggle={() => setMobileNavOpen(true)} />
         {noPadding
           ? <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
           : <div className="p-3 sm:p-4 md:p-6 animate-fade-in">{children}</div>

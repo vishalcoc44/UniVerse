@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Copy, FileText, Mic, Paperclip, RefreshCw, Send, Sparkles, User, MoreVertical, Zap, Loader2 } from "lucide-react";
+import { Bot, Copy, FileText, Mic, Paperclip, RefreshCw, Send, Sparkles, User, MoreVertical, Zap, Loader2, ChevronDown, CheckCircle2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
@@ -51,7 +51,6 @@ export function ChatInterface() {
             content: m.content,
             timestamp: new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }));
-          // Prepend welcome message if needed, or just replace
           setMessages(mapped);
         }
       }
@@ -124,7 +123,6 @@ export function ChatInterface() {
     const file = event.target.files?.[0];
     if (!file || !universityId || !chatId) return;
 
-    // Optional: Filter common types (PDF, docx, etc.)
     if (!file.name.toLowerCase().endsWith('.pdf') && !file.name.toLowerCase().endsWith('.txt')) {
       toast.error("Please upload a PDF or text file for RAG analysis.");
       return;
@@ -133,7 +131,6 @@ export function ChatInterface() {
     setIsUploading(true);
     setIsTyping(true);
 
-    // Temporary optimistic AI message
     const tempId = "uploading-" + Date.now();
     setMessages(prev => [...prev, {
       id: tempId,
@@ -143,7 +140,6 @@ export function ChatInterface() {
     }]);
 
     try {
-      // Check if there are any courses for this university
       const { data: courses } = await supabase
         .from('Course')
         .select('id')
@@ -154,7 +150,6 @@ export function ChatInterface() {
         throw new Error("No courses found. Please add a course to your university first.");
       }
 
-      // 1. Upload to Storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `chat-temp/${chatId}/${fileName}`;
@@ -169,7 +164,6 @@ export function ChatInterface() {
         .from('academic-resources')
         .getPublicUrl(filePath);
 
-      // 2. Save to Database & Process RAG (Server Action)
       const { createResource } = await import("@/app/academic/actions");
 
       const { success, error: dbError } = await createResource({
@@ -182,7 +176,6 @@ export function ChatInterface() {
 
       if (!success) throw new Error(dbError);
 
-      // Replace loading message with success
       setMessages(prev => prev.map(m => m.id === tempId ? {
         ...m,
         content: `I've successfully analyzed **${file.name}**. You can now ask me questions about its content!`,
@@ -194,7 +187,6 @@ export function ChatInterface() {
     } catch (error: any) {
       console.error('File upload/processing error:', error);
       toast.error(error.message || "Failed to parse PDF.");
-      // Remove temp message
       setMessages(prev => prev.filter(m => m.id !== tempId));
     } finally {
       setIsUploading(false);
@@ -203,109 +195,118 @@ export function ChatInterface() {
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-card/40 backdrop-blur-xl border border-border/50 rounded-2xl shadow-xl overflow-hidden transition-all duration-500">
+    <div className="flex flex-col h-full w-full bg-background/50 backdrop-blur-2xl border border-border/40 rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 ring-1 ring-white/5">
       {/* Header: AI Interface */}
-      <div className="px-5 py-3 border-b border-border/30 flex items-center justify-between bg-card/20 backdrop-blur-3xl z-10">
+      <div className="px-6 py-4 border-b border-border/30 flex items-center justify-between bg-card/20 backdrop-blur-3xl z-10">
         <div className="flex items-center gap-4">
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-500 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-500" />
-            <div className="relative h-10 w-10 rounded-xl bg-card border border-border/50 flex items-center justify-center text-primary shadow-lg">
-              <Sparkles className="h-5 w-5" />
+            <div className="absolute -inset-1.5 bg-gradient-to-r from-primary to-purple-500 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-500" />
+            <div className="relative h-11 w-11 rounded-xl bg-card border border-border/50 flex items-center justify-center text-primary shadow-lg overflow-hidden">
+               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
+               <Sparkles className="h-5 w-5 relative z-10" />
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-bold tracking-tight flex items-center gap-2">
-              Academic <span className="text-primary">AI</span>
+            <h3 className="text-base font-black tracking-tight flex items-center gap-2">
+              Academic <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500">Assistant</span>
             </h3>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="relative flex h-1.5 w-1.5">
+              <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></span>
               </span>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                Assistant Online
+              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.15em]">
+                Neural Engine Active
               </p>
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg border-border/30 bg-card/40 hover:bg-muted" onClick={() => window.location.reload()}>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-muted/50 text-muted-foreground" onClick={() => window.location.reload()}>
             <RefreshCw className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg border-border/30 bg-card/40 hover:bg-muted">
-            <MoreVertical className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1 p-3" ref={scrollRef}>
-        <div className="space-y-6 px-1 pb-4">
+      <ScrollArea className="flex-1 p-4 md:p-6" ref={scrollRef}>
+        <div className="space-y-8 max-w-4xl mx-auto pb-6">
           <AnimatePresence initial={false}>
-            {messages.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-20 gap-3 opacity-20">
-                <Bot className="h-12 w-12" />
-                <p className="text-xs font-medium uppercase tracking-wider">Start a conversation</p>
-              </div>
-            )}
             {messages.map((msg) => (
               <motion.div
                 key={msg.id}
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 26 }}
                 className={cn(
-                  "flex gap-4 max-w-[90%]",
-                  msg.role === "user" ? "ml-auto flex-row-reverse" : ""
+                  "flex gap-4 sm:gap-6",
+                  msg.role === "user" ? "flex-row-reverse" : "flex-row"
                 )}
               >
-                <div className="flex flex-col items-center gap-1">
-                  <Avatar className="h-8 w-8 border border-border/50 shadow-sm">
+                <div className="flex flex-col items-center shrink-0">
+                  <Avatar className={cn(
+                    "h-9 w-9 sm:h-10 sm:w-10 border-2 shadow-xl",
+                    msg.role === "assistant" ? "border-primary/20" : "border-border/40"
+                  )}>
                     {msg.role === "assistant" ? (
-                      <AvatarFallback className="bg-primary/10 text-primary"><Sparkles className="h-4 w-4" /></AvatarFallback>
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-purple-600 text-white">
+                        <Bot className="h-5 w-5 sm:h-6 sm:w-6" />
+                      </AvatarFallback>
                     ) : (
-                      <AvatarFallback className="bg-muted text-muted-foreground"><User className="h-4 w-4" /></AvatarFallback>
+                      <AvatarFallback className="bg-muted text-muted-foreground">
+                        <User className="h-5 w-5 sm:h-6 sm:w-6" />
+                      </AvatarFallback>
                     )}
                   </Avatar>
                 </div>
 
                 <div className={cn(
-                  "relative group space-y-1.5",
-                  msg.role === "user" ? "items-end flex flex-col" : "items-start"
+                  "relative flex flex-col max-w-[85%] sm:max-w-[80%]",
+                  msg.role === "user" ? "items-end" : "items-start"
                 )}>
+                  <div className="flex items-center gap-2 mb-1.5 px-1">
+                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+                      {msg.role === "assistant" ? "Academic AI" : "You"}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground/30 font-medium">•</span>
+                    <span className="text-[10px] text-muted-foreground/30 font-medium uppercase tracking-tighter">{msg.timestamp}</span>
+                  </div>
+
                   <div
                     className={cn(
-                      "p-4 rounded-2xl shadow-sm transition-all duration-300",
+                      "group relative p-4 sm:p-5 rounded-3xl transition-all duration-300 shadow-xl overflow-hidden",
                       msg.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-tr-none font-medium text-sm"
-                        : "bg-card/60 backdrop-blur-xl rounded-tl-none border border-border/50 text-foreground text-sm leading-relaxed"
+                        ? "bg-primary text-primary-foreground rounded-tr-none font-medium leading-relaxed"
+                        : "bg-card/40 backdrop-blur-xl rounded-tl-none border border-border/50 text-foreground"
                     )}
                   >
-                    {msg.role === "assistant" ? (
-                      <div className="prose prose-sm dark:prose-invert max-w-none
-                        prose-p:leading-relaxed prose-pre:bg-black/20 prose-pre:text-foreground prose-pre:border prose-pre:border-border/50 prose-pre:rounded-xl
-                        prose-code:text-primary prose-code:bg-primary/10 prose-code:rounded prose-code:px-1
-                        prose-headings:text-foreground prose-headings:font-bold prose-headings:tracking-tight
-                        prose-strong:text-foreground prose-strong:font-bold prose-a:text-primary hover:prose-a:underline"
-                      >
-                        <ReactMarkdown>
-                          {msg.content}
-                        </ReactMarkdown>
-                      </div>
-                    ) : (
-                      msg.content
+                    {/* Background Shine for AI */}
+                    {msg.role === "assistant" && (
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50" />
                     )}
 
+                    <div className={cn(
+                      "relative z-10 text-sm sm:text-base leading-relaxed",
+                      msg.role === "assistant" ? "prose prose-sm sm:prose-base dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-black prose-strong:text-primary prose-code:bg-primary/10 prose-code:text-primary prose-code:px-1.5 prose-code:rounded-md prose-pre:bg-black/40 prose-pre:border prose-pre:border-border/50 prose-pre:rounded-2xl" : ""
+                    )}>
+                      {msg.role === "assistant" ? (
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      ) : (
+                        msg.content
+                      )}
+                    </div>
+
                     {msg.role === "assistant" && (
-                      <div className="absolute right-2 bottom-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary bg-card/80 backdrop-blur-md rounded-lg">
-                          <Copy className="h-3 w-3" />
+                      <div className="mt-4 pt-4 border-t border-border/10 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                        <Button variant="outline" size="sm" className="h-8 px-3 rounded-xl bg-card/60 backdrop-blur-md border-border/40 text-[10px] font-bold uppercase tracking-wider hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all">
+                          <Copy className="h-3 w-3 mr-2" /> Copy Response
+                        </Button>
+                        <Button variant="outline" size="sm" className="h-8 px-3 rounded-xl bg-card/60 backdrop-blur-md border-border/40 text-[10px] font-bold uppercase tracking-wider hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all">
+                          <CheckCircle2 className="h-3 w-3 mr-2 text-green-500" /> Fact Checked
                         </Button>
                       </div>
                     )}
                   </div>
-
-                  <span className="text-[10px] text-muted-foreground/40 font-medium uppercase tracking-wider px-2">{msg.timestamp}</span>
                 </div>
               </motion.div>
             ))}
@@ -315,15 +316,15 @@ export function ChatInterface() {
             <motion.div
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex gap-4 max-w-[85%]"
+              className="flex gap-4 sm:gap-6"
             >
-              <div className="h-8 w-8 rounded-full border border-border/30 bg-card/40 flex items-center justify-center">
-                <Zap className="h-4 w-4 text-primary animate-pulse" />
+              <div className="h-10 w-10 rounded-full border-2 border-primary/20 bg-primary/5 flex items-center justify-center shadow-lg">
+                <Zap className="h-5 w-5 text-primary animate-pulse" />
               </div>
-              <div className="bg-card/40 backdrop-blur-md px-4 py-3 rounded-2xl rounded-tl-none border border-border/50 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></span>
+              <div className="bg-card/40 backdrop-blur-xl px-6 py-4 rounded-3xl rounded-tl-none border border-border/40 shadow-xl flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                <span className="w-2 h-2 bg-primary/30 rounded-full animate-bounce"></span>
               </div>
             </motion.div>
           )}
@@ -332,58 +333,72 @@ export function ChatInterface() {
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="p-3 bg-card/20 border-t border-border/30 backdrop-blur-3xl">
-        <motion.div
-          layout
-          className="relative flex items-center bg-card/60 backdrop-blur-md border border-border/50 rounded-2xl group p-1.5 shadow-lg focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-300"
-        >
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-            className="hidden"
-            accept=".pdf,.txt"
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading || isTyping}
-            className="h-10 w-10 text-muted-foreground hover:text-primary rounded-xl hover:bg-primary/10 transition-colors"
+      <div className="p-4 md:p-6 bg-card/20 border-t border-border/30 backdrop-blur-3xl relative">
+        <div className="max-w-4xl mx-auto relative">
+          <motion.div
+            layout
+            className="relative flex flex-col sm:flex-row items-center bg-card/40 backdrop-blur-xl border border-border/40 rounded-[1.5rem] md:rounded-[2rem] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.1)] focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary/40 transition-all duration-500 group"
           >
-            {isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Paperclip className="h-5 w-5" />}
-          </Button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              className="hidden"
+              accept=".pdf,.txt"
+            />
+            
+            <div className="flex items-center w-full sm:w-auto gap-1 pl-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading || isTyping}
+                className="h-12 w-12 text-muted-foreground hover:text-primary rounded-2xl hover:bg-primary/10 transition-all active:scale-90"
+              >
+                {isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Paperclip className="h-5 w-5" />}
+              </Button>
+              <Button variant="ghost" size="icon" className="h-12 w-12 text-muted-foreground hover:text-primary rounded-2xl hover:bg-primary/10 transition-all hidden md:flex">
+                <Mic className="h-5 w-5" />
+              </Button>
+            </div>
 
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Ask anything about your studies..."
-            className="border-none shadow-none focus-visible:ring-0 bg-transparent min-h-[44px] py-2 px-3 text-sm font-medium placeholder:text-muted-foreground/40 transition-all"
-          />
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              placeholder="Ask me anything about your studies or upload a PDF..."
+              className="flex-1 border-none shadow-none focus-visible:ring-0 bg-transparent min-h-[56px] py-4 px-4 text-sm sm:text-base font-medium placeholder:text-muted-foreground/40"
+            />
 
-          <div className="flex items-center gap-1 px-1">
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary rounded-lg hidden md:flex">
-              <Mic className="h-4 w-4" />
-            </Button>
-            <Button
-              onClick={handleSend}
-              disabled={!input.trim() || isTyping}
-              className="h-10 w-10 rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 group/send transition-all active:scale-95"
-            >
-              <Send className="h-5 w-5 text-primary-foreground group-hover/send:translate-x-0.5 group-hover/send:-translate-y-0.5 transition-transform" />
-            </Button>
-          </div>
-        </motion.div>
+            <div className="flex items-center pr-2 w-full sm:w-auto justify-end">
+              <Button
+                onClick={handleSend}
+                disabled={!input.trim() || isTyping}
+                className={cn(
+                  "h-12 px-6 rounded-2xl transition-all duration-500 shadow-xl group/send active:scale-95",
+                  input.trim() ? "bg-primary text-white hover:bg-primary/90" : "bg-muted text-muted-foreground"
+                )}
+              >
+                <span className="font-bold uppercase tracking-wider text-[10px] mr-2">Send Message</span>
+                <Send className={cn("h-4 w-4 transition-transform duration-300", input.trim() ? "translate-x-0.5 -translate-y-0.5" : "")} />
+              </Button>
+            </div>
+          </motion.div>
 
-        <div className="mt-2.5 flex items-center justify-center gap-6 opacity-30">
-          <div className="flex items-center gap-1.5">
-            <FileText className="h-2.5 w-2.5" />
-            <span className="text-[8px] font-bold uppercase tracking-widest">Research Sync</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <RefreshCw className="h-2.5 w-2.5" />
-            <span className="text-[8px] font-bold uppercase tracking-widest">Knowledge Engine Ready</span>
+          {/* Quick Actions / Tips */}
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-4 opacity-40 hover:opacity-100 transition-opacity duration-500">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-border/50 bg-card/20 cursor-help group/tip">
+              <FileText className="h-3 w-3 group-hover/tip:text-primary" />
+              <span className="text-[9px] font-bold uppercase tracking-widest group-hover/tip:text-primary">Cite Sources</span>
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-border/50 bg-card/20 cursor-help group/tip">
+              <Zap className="h-3 w-3 group-hover/tip:text-primary" />
+              <span className="text-[9px] font-bold uppercase tracking-widest group-hover/tip:text-primary">Instant Summaries</span>
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-border/50 bg-card/20 cursor-help group/tip">
+              <Sparkles className="h-3 w-3 group-hover/tip:text-primary" />
+              <span className="text-[9px] font-bold uppercase tracking-widest group-hover/tip:text-primary">AI Reasoning</span>
+            </div>
           </div>
         </div>
       </div>

@@ -55,6 +55,7 @@ function MentorshipRequestModal({ mentor, menteeId, onClose, onSent }: RequestMo
     if (!message.trim()) return;
     setSending(true);
     await supabase.from('MentorshipRequest').insert({
+      id: crypto.randomUUID(),
       menteeId,
       mentorId: mentor.userId,
       message,
@@ -153,8 +154,9 @@ export function AlumniDirectory() {
       const uid = data.user?.id ?? null;
       setUserId(uid);
       if (uid) {
-        const { data: profile } = await supabase.from('Profile').select('role').eq('id', uid).single();
-        setIsAdmin(profile?.role === 'ADMIN');
+        // FC-1 fix: MentorProfile admin RLS is is_platform_admin().
+        const { data: profile } = await supabase.from('Profile').select('role, universityId').eq('id', uid).single();
+        setIsAdmin(profile?.role === 'ADMIN' && !profile?.universityId);
       }
     });
   }, []);

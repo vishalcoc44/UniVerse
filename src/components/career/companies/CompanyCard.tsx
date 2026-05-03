@@ -90,8 +90,9 @@ function CompanyProfileDrawer({ companyId, onClose, currentUserId }: CompanyProf
     // check admin role of current user if provided
     (async () => {
       if (!currentUserId) return;
-      const { data: profile } = await supabase.from('Profile').select('role').eq('id', currentUserId).single();
-      setIsAdminUser(profile?.role === 'ADMIN');
+      // FC-1 fix: Company admin RLS is is_platform_admin().
+      const { data: profile } = await supabase.from('Profile').select('role, universityId').eq('id', currentUserId).single();
+      setIsAdminUser(profile?.role === 'ADMIN' && !profile?.universityId);
     })();
   }, [companyId]);
 

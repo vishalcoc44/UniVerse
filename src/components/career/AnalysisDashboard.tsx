@@ -129,19 +129,18 @@ className="text-5xl font-black tracking-tighter italic"
 
 <div className="space-y-2">
 <div className="flex items-center justify-center gap-2">
-<Badge className={cn("rounded-lg px-3 py-1 font-black italic tracking-widest text-[10px] uppercase border-none", 
-score >= 80 ? "bg-green-500/10 text-green-500" : 
+<Badge className={cn("rounded-lg px-3 py-1 font-black italic tracking-widest text-[10px] uppercase border-none",
+score >= 80 ? "bg-green-500/10 text-green-500" :
 score >= 60 ? "bg-amber-500/10 text-amber-500" : "bg-rose-500/10 text-rose-500"
 )}>
 {getScoreLabel(score)}
 </Badge>
-<Badge variant="outline" className="rounded-lg px-3 py-1 font-black italic tracking-widest text-[10px] uppercase border-border/50 text-muted-foreground/60">
-V1.2 Engine
-</Badge>
 </div>
 <p className="text-sm font-bold italic tracking-tight text-foreground/80 leading-relaxed px-4">
-{score >= 80 
-? "Your resume is in the top 5% of candidates for Technology roles." 
+{score >= 80
+? "Strong ATS profile — your resume reads cleanly to recruiter tooling."
+: score >= 60
+? "Solid foundation — a few targeted edits could push you into the top tier."
 : "Small adjustments could significantly boost your recruiter visibility."}
 </p>
 </div>

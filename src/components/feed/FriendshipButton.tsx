@@ -48,9 +48,11 @@ export function FriendshipButton({ targetUserId, currentUserId, size = "sm", cla
   const sendRequest = async () => {
     setActing(true);
     const { error } = await supabase.from('Friendship').insert({
+      id: crypto.randomUUID(),
       requesterId: currentUserId,
       addresseeId: targetUserId,
       status: 'PENDING',
+      updatedAt: new Date().toISOString(),
     });
     if (error) {
       toast.error("Failed to send friend request");

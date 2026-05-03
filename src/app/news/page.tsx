@@ -192,16 +192,8 @@ export default function NewsPage() {
 
 	return (
 		<DashboardLayout
-			title={
-				<div className="flex items-center gap-3">
-					<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
-						<Newspaper className="h-6 w-6" />
-					</div>
-					<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-						Campus <span className="text-primary">News</span>
-					</h1>
-				</div>
-			}
+			icon={Newspaper}
+			title={<>Campus <span className="text-primary">News</span></>}
 			subtitle="Stay updated with the latest university announcements."
 			breadcrumb={["UniVerse", "News"]}
 		>

@@ -18,12 +18,16 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const origin = searchParams.get("origin");
-  const destination = searchParams.get("destination");
-  const waypoints = searchParams.get("waypoints") ?? "";
+  const origin = searchParams.get("origin")?.trim() ?? "";
+  const destination = searchParams.get("destination")?.trim() ?? "";
+  const waypoints = (searchParams.get("waypoints") ?? "").trim();
 
   if (!origin || !destination) {
     return NextResponse.json({ error: "origin and destination are required" }, { status: 400 });
+  }
+
+  if (origin.length > 120 || destination.length > 120 || waypoints.length > 500) {
+    return NextResponse.json({ error: "One or more route parameters are too long" }, { status: 400 });
   }
 
   const apiKey = process.env.GOOGLE_MAPS_SERVER_KEY;

@@ -252,16 +252,8 @@ export default function Dashboard() {
 
 	return (
 		<DashboardLayout
-			title={
-				<div className="flex items-center gap-3">
-					<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
-						<LayoutDashboard className="h-6 w-6" />
-					</div>
-					<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-						Welcome <span className="text-primary truncate max-w-[200px] md:max-w-md inline-block align-bottom">{firstName}</span>!
-					</h1>
-				</div>
-			}
+			title={<>Welcome <span className="text-primary truncate">{firstName}</span>!</>}
+			icon={LayoutDashboard}
 			subtitle="Here's what's happening across your campus ecosystem today."
 			breadcrumb={["UniVerse", "Overview"]}
 		>

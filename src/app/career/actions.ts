@@ -3,23 +3,30 @@
 import { createClient } from "@/lib/server-supabase";
 import { revalidatePath } from "next/cache";
 
-export async function getMentors(universityId?: string) {
+export async function getMentors(_universityId?: string) {
 	try {
 		const supabase = await createClient();
-		let query = supabase
+		// FC-23: caller-supplied universityId ignored — derive from authenticated session.
+		// Also adds an auth check that was previously missing entirely.
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) return { success: false, error: "Authentication required" };
+
+		const { data: profile } = await supabase
+			.from('Profile')
+			.select('universityId')
+			.eq('id', user.id)
+			.single();
+		if (!profile?.universityId) return { success: false, error: "No university affiliation" };
+
+		const { data, error } = await supabase
 			.from('MentorProfile')
 			.select(`
 				*,
-				profile:Profile(fullName, avatarUrl, department, universityId, University(name, abbreviation)),
-				skills:MentorshipSkill(skill, type)
+				profile:Profile(fullName, avatarUrl, department, universityId, University(name, abbreviation))
 			`)
-			.eq('isActive', true);
+			.eq('isAccepting', true)
+			.eq('profile.universityId', profile.universityId);
 
-		if (universityId) {
-			query = query.eq('profile.universityId', universityId);
-		}
-
-		const { data, error } = await query;
 		if (error) throw error;
 		return { success: true, mentors: data };
 	} catch (error: any) {

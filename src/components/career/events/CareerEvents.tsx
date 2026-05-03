@@ -80,9 +80,11 @@ export function CareerEvents() {
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // FC-1 fix: Event admin RLS allows platform admin OR university admin
+        // in matching uni (audit/fixes/05). Both gain admin UI affordances here.
         const { data: profile } = await supabase
           .from('Profile')
-          .select('role')
+          .select('role, universityId')
           .eq('id', user.id)
           .single();
         setIsAdmin(profile?.role === 'ADMIN');

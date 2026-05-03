@@ -20,51 +20,42 @@ export default function MarketplacePage() {
 
 	return (
 		<DashboardLayout
-			title={
-				<div className="flex flex-col gap-1">
-					<div className="flex items-center gap-3">
-						<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
-							<ShoppingBag className="h-6 w-6" />
-						</div>
-						<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-							Market<span className="text-primary">place</span>
-						</h1>
-					</div>
-					<div className="flex items-center gap-2 mt-2">
-						<div className="flex items-center p-1 bg-muted/50 rounded-lg border border-border/50">
-							<button
-								onClick={() => setActiveScope('campus')}
-								className={cn(
-									"flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md transition-all",
-									activeScope === 'campus'
-										? "bg-background text-primary shadow-sm"
-										: "text-muted-foreground hover:text-foreground"
-								)}
-							>
-								<School className="h-3.5 w-3.5" />
-								Campus
-							</button>
-							<button
-								onClick={() => setActiveScope('universe')}
-								className={cn(
-									"flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md transition-all",
-									activeScope === 'universe'
-										? "bg-background text-primary shadow-sm"
-										: "text-muted-foreground hover:text-foreground"
-								)}
-							>
-								<Globe className="h-3.5 w-3.5" />
-								Universe
-							</button>
-						</div>
-					</div>
-				</div>
-			}
+			icon={ShoppingBag}
+			title={<>Market<span className="text-primary">place</span></>}
 			subtitle="Buy, sell, and connect across your campus and beyond."
 			breadcrumb={["UniVerse", "Marketplace"]}
 			action={<SellModal onListingCreated={handleListingCreated} activeScope={activeScope} />}
 		>
-			<div className="pb-10 h-full">
+			<div className="pb-10 h-full space-y-6">
+				<div className="flex items-center gap-2">
+					<div className="flex items-center p-1 bg-muted/50 rounded-lg border border-border/50">
+						<button
+							onClick={() => setActiveScope('campus')}
+							className={cn(
+								"flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md transition-all",
+								activeScope === 'campus'
+									? "bg-background text-primary shadow-sm"
+									: "text-muted-foreground hover:text-foreground"
+							)}
+						>
+							<School className="h-3.5 w-3.5" />
+							Campus
+						</button>
+						<button
+							onClick={() => setActiveScope('universe')}
+							className={cn(
+								"flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md transition-all",
+								activeScope === 'universe'
+									? "bg-background text-primary shadow-sm"
+									: "text-muted-foreground hover:text-foreground"
+							)}
+						>
+							<Globe className="h-3.5 w-3.5" />
+							Universe
+						</button>
+					</div>
+				</div>
+
 				<Tabs defaultValue="buy-sell" className="space-y-6">
 					<TabsList>
 						<TabsTrigger value="buy-sell" className="gap-2"><ShoppingBag className="h-4 w-4" /> Buy & Sell</TabsTrigger>

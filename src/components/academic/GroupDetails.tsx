@@ -84,14 +84,20 @@ export function GroupDetails({ group, onBack, userId }: GroupDetailsProps) {
 
 	useEffect(() => {
 		if (activeTab === "chat") {
+			let firstLoad = true;
 			const fetchMessages = async () => {
 				const res = await getStudyGroupMessages(group.id);
 				if (res.success) {
 					setMessages(res.messages || []);
+				} else if (firstLoad) {
+					// Surface the first-load error; suppress on poll to avoid spam.
+					console.error("getStudyGroupMessages error:", res.error);
+					toast.error(`Could not load messages: ${res.error || "unknown"}`);
 				}
+				firstLoad = false;
 			};
 			fetchMessages();
-			
+
 			// Poll for new messages every 5 seconds for basic real-time feel
 			const interval = setInterval(fetchMessages, 5000);
 			return () => clearInterval(interval);
@@ -108,7 +114,8 @@ export function GroupDetails({ group, onBack, userId }: GroupDetailsProps) {
 			const mRes = await getStudyGroupMessages(group.id);
 			if (mRes.success) setMessages(mRes.messages || []);
 		} else {
-			toast.error("Signal lost: Failed to send message");
+			// Surface the specific error from the server action so failures are debuggable.
+			toast.error(res.error || "Failed to send message");
 		}
 		setIsSending(false);
 	};

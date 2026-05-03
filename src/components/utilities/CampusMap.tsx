@@ -159,7 +159,8 @@ const emptySuggestionForm = { title: "", serviceCategory: "", description: "", l
 
 export function CampusMap() {
   const { universityId, userId, role, loading: userContextLoading } = useUserUniversity();
-  const isAdmin = role === "ADMIN";
+  // FC-1 fix: campus map data is platform-managed.
+  const isAdmin = role === "ADMIN" && !universityId;
   const [hasCampusMapDataColumn, setHasCampusMapDataColumn] = useState(true);
 
   // Refs

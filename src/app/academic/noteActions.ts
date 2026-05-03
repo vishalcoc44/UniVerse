@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/server-supabase";
 import { revalidatePath } from "next/cache";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { rateLimit } from "@/lib/rate-limit";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -76,6 +77,10 @@ export async function summarizeTextAction(text: string) {
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return { success: false, error: "Authentication required" };
 
+		// FC-19: 15 summaries per 5 minutes per user
+		const r = rateLimit(`ai-summarize:${user.id}`, { maxRequests: 15, windowMs: 5 * 60_000 });
+		if (!r.allowed) return { success: false, error: `Too many requests. Try again in ${r.resetInSeconds}s.` };
+
 		if (!text || text.length > 50000) {
 			return { success: false, error: "Invalid or oversized text" };
 		}
@@ -96,6 +101,10 @@ export async function explainConceptAction(concept: string) {
 		const supabase = await createClient();
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return { success: false, error: "Authentication required" };
+
+		// FC-19: 30 concept explanations per 5 minutes per user
+		const r = rateLimit(`ai-explain:${user.id}`, { maxRequests: 30, windowMs: 5 * 60_000 });
+		if (!r.allowed) return { success: false, error: `Too many requests. Try again in ${r.resetInSeconds}s.` };
 
 		if (!concept || concept.length > 5000) {
 			return { success: false, error: "Invalid concept text" };

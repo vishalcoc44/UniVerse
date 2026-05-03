@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, DollarSign, TrendingUp, BarChart2, Plus, X, Trash2 } from 'lucide-react';
+import { Loader2, DollarSign, Plus, X, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -17,7 +16,7 @@ interface SalaryReport {
   location: string | null;
   baseSalary: number;
   experienceYears: number | null;
-  anonymous: boolean;
+  isAnonymous: boolean;
   createdAt: string;
 }
 
@@ -45,7 +44,7 @@ export function SalaryInsights() {
   const [submitting, setSubmitting] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [form, setForm] = useState({
-    role: '', company: '', location: '', baseSalary: '', experienceYears: '', anonymous: true,
+    role: '', company: '', location: '', baseSalary: '', experienceYears: '', isAnonymous: true,
   });
   const [editingReportId, setEditingReportId] = useState<string | null>(null);
 
@@ -53,9 +52,9 @@ export function SalaryInsights() {
     setLoading(true);
     const { data } = await supabase
       .from('SalaryReport')
-      .select('id, userId, role, company, location, baseSalary, experienceYears, anonymous, createdAt')
+      .select('id, userId, role, company, location, baseSalary, experienceYears, isAnonymous, createdAt')
       .order('createdAt', { ascending: false });
-    setReports((data as SalaryReport[]) ?? []);
+    setReports((data as unknown as SalaryReport[]) ?? []);
     setLoading(false);
   };
 
@@ -64,8 +63,9 @@ export function SalaryInsights() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
-        const { data: profile } = await supabase.from('Profile').select('role').eq('id', user.id).single();
-        setIsAdmin(profile?.role === 'ADMIN');
+        // FC-1 fix: SalaryReport admin RLS is is_platform_admin() (audit/fixes/05). Match here.
+        const { data: profile } = await supabase.from('Profile').select('role, universityId').eq('id', user.id).single();
+        setIsAdmin(profile?.role === 'ADMIN' && !profile?.universityId);
       }
       await fetchReports();
     })();
@@ -79,15 +79,15 @@ export function SalaryInsights() {
     if (editingReportId) {
       const { error } = await supabase.from('SalaryReport').update({
         role: form.role,
-        company: form.company || 'Anonymous',
+        company: form.company || null,
         location: form.location || null,
         baseSalary: parseInt(form.baseSalary),
         experienceYears: form.experienceYears ? parseInt(form.experienceYears) : null,
-        anonymous: form.anonymous,
+        isAnonymous: form.isAnonymous,
       }).eq('id', editingReportId);
       if (error) { alert(error.message); setSubmitting(false); return; }
       setEditingReportId(null);
-      setForm({ role: '', company: '', location: '', baseSalary: '', experienceYears: '', anonymous: true });
+      setForm({ role: '', company: '', location: '', baseSalary: '', experienceYears: '', isAnonymous: true });
       setShowForm(false);
       await fetchReports();
       setSubmitting(false);
@@ -101,9 +101,9 @@ export function SalaryInsights() {
       location: form.location || null,
       baseSalary: parseInt(form.baseSalary),
       experienceYears: form.experienceYears ? parseInt(form.experienceYears) : null,
-      anonymous: form.anonymous,
+      isAnonymous: form.isAnonymous,
     });
-    setForm({ role: '', company: '', location: '', baseSalary: '', experienceYears: '', anonymous: true });
+    setForm({ role: '', company: '', location: '', baseSalary: '', experienceYears: '', isAnonymous: true });
     setShowForm(false);
     await fetchReports();
     setSubmitting(false);
@@ -117,7 +117,7 @@ export function SalaryInsights() {
       location: report.location ?? '',
       baseSalary: String(report.baseSalary),
       experienceYears: report.experienceYears != null ? String(report.experienceYears) : '',
-      anonymous: report.anonymous,
+      isAnonymous: report.isAnonymous,
     });
     setShowForm(true);
   };
@@ -155,7 +155,6 @@ export function SalaryInsights() {
   }).sort((a, b) => b.avg - a.avg);
 
   const maxAvg = byRole.length ? Math.max(...byRole.map(r => r.avg)) : 1;
-  const selectedStats = byRole.find(r => r.role === selectedRole);
 
   if (loading) return (
     <div className="flex items-center gap-2 text-muted-foreground text-sm py-4">
@@ -204,7 +203,7 @@ export function SalaryInsights() {
                   className="h-9 bg-card/40 border-border/40 rounded-xl text-xs" />
               </div>
               <label className="flex items-center gap-2 text-xs font-bold cursor-pointer">
-                <input type="checkbox" checked={form.anonymous} onChange={e => setForm(p => ({ ...p, anonymous: e.target.checked }))} className="rounded" />
+                <input type="checkbox" checked={form.isAnonymous} onChange={e => setForm(p => ({ ...p, isAnonymous: e.target.checked }))} className="rounded" />
                 Submit anonymously
               </label>
               <Button size="sm" className="h-8 text-[11px] font-black rounded-xl w-full" onClick={submitReport} disabled={submitting}>
@@ -269,7 +268,7 @@ export function SalaryInsights() {
                       {stat.reports.map(r => (
                         <div key={r.id} className="flex items-center justify-between gap-2 text-xs">
                           <span className="text-muted-foreground font-medium">
-                            {r.anonymous ? 'Anonymous' : 'User'} {r.company ? `@ ${r.company}` : ''} {r.location ? `(${r.location})` : ''}
+                            {r.isAnonymous ? 'Anonymous' : 'User'} {r.company ? `@ ${r.company}` : ''} {r.location ? `(${r.location})` : ''}
                             {r.experienceYears != null ? ` · ${r.experienceYears}yr exp` : ''}
                           </span>
                           <div className="flex items-center gap-1">

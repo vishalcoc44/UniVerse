@@ -22,7 +22,10 @@ const PROTECTED_ROUTES = [
 	'/admin',
 ]
 
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/auth', '/api/images']
+// FC-27 fix: removed '/login' from PUBLIC_ROUTES — there is no /login page
+// in the app. The actual login page is /auth. Keeping it would let stray
+// links to /login bypass auth (and 404 anyway).
+const PUBLIC_ROUTES = ['/', '/signup', '/auth', '/api/images']
 
 function isProtectedRoute(pathname: string): boolean {
 	return PROTECTED_ROUTES.some(route => pathname === route || pathname.startsWith(`${route}/`))
@@ -65,7 +68,8 @@ export async function updateSession(request: NextRequest) {
 		const pathname = request.nextUrl.pathname
 
 		if (!user && isProtectedRoute(pathname)) {
-			const loginUrl = new URL('/login', request.url)
+			// FC-27 fix: redirect to /auth (the actual login page) not /login (which 404s)
+			const loginUrl = new URL('/auth', request.url)
 			loginUrl.searchParams.set('redirect', pathname)
 			return NextResponse.redirect(loginUrl)
 		}

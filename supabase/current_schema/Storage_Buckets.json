@@ -1,0 +1,99 @@
+[
+  {
+    "id": "resumes",
+    "name": "resumes",
+    "owner": null,
+    "created_at": "2026-02-24T05:17:55.285Z",
+    "updated_at": "2026-02-24T05:17:55.285Z",
+    "public": false,
+    "avif_autodetection": false,
+    "file_size_limit": "10485760",
+    "allowed_mime_types": [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ],
+    "owner_id": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "avatars",
+    "name": "avatars",
+    "owner": null,
+    "created_at": "2026-03-01T06:49:53.173Z",
+    "updated_at": "2026-03-01T06:49:53.173Z",
+    "public": true,
+    "avif_autodetection": false,
+    "file_size_limit": "1048576",
+    "allowed_mime_types": [
+      "image/png",
+      "image/jpeg",
+      "image/gif",
+      "image/webp"
+    ],
+    "owner_id": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "post-images",
+    "name": "post-images",
+    "owner": null,
+    "created_at": "2025-12-25T17:49:34.230Z",
+    "updated_at": "2025-12-25T17:49:34.230Z",
+    "public": true,
+    "avif_autodetection": false,
+    "file_size_limit": "5242880",
+    "allowed_mime_types": [
+      "image/png",
+      "image/jpeg",
+      "image/gif",
+      "image/webp",
+      "image/svg+xml"
+    ],
+    "owner_id": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "academic-resources",
+    "name": "academic-resources",
+    "owner": null,
+    "created_at": "2025-12-29T16:37:14.659Z",
+    "updated_at": "2025-12-29T16:37:14.659Z",
+    "public": true,
+    "avif_autodetection": false,
+    "file_size_limit": "20971520",
+    "allowed_mime_types": [
+      "application/pdf",
+      "text/plain",
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ],
+    "owner_id": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "message-attachments",
+    "name": "message-attachments",
+    "owner": null,
+    "created_at": "2026-03-23T07:52:36.637Z",
+    "updated_at": "2026-03-23T07:52:36.637Z",
+    "public": false,
+    "avif_autodetection": false,
+    "file_size_limit": "10485760",
+    "allowed_mime_types": [
+      "image/png",
+      "image/jpeg",
+      "image/gif",
+      "image/webp",
+      "application/pdf",
+      "text/plain",
+      "video/mp4",
+      "audio/mpeg"
+    ],
+    "owner_id": null,
+    "type": "STANDARD"
+  }
+]

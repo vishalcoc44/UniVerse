@@ -66,7 +66,7 @@ export function ThreadList({ activeCategory, scope = 'campus', sortBy = 'latest'
       query = query.eq('scope', 'UNIVERSE');
     }
 
-    if (activeCategory && activeCategory !== 'all') {
+    if (activeCategory && activeCategory !== 'general') {
       query = query.eq('category', activeCategory);
     }
 
@@ -187,29 +187,29 @@ export function ThreadList({ activeCategory, scope = 'campus', sortBy = 'latest'
           {threads.map((thread, index) => (
             <motion.div
               key={thread.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: Math.min(index, 10) * 0.05 }}
             >
               <Card className={cn(
-                "group relative flex overflow-hidden transition-all duration-500 hover:border-primary/50 bg-card/40 backdrop-blur-xl border-border/50 rounded-[2rem] shadow-xl hover:shadow-primary/5 hover:-translate-y-1",
+                "group relative flex overflow-hidden transition-all duration-300 hover:border-primary/50 bg-card/40 backdrop-blur-xl border-border/50 rounded-2xl shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5",
                 thread.isPinned && "border-primary/40 bg-primary/5 shadow-primary/10"
               )}>
-                {/* Voting Column */}
-                <div className="w-16 flex flex-col items-center p-4 gap-2 border-r border-border/20 bg-muted/5 group-hover:bg-muted/10 transition-colors">
+                {/* Voting Column - More Compact */}
+                <div className="w-12 flex flex-col items-center py-4 gap-1 border-r border-border/10 bg-muted/5 group-hover:bg-muted/10 transition-colors">
                   <Button
                     variant="ghost"
                     size="icon"
-                    aria-label={`Upvote thread. Current votes: ${thread.totalVotes}`}
+                    aria-label={`Upvote thread`}
                     className={cn(
-                      "h-10 w-10 rounded-xl transition-all outline-none focus-visible:ring-2 focus-visible:ring-orange-500",
-                      userVotes[thread.id] === 1 ? "bg-orange-500/20 text-orange-500" : "text-muted-foreground hover:bg-orange-500/10 hover:text-orange-500"
+                      "h-8 w-8 rounded-lg transition-all",
+                      userVotes[thread.id] === 1 ? "text-orange-500 bg-orange-500/10" : "text-muted-foreground hover:text-orange-500 hover:bg-orange-500/5"
                     )}
                     onClick={() => handleVote(thread.id, 1)}
                   >
-                    <ArrowBigUp className="h-7 w-7" />
+                    <ArrowBigUp className="h-6 w-6" />
                   </Button>
-                  <span className="text-lg font-black italic tracking-tighter" aria-hidden="true">
+                  <span className="text-xs font-bold tracking-tight">
                     {thread.totalVotes > 999 ? `${(thread.totalVotes / 1000).toFixed(1)}k` : thread.totalVotes}
                   </span>
                   <Button
@@ -217,113 +217,104 @@ export function ThreadList({ activeCategory, scope = 'campus', sortBy = 'latest'
                     size="icon"
                     aria-label="Downvote thread"
                     className={cn(
-                      "h-10 w-10 rounded-xl transition-all outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-                      userVotes[thread.id] === -1 ? "bg-blue-500/20 text-blue-500" : "text-muted-foreground hover:bg-blue-500/10 hover:text-blue-500"
+                      "h-8 w-8 rounded-lg transition-all",
+                      userVotes[thread.id] === -1 ? "text-blue-500 bg-blue-500/10" : "text-muted-foreground hover:text-blue-500 hover:bg-blue-500/5"
                     )}
                     onClick={() => handleVote(thread.id, -1)}
                   >
-                    <ArrowBigDown className="h-7 w-7" />
+                    <ArrowBigDown className="h-6 w-6" />
                   </Button>
                 </div>
 
-                {/* Content Column */}
-                <div className="flex-1 p-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
+                {/* Content Column - Reduced Padding */}
+                <div className="flex-1 p-4 md:p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
                       {thread.isPinned && (
-                        <Badge className="bg-primary text-primary-foreground font-black italic tracking-widest text-[9px] uppercase px-2 py-0.5 rounded-md">
+                        <Badge className="bg-primary/10 text-primary border-primary/20 font-bold text-[9px] uppercase px-1.5 py-0 rounded-md">
                           Pinned
                         </Badge>
                       )}
-                      <div className="flex items-center gap-2 px-3 py-1 bg-muted/20 rounded-full border border-border/30">
-                        <div className="h-2 w-2 rounded-full bg-primary animate-pulse" aria-hidden="true" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground italic">
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-muted/40 rounded-md border border-border/20">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
                           {thread.category || "General"}
                         </span>
                       </div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 italic">
+                      <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground/50">
                         {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}
                       </span>
                     </div>
-                    {currentUserId === thread.authorId ? (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label="Thread options"
-                            className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity focus-visible:opacity-100 outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-32">
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-32 rounded-xl">
+                        {currentUserId === thread.authorId && (
                           <DropdownMenuItem
                             onClick={() => handleDeleteThread(thread.id)}
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                            className="text-destructive focus:text-destructive cursor-pointer"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete
                           </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Thread options"
-                        className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity focus-visible:opacity-100 outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    )}
+                        )}
+                        <DropdownMenuItem className="cursor-pointer">
+                          <Flag className="h-4 w-4 mr-2" />
+                          Report
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
 
-                  <div className="space-y-3 cursor-pointer" onClick={() => router.push(`/forums/${thread.id}`)}>
-                    <h3 className="text-2xl font-black italic tracking-tighter text-foreground group-hover:text-primary transition-colors leading-tight">
+                  <div className="space-y-2 cursor-pointer" onClick={() => router.push(`/forums/${thread.id}`)}>
+                    <h3 className="text-lg md:text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors leading-snug">
                       {thread.title}
                     </h3>
-                    <p className="text-base font-medium text-muted-foreground/80 italic tracking-tight line-clamp-3 leading-relaxed">
+                    <p className="text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed">
                       {thread.content}
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-2 mt-6" role="list" aria-label="Thread tags">
-                    {thread.tags?.map((tag: string) => (
-                      <Badge key={tag} role="listitem" className="bg-muted/20 text-muted-foreground hover:bg-muted/30 border-none px-3 py-1 rounded-full font-black italic tracking-widest text-[9px] uppercase">
-                        #{tag}
-                      </Badge>
-                    ))}
-                  </div>
+                  {thread.tags && thread.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-4" role="list">
+                      {thread.tags.map((tag: string) => (
+                        <span key={tag} className="text-[10px] font-bold text-primary/70 hover:text-primary transition-colors cursor-pointer">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
-                  <div className="flex items-center justify-between mt-8 pt-6 border-t border-border/10">
-                    <div className="flex items-center gap-6">
+                  <div className="flex items-center justify-between mt-5 pt-4 border-t border-border/5">
+                    <div className="flex items-center gap-4">
                       <button
-                        className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors focus-visible:text-primary outline-none focus-visible:underline"
-                        aria-label={`${thread.replies ? thread.replies[0]?.count : 0} responses`}
+                        className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
                         onClick={() => router.push(`/forums/${thread.id}`)}
                       >
-                        <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                        <span className="text-xs font-black italic tracking-widest uppercase">
-                          {thread.replies ? thread.replies[0]?.count : 0} RESPONSES
+                        <MessageSquare className="h-3.5 w-3.5" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">
+                          {thread.replies ? thread.replies[0]?.count : 0}
                         </span>
                       </button>
-                      <div className="flex items-center gap-2 text-muted-foreground/60" aria-label={`${thread.viewCount || 0} reads`}>
-                        <Eye className="h-4 w-4" aria-hidden="true" />
-                        <span className="text-xs font-black italic tracking-widest uppercase">
-                          {thread.viewCount || 0} READS
+                      <div className="flex items-center gap-1.5 text-muted-foreground/60">
+                        <Eye className="h-3.5 w-3.5" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">
+                          {thread.viewCount || 0}
                         </span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <div className="flex -space-x-2 mr-2" aria-hidden="true">
-                        {[1, 2, 3].map(i => (
-                          <div key={i} className="h-6 w-6 rounded-full border-2 border-background bg-muted" />
-                        ))}
-                      </div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground italic">
-                        {thread.isAnonymous ? "ANONYMOUS SOURCE" : "VERIFIED ID"}
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 italic">
+                        {thread.isAnonymous ? "Anonymous Source" : "Verified ID"}
                       </span>
                     </div>
                   </div>

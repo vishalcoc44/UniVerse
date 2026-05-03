@@ -10,16 +10,8 @@ import { Map, Bus, Tag, Search, Wrench } from "lucide-react";
 export default function UtilitiesPage() {
 	return (
 		<DashboardLayout
-			title={
-				<div className="flex items-center gap-3">
-					<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
-						<Wrench className="h-6 w-6" />
-					</div>
-					<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-						Campus <span className="text-primary">Utilities</span>
-					</h1>
-				</div>
-			}
+			icon={Wrench}
+			title={<>Campus <span className="text-primary">Utilities</span></>}
 			subtitle="Tools to navigate and save around campus."
 			breadcrumb={["UniVerse", "Utilities"]}
 		>

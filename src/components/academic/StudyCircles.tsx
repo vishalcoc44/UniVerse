@@ -28,6 +28,7 @@ export function StudyCircles() {
 	const [recommendedGroups, setRecommendedGroups] = useState<StudyGroup[]>([]);
 	const [loading, setLoading] = useState(true);
 	const { universityId, loading: uniLoading, userId } = useUserUniversity();
+	const [activeTab, setActiveTab] = useState("all");
 
 	// Create Modal State
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -80,14 +81,16 @@ export function StudyCircles() {
 		setIsCreating(false);
 	};
 
-	const handleJoin = async (id: string, name: string) => {
-		setJoiningId(id);
-		const { success, error } = await joinStudyGroup(id);
+	const handleJoin = async (group: StudyGroup) => {
+		setJoiningId(group.id);
+		const { success, error } = await joinStudyGroup(group.id);
 		if (success) {
-			toast.success(`Joined ${name}!`);
+			toast.success(`Joined ${group.name}!`);
 			fetchGroups();
+			setSelectedGroup(group);
 		} else if (error === "Already a member") {
-			toast.info(`You are already in ${name}`);
+			toast.info(`You are already in ${group.name}`);
+			setSelectedGroup(group);
 		} else {
 			toast.error(error || "Failed to join");
 		}
@@ -119,19 +122,13 @@ export function StudyCircles() {
 					variant="ghost"
 					size="sm"
 					className="h-9 px-4 rounded-xl bg-primary/10 text-primary border border-primary/20 font-black uppercase text-[10px] tracking-widest hover:bg-primary hover:text-white transition-all active:scale-95 shadow-lg shadow-primary/5"
-					onClick={(e) => {
-						e.stopPropagation();
-						// If already joined (this logic needs to check membership, but for now we'll allow Open or Join)
-						// For the sake of "wow" factor, let's make it smarter
-						if (group.memberCount > 0) {
-							setSelectedGroup(group);
-						} else {
-							handleJoin(group.id, group.name);
-						}
-					}}
+						onClick={(e) => {
+							e.stopPropagation();
+							handleJoin(group);
+						}}
 					disabled={joiningId === group.id}
 				>
-					{joiningId === group.id ? <Loader2 className="h-3 w-3 animate-spin" /> : group.memberCount > 0 ? "Open Circle" : "Infiltrate"}
+						{joiningId === group.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Enter Circle"}
 				</Button>
 			</div>
 		</div>
@@ -222,7 +219,7 @@ export function StudyCircles() {
 							</Dialog>
 						</div>
 
-						<Tabs defaultValue="all" className="w-full flex-1 flex flex-col min-h-0">
+						<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col min-h-0">
 							<TabsList className="w-full grid grid-cols-2 bg-muted/30 p-1.5 rounded-2xl mb-6 border border-border/10">
 								<TabsTrigger value="all" className="text-[10px] font-black uppercase tracking-[0.1em] rounded-xl py-2.5 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-xl transition-all duration-300">All Nodes</TabsTrigger>
 								<TabsTrigger value="recommended" className="text-[10px] font-black uppercase tracking-[0.1em] rounded-xl py-2.5 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-xl transition-all duration-300 flex items-center gap-2">
@@ -274,6 +271,7 @@ export function StudyCircles() {
 						<Button
 							variant="ghost"
 							className="w-full h-14 rounded-2xl bg-card/40 border border-border/20 font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl hover:bg-primary/5 hover:border-primary/40 transition-all duration-500 overflow-hidden relative group"
+							onClick={() => setActiveTab("all")}
 						>
 							<div className="absolute inset-x-0 bottom-0 h-[2px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
 							Browse Global Network

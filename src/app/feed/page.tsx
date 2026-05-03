@@ -351,7 +351,7 @@ export default function Feed() {
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return;
 		try {
-			const { error } = await supabase.from('Friendship').insert({ requesterId: user.id, addresseeId: userId });
+			const { error } = await supabase.from('Friendship').insert({ id: crypto.randomUUID(), requesterId: user.id, addresseeId: userId, updatedAt: new Date().toISOString() });
 			if (error?.code === '23505') { toast.info("Request already sent."); } else if (error) throw error;
 			else { toast.success("Friend request sent!"); setPeopleSuggestions(prev => prev.filter(p => p.id !== userId)); }
 		} catch { toast.error("Failed to send request."); }
@@ -366,14 +366,8 @@ export default function Feed() {
 
 	return (
 		<DashboardLayout
-			title={
-				<div className="flex items-center gap-3">
-					<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
-						<Activity className="h-6 w-6" />
-					</div>
-					<h1 className="text-3xl md:text-4xl font-bold tracking-tight">Social <span className="text-primary">Feed</span></h1>
-				</div>
-			}
+			icon={Activity}
+			title={<>Social <span className="text-primary">Feed</span></>}
 			subtitle="Connect with your campus and the universe."
 			breadcrumb={["UniVerse", "Feed"]}
 		>

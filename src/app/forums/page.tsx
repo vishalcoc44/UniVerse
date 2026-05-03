@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export default function ForumsPage() {
-	const [activeCategory, setActiveCategory] = useState("all");
+	const [activeCategory, setActiveCategory] = useState("general");
 	const [activeScope, setActiveScope] = useState<"campus" | "universe">("campus");
 	const [activeTab, setActiveTab] = useState<"latest" | "trending" | "categories">("latest");
 	const [refreshKey, setRefreshKey] = useState(0);
@@ -25,59 +25,16 @@ export default function ForumsPage() {
 
 	return (
 		<DashboardLayout
-			title={
-				<div className="flex items-center gap-3">
-					<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
-						<MessageCircle className="h-6 w-6" />
-					</div>
-					<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-						Anonymous <span className="text-primary">Forums</span>
-					</h1>
-				</div>
-			}
+			icon={MessageCircle}
+			title={<>Anonymous <span className="text-primary">Forums</span></>}
 			subtitle="Speak freely, stay anonymous. Your identity is always protected."
 			breadcrumb={["UniVerse", "Forums"]}
 		>
-			<div className="space-y-6">
+			<div className="max-w-5xl mx-auto space-y-6">
 				{/* Controls Row */}
-				<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-					{/* Scope Switcher */}
-					<div
-						className="inline-flex p-1 bg-muted/50 rounded-xl border border-border/50"
-						role="radiogroup"
-						aria-label="Discussion Scope"
-					>
-						{[
-							{ id: "campus", label: "Local Campus", icon: Building2 },
-							{ id: "universe", label: "Global Universe", icon: Globe2 }
-						].map((scope) => (
-							<button
-								key={scope.id}
-								role="radio"
-								aria-checked={activeScope === scope.id}
-								onClick={() => setActiveScope(scope.id as any)}
-								className={cn(
-									"relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-									activeScope === scope.id
-										? "text-primary-foreground"
-										: "text-muted-foreground hover:text-foreground"
-								)}
-							>
-								{activeScope === scope.id && (
-									<motion.div
-										layoutId="forumScope"
-										className="absolute inset-0 bg-primary rounded-lg shadow-md"
-										transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-									/>
-								)}
-								<scope.icon className="h-4 w-4 relative z-10" />
-								<span className="relative z-10">{scope.label}</span>
-							</button>
-						))}
-					</div>
-
+				<div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-card/30 backdrop-blur-md p-2 rounded-2xl border border-border/50">
 					{/* Tab Switcher */}
-					<div className="inline-flex p-1 bg-muted/50 rounded-xl border border-border/50">
+					<div className="flex p-1 bg-muted/30 rounded-xl overflow-x-auto no-scrollbar">
 						{tabs.map((tab) => (
 							<button
 								key={tab.id}
@@ -85,7 +42,7 @@ export default function ForumsPage() {
 								aria-selected={activeTab === tab.id}
 								onClick={() => setActiveTab(tab.id)}
 								className={cn(
-									"relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+									"relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-tight transition-all shrink-0",
 									activeTab === tab.id
 										? "text-primary-foreground"
 										: "text-muted-foreground hover:text-foreground"
@@ -94,12 +51,47 @@ export default function ForumsPage() {
 								{activeTab === tab.id && (
 									<motion.div
 										layoutId="forumTab"
-										className="absolute inset-0 bg-primary rounded-lg shadow-md"
+										className="absolute inset-0 bg-primary rounded-lg shadow-sm"
 										transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
 									/>
 								)}
-								<tab.icon className="h-4 w-4 relative z-10" />
-								<span className="relative z-10 hidden sm:inline">{tab.label}</span>
+								<tab.icon className="h-3.5 w-3.5 relative z-10" />
+								<span className="relative z-10">{tab.label}</span>
+							</button>
+						))}
+					</div>
+
+					{/* Scope Switcher */}
+					<div
+						className="flex p-1 bg-muted/30 rounded-xl"
+						role="radiogroup"
+						aria-label="Discussion Scope"
+					>
+						{[
+							{ id: "campus", label: "Campus", icon: Building2 },
+							{ id: "universe", label: "Universe", icon: Globe2 }
+						].map((scope) => (
+							<button
+								key={scope.id}
+								role="radio"
+								aria-checked={activeScope === scope.id}
+								onClick={() => setActiveScope(scope.id as any)}
+								className={cn(
+									"relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-tight transition-all",
+									activeScope === scope.id
+										? "text-primary-foreground"
+										: "text-muted-foreground hover:text-foreground"
+								)}
+							>
+								{activeScope === scope.id && (
+									<motion.div
+										layoutId="forumScope"
+										className="absolute inset-0 bg-primary rounded-lg shadow-sm"
+										transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+									/>
+								)}
+								<scope.icon className="h-3.5 w-3.5 relative z-10" />
+								<span className="relative z-10">{scope.label}</span>
 							</button>
 						))}
 					</div>

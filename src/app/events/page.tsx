@@ -267,16 +267,8 @@ export default function EventsPage() {
 
 	return (
 		<DashboardLayout
-			title={
-				<div className="flex items-center gap-3">
-					<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
-						<CalendarIcon className="h-6 w-6" />
-					</div>
-					<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-						Events <span className="text-primary">Central</span>
-					</h1>
-				</div>
-			}
+			title={<>Events <span className="text-primary">Central</span></>}
+			icon={CalendarIcon}
 			subtitle="Where campus life happens."
 			breadcrumb={["UniVerse", "Events"]}
 		>

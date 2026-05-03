@@ -130,7 +130,7 @@ export default function PlatformAdminsPage() {
 
   if (!authChecked) {
     return (
-      <DashboardLayout title="Platform Admins" breadcrumb={["UniVerse", "Admin", "Platform Admins"]}>
+      <DashboardLayout icon={ShieldCheck} title="Platform Admins" breadcrumb={["UniVerse", "Admin", "Platform Admins"]}>
         <div className="py-24 flex items-center justify-center gap-3">
           <Loader2 className="h-6 w-6 animate-spin text-primary/50" />
           <p className="text-sm text-muted-foreground">Checking access...</p>
@@ -141,6 +141,7 @@ export default function PlatformAdminsPage() {
 
   return (
     <DashboardLayout
+      icon={ShieldCheck}
       title="Platform Admin Management"
       subtitle="Grant and revoke platform-wide admin access"
       breadcrumb={["UniVerse", "Admin", "Platform Admins"]}

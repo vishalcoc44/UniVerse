@@ -1,0 +1,4316 @@
+[
+  {
+    "table_name": "AcademicAIChat",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "AcademicAIChat",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "AcademicAIChat",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "AcademicAIChat",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "AcademicAIChat",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "AcademicAIChatMessage",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "AcademicAIChatMessage",
+    "column_name": "chatId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "AcademicAIChatMessage",
+    "column_name": "role",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "AcademicAIChatMessage",
+    "column_name": "content",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "AcademicAIChatMessage",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "ApplicationStatusHistory",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "ApplicationStatusHistory",
+    "column_name": "applicationId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ApplicationStatusHistory",
+    "column_name": "fromStatus",
+    "data_type": "USER-DEFINED",
+    "column_default": null
+  },
+  {
+    "table_name": "ApplicationStatusHistory",
+    "column_name": "toStatus",
+    "data_type": "USER-DEFINED",
+    "column_default": null
+  },
+  {
+    "table_name": "ApplicationStatusHistory",
+    "column_name": "note",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ApplicationStatusHistory",
+    "column_name": "changedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Bookmark",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Bookmark",
+    "column_name": "postId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Bookmark",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Bookmark",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "CareerAchievement",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "CareerAchievement",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "CareerAchievement",
+    "column_name": "type",
+    "data_type": "USER-DEFINED",
+    "column_default": null
+  },
+  {
+    "table_name": "CareerAchievement",
+    "column_name": "metadata",
+    "data_type": "jsonb",
+    "column_default": "'{}'::jsonb"
+  },
+  {
+    "table_name": "CareerAchievement",
+    "column_name": "earnedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Club",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Club",
+    "column_name": "name",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Club",
+    "column_name": "description",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Club",
+    "column_name": "logoUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Club",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "Club",
+    "column_name": "scope",
+    "data_type": "USER-DEFINED",
+    "column_default": "'CAMPUS'::\"ContentScope\""
+  },
+  {
+    "table_name": "Club",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ClubMember",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ClubMember",
+    "column_name": "clubId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ClubMember",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ClubMember",
+    "column_name": "role",
+    "data_type": "text",
+    "column_default": "'MEMBER'::text"
+  },
+  {
+    "table_name": "ClubMember",
+    "column_name": "status",
+    "data_type": "text",
+    "column_default": "'PENDING'::text"
+  },
+  {
+    "table_name": "ClubMember",
+    "column_name": "joinedAt",
+    "data_type": "timestamp with time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Comment",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "Comment",
+    "column_name": "content",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Comment",
+    "column_name": "postId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Comment",
+    "column_name": "authorId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Comment",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Comment",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Comment",
+    "column_name": "parentId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Company",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "Company",
+    "column_name": "name",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Company",
+    "column_name": "logoUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Company",
+    "column_name": "bannerUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Company",
+    "column_name": "description",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Company",
+    "column_name": "website",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Company",
+    "column_name": "industry",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Company",
+    "column_name": "size",
+    "data_type": "USER-DEFINED",
+    "column_default": "'STARTUP'::\"CompanySize\""
+  },
+  {
+    "table_name": "Company",
+    "column_name": "headquarters",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Company",
+    "column_name": "verified",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "Company",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Company",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "CompanyReview",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "CompanyReview",
+    "column_name": "companyId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "CompanyReview",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "CompanyReview",
+    "column_name": "rating",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "CompanyReview",
+    "column_name": "pros",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "CompanyReview",
+    "column_name": "cons",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "CompanyReview",
+    "column_name": "role",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "CompanyReview",
+    "column_name": "isAnonymous",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "CompanyReview",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Conversation",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "Conversation",
+    "column_name": "isGroup",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "Conversation",
+    "column_name": "name",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Conversation",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Conversation",
+    "column_name": "createdBy",
+    "data_type": "text",
+    "column_default": "(auth.uid())::text"
+  },
+  {
+    "table_name": "ConversationParticipant",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "ConversationParticipant",
+    "column_name": "conversationId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ConversationParticipant",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ConversationParticipant",
+    "column_name": "role",
+    "data_type": "USER-DEFINED",
+    "column_default": "'MEMBER'::\"ParticipantRole\""
+  },
+  {
+    "table_name": "ConversationParticipant",
+    "column_name": "status",
+    "data_type": "USER-DEFINED",
+    "column_default": "'PENDING'::\"ConversationStatus\""
+  },
+  {
+    "table_name": "ConversationPreference",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "ConversationPreference",
+    "column_name": "conversationId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ConversationPreference",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ConversationPreference",
+    "column_name": "isMuted",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "ConversationPreference",
+    "column_name": "mutedUntil",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "ConversationPreference",
+    "column_name": "isArchived",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "ConversationPreference",
+    "column_name": "archivedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "ConversationPreference",
+    "column_name": "isPinned",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "ConversationPreference",
+    "column_name": "pinnedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "ConversationPreference",
+    "column_name": "lastReadAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "ConversationPreference",
+    "column_name": "clearedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "ConversationPreference",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "ConversationPreference",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Course",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "(gen_random_uuid())::text"
+  },
+  {
+    "table_name": "Course",
+    "column_name": "code",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Course",
+    "column_name": "name",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Course",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "CourseEnrollment",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "CourseEnrollment",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "CourseEnrollment",
+    "column_name": "courseId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "CourseEnrollment",
+    "column_name": "role",
+    "data_type": "text",
+    "column_default": "'STUDENT'::text"
+  },
+  {
+    "table_name": "Department",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "(gen_random_uuid())::text"
+  },
+  {
+    "table_name": "Department",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Department",
+    "column_name": "name",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Department",
+    "column_name": "code",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Department",
+    "column_name": "createdBy",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Department",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Department",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "DepartmentAdminAssignment",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "(gen_random_uuid())::text"
+  },
+  {
+    "table_name": "DepartmentAdminAssignment",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentAdminAssignment",
+    "column_name": "departmentId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentAdminAssignment",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentAdminAssignment",
+    "column_name": "assignedBy",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentAdminAssignment",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "DepartmentAnnouncement",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "(gen_random_uuid())::text"
+  },
+  {
+    "table_name": "DepartmentAnnouncement",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentAnnouncement",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentAnnouncement",
+    "column_name": "content",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentAnnouncement",
+    "column_name": "scopeType",
+    "data_type": "USER-DEFINED",
+    "column_default": "'UNIVERSITY'::\"AnnouncementScopeType\""
+  },
+  {
+    "table_name": "DepartmentAnnouncement",
+    "column_name": "departmentId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentAnnouncement",
+    "column_name": "sectionId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentAnnouncement",
+    "column_name": "createdBy",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentAnnouncement",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "DepartmentAnnouncement",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "DepartmentSection",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "(gen_random_uuid())::text"
+  },
+  {
+    "table_name": "DepartmentSection",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentSection",
+    "column_name": "departmentId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentSection",
+    "column_name": "name",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentSection",
+    "column_name": "code",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentSection",
+    "column_name": "createdBy",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentSection",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "DepartmentSection",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "DepartmentStudentAssignment",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "(gen_random_uuid())::text"
+  },
+  {
+    "table_name": "DepartmentStudentAssignment",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentStudentAssignment",
+    "column_name": "studentId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentStudentAssignment",
+    "column_name": "departmentId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentStudentAssignment",
+    "column_name": "sectionId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentStudentAssignment",
+    "column_name": "assignedBy",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentStudentAssignment",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "DepartmentStudentAssignment",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "DepartmentTeacherAssignment",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "(gen_random_uuid())::text"
+  },
+  {
+    "table_name": "DepartmentTeacherAssignment",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentTeacherAssignment",
+    "column_name": "teacherId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentTeacherAssignment",
+    "column_name": "departmentId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentTeacherAssignment",
+    "column_name": "sectionId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentTeacherAssignment",
+    "column_name": "assignedBy",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "DepartmentTeacherAssignment",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "EmployerProfile",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "EmployerProfile",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "EmployerProfile",
+    "column_name": "companyId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "EmployerProfile",
+    "column_name": "position",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "EmployerProfile",
+    "column_name": "verifiedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "EmployerProfile",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Event",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Event",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Event",
+    "column_name": "description",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Event",
+    "column_name": "date",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "Event",
+    "column_name": "location",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Event",
+    "column_name": "imageUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Event",
+    "column_name": "clubId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Event",
+    "column_name": "organizerId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Event",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "Event",
+    "column_name": "scope",
+    "data_type": "USER-DEFINED",
+    "column_default": "'CAMPUS'::\"ContentScope\""
+  },
+  {
+    "table_name": "Event",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Event",
+    "column_name": "updatedAt",
+    "data_type": "timestamp with time zone",
+    "column_default": "timezone('utc'::text, now())"
+  },
+  {
+    "table_name": "Event",
+    "column_name": "isPinned",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "Event",
+    "column_name": "participantLimit",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "Event",
+    "column_name": "careerEventType",
+    "data_type": "USER-DEFINED",
+    "column_default": null
+  },
+  {
+    "table_name": "Event",
+    "column_name": "virtualBoothUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Event",
+    "column_name": "isCareerEvent",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "EventRSVP",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "EventRSVP",
+    "column_name": "eventId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "EventRSVP",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "EventRSVP",
+    "column_name": "status",
+    "data_type": "text",
+    "column_default": "'GOING'::text"
+  },
+  {
+    "table_name": "EventRSVP",
+    "column_name": "createdAt",
+    "data_type": "timestamp with time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Flashcard",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "Flashcard",
+    "column_name": "setId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Flashcard",
+    "column_name": "front",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Flashcard",
+    "column_name": "back",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Flashcard",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Flashcard",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "FlashcardSet",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "FlashcardSet",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "FlashcardSet",
+    "column_name": "description",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "FlashcardSet",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "FlashcardSet",
+    "column_name": "courseId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "FlashcardSet",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "FlashcardSet",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "ForumBookmark",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "ForumBookmark",
+    "column_name": "threadId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumBookmark",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumBookmark",
+    "column_name": "createdAt",
+    "data_type": "timestamp with time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "ForumPoll",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "ForumPoll",
+    "column_name": "threadId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumPoll",
+    "column_name": "question",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumPoll",
+    "column_name": "expiresAt",
+    "data_type": "timestamp with time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumPoll",
+    "column_name": "createdAt",
+    "data_type": "timestamp with time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "ForumPollOption",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "ForumPollOption",
+    "column_name": "pollId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumPollOption",
+    "column_name": "optionText",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumPollOption",
+    "column_name": "order",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumPollVote",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "ForumPollVote",
+    "column_name": "optionId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumPollVote",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumPollVote",
+    "column_name": "createdAt",
+    "data_type": "timestamp with time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "ForumPollVote",
+    "column_name": "pollId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumReply",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumReply",
+    "column_name": "content",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumReply",
+    "column_name": "isAnonymous",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "ForumReply",
+    "column_name": "threadId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumReply",
+    "column_name": "authorId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumReply",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "ForumReply",
+    "column_name": "anonymousSeed",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumReply",
+    "column_name": "attachments",
+    "data_type": "jsonb",
+    "column_default": "'[]'::jsonb"
+  },
+  {
+    "table_name": "ForumReport",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "ForumReport",
+    "column_name": "threadId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumReport",
+    "column_name": "replyId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumReport",
+    "column_name": "reporterId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumReport",
+    "column_name": "reason",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumReport",
+    "column_name": "status",
+    "data_type": "text",
+    "column_default": "'PENDING'::text"
+  },
+  {
+    "table_name": "ForumReport",
+    "column_name": "createdAt",
+    "data_type": "timestamp with time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "content",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "isAnonymous",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "courseId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "category",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "authorId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "scope",
+    "data_type": "USER-DEFINED",
+    "column_default": "'CAMPUS'::\"ContentScope\""
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "tags",
+    "data_type": "ARRAY",
+    "column_default": "'{}'::text[]"
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "isPinned",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "viewCount",
+    "data_type": "integer",
+    "column_default": "0"
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "anonymousSeed",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumThread",
+    "column_name": "attachments",
+    "data_type": "jsonb",
+    "column_default": "'[]'::jsonb"
+  },
+  {
+    "table_name": "ForumVote",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "ForumVote",
+    "column_name": "threadId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumVote",
+    "column_name": "replyId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumVote",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumVote",
+    "column_name": "value",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "ForumVote",
+    "column_name": "createdAt",
+    "data_type": "timestamp with time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Friendship",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Friendship",
+    "column_name": "requesterId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Friendship",
+    "column_name": "addresseeId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Friendship",
+    "column_name": "status",
+    "data_type": "USER-DEFINED",
+    "column_default": "'PENDING'::\"FriendshipStatus\""
+  },
+  {
+    "table_name": "Friendship",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "Friendship",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "InterviewQuestion",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "InterviewQuestion",
+    "column_name": "question",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "InterviewQuestion",
+    "column_name": "category",
+    "data_type": "USER-DEFINED",
+    "column_default": "'BEHAVIORAL'::\"InterviewCategory\""
+  },
+  {
+    "table_name": "InterviewQuestion",
+    "column_name": "difficulty",
+    "data_type": "USER-DEFINED",
+    "column_default": "'MEDIUM'::\"InterviewDifficulty\""
+  },
+  {
+    "table_name": "InterviewQuestion",
+    "column_name": "tags",
+    "data_type": "ARRAY",
+    "column_default": "'{}'::text[]"
+  },
+  {
+    "table_name": "InterviewQuestion",
+    "column_name": "sampleAnswer",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "InterviewQuestion",
+    "column_name": "tip",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "InterviewQuestion",
+    "column_name": "companyTags",
+    "data_type": "ARRAY",
+    "column_default": "'{}'::text[]"
+  },
+  {
+    "table_name": "InterviewQuestion",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "InterviewSession",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "InterviewSession",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "InterviewSession",
+    "column_name": "jobId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "InterviewSession",
+    "column_name": "role",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "InterviewSession",
+    "column_name": "questions",
+    "data_type": "jsonb",
+    "column_default": "'[]'::jsonb"
+  },
+  {
+    "table_name": "InterviewSession",
+    "column_name": "answers",
+    "data_type": "jsonb",
+    "column_default": "'[]'::jsonb"
+  },
+  {
+    "table_name": "InterviewSession",
+    "column_name": "feedback",
+    "data_type": "jsonb",
+    "column_default": "'[]'::jsonb"
+  },
+  {
+    "table_name": "InterviewSession",
+    "column_name": "overallScore",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "InterviewSession",
+    "column_name": "durationSec",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "InterviewSession",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Job",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "Job",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Job",
+    "column_name": "companyId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Job",
+    "column_name": "description",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Job",
+    "column_name": "type",
+    "data_type": "USER-DEFINED",
+    "column_default": "'FULL_TIME'::\"JobType\""
+  },
+  {
+    "table_name": "Job",
+    "column_name": "status",
+    "data_type": "USER-DEFINED",
+    "column_default": "'ACTIVE'::\"JobStatus\""
+  },
+  {
+    "table_name": "Job",
+    "column_name": "location",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Job",
+    "column_name": "isRemote",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "Job",
+    "column_name": "skills",
+    "data_type": "ARRAY",
+    "column_default": "'{}'::text[]"
+  },
+  {
+    "table_name": "Job",
+    "column_name": "salaryMin",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "Job",
+    "column_name": "salaryMax",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "Job",
+    "column_name": "currency",
+    "data_type": "text",
+    "column_default": "'USD'::text"
+  },
+  {
+    "table_name": "Job",
+    "column_name": "deadline",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "Job",
+    "column_name": "postedById",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Job",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Job",
+    "column_name": "scope",
+    "data_type": "USER-DEFINED",
+    "column_default": "'CAMPUS'::\"ContentScope\""
+  },
+  {
+    "table_name": "Job",
+    "column_name": "applyUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Job",
+    "column_name": "embedding",
+    "data_type": "USER-DEFINED",
+    "column_default": null
+  },
+  {
+    "table_name": "Job",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Job",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "JobApplication",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "JobApplication",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "JobApplication",
+    "column_name": "jobId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "JobApplication",
+    "column_name": "resumeId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "JobApplication",
+    "column_name": "status",
+    "data_type": "USER-DEFINED",
+    "column_default": "'APPLIED'::\"ApplicationStatus\""
+  },
+  {
+    "table_name": "JobApplication",
+    "column_name": "appliedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "JobApplication",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "JobApplication",
+    "column_name": "notes",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "JobApplication",
+    "column_name": "companyName",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "JobApplication",
+    "column_name": "jobTitle",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "JobApplication",
+    "column_name": "jobUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Like",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Like",
+    "column_name": "postId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Like",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Like",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "MarketplaceListing",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MarketplaceListing",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MarketplaceListing",
+    "column_name": "description",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MarketplaceListing",
+    "column_name": "price",
+    "data_type": "double precision",
+    "column_default": null
+  },
+  {
+    "table_name": "MarketplaceListing",
+    "column_name": "imageUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MarketplaceListing",
+    "column_name": "type",
+    "data_type": "USER-DEFINED",
+    "column_default": null
+  },
+  {
+    "table_name": "MarketplaceListing",
+    "column_name": "status",
+    "data_type": "text",
+    "column_default": "'ACTIVE'::text"
+  },
+  {
+    "table_name": "MarketplaceListing",
+    "column_name": "sellerId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MarketplaceListing",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "MarketplaceListing",
+    "column_name": "scope",
+    "data_type": "USER-DEFINED",
+    "column_default": "'CAMPUS'::\"ContentScope\""
+  },
+  {
+    "table_name": "MarketplaceListing",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MarketplaceListing",
+    "column_name": "category",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorProfile",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "MentorProfile",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorProfile",
+    "column_name": "headline",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorProfile",
+    "column_name": "company",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorProfile",
+    "column_name": "role",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorProfile",
+    "column_name": "gradYear",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorProfile",
+    "column_name": "department",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorProfile",
+    "column_name": "availableSlots",
+    "data_type": "integer",
+    "column_default": "2"
+  },
+  {
+    "table_name": "MentorProfile",
+    "column_name": "isAccepting",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "MentorProfile",
+    "column_name": "linkedinUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorProfile",
+    "column_name": "bio",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorProfile",
+    "column_name": "skills",
+    "data_type": "ARRAY",
+    "column_default": "'{}'::text[]"
+  },
+  {
+    "table_name": "MentorProfile",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "MentorProfile",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "MentorshipRequest",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "MentorshipRequest",
+    "column_name": "menteeId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorshipRequest",
+    "column_name": "mentorId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorshipRequest",
+    "column_name": "status",
+    "data_type": "USER-DEFINED",
+    "column_default": "'PENDING'::\"MentorshipStatus\""
+  },
+  {
+    "table_name": "MentorshipRequest",
+    "column_name": "message",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorshipRequest",
+    "column_name": "goalAreas",
+    "data_type": "ARRAY",
+    "column_default": "'{}'::text[]"
+  },
+  {
+    "table_name": "MentorshipRequest",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "MentorshipRequest",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "MentorshipSession",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "MentorshipSession",
+    "column_name": "requestId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorshipSession",
+    "column_name": "scheduledAt",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorshipSession",
+    "column_name": "duration",
+    "data_type": "integer",
+    "column_default": "60"
+  },
+  {
+    "table_name": "MentorshipSession",
+    "column_name": "meetLink",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorshipSession",
+    "column_name": "notes",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorshipSession",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "MentorshipSkill",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorshipSkill",
+    "column_name": "skill",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorshipSkill",
+    "column_name": "type",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MentorshipSkill",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Message",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "Message",
+    "column_name": "content",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Message",
+    "column_name": "conversationId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Message",
+    "column_name": "senderId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Message",
+    "column_name": "readBy",
+    "data_type": "ARRAY",
+    "column_default": null
+  },
+  {
+    "table_name": "Message",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "Message",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Message",
+    "column_name": "isEdited",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "Message",
+    "column_name": "isDeleted",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "Message",
+    "column_name": "deletedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "Message",
+    "column_name": "deletedBy",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Message",
+    "column_name": "replyToId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Message",
+    "column_name": "deletedFor",
+    "data_type": "ARRAY",
+    "column_default": "ARRAY[]::text[]"
+  },
+  {
+    "table_name": "MessageAttachment",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "MessageAttachment",
+    "column_name": "messageId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MessageAttachment",
+    "column_name": "uploaderId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MessageAttachment",
+    "column_name": "fileName",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MessageAttachment",
+    "column_name": "fileType",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MessageAttachment",
+    "column_name": "fileSize",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "MessageAttachment",
+    "column_name": "url",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MessageAttachment",
+    "column_name": "metadata",
+    "data_type": "jsonb",
+    "column_default": null
+  },
+  {
+    "table_name": "MessageAttachment",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "MessageHidden",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "MessageHidden",
+    "column_name": "messageId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MessageHidden",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MessageHidden",
+    "column_name": "hiddenAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "MessageReaction",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "MessageReaction",
+    "column_name": "messageId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MessageReaction",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MessageReaction",
+    "column_name": "emoji",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MessageReaction",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "MoodLog",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MoodLog",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MoodLog",
+    "column_name": "moodScore",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "MoodLog",
+    "column_name": "notes",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "MoodLog",
+    "column_name": "activities",
+    "data_type": "ARRAY",
+    "column_default": null
+  },
+  {
+    "table_name": "MoodLog",
+    "column_name": "loggedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "Note",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "Note",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Note",
+    "column_name": "courseId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Note",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Note",
+    "column_name": "content",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Note",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "Note",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "Notification",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "(gen_random_uuid())::text"
+  },
+  {
+    "table_name": "Notification",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Notification",
+    "column_name": "type",
+    "data_type": "USER-DEFINED",
+    "column_default": null
+  },
+  {
+    "table_name": "Notification",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Notification",
+    "column_name": "body",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Notification",
+    "column_name": "link",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Notification",
+    "column_name": "isRead",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "Notification",
+    "column_name": "createdAt",
+    "data_type": "timestamp with time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Post",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Post",
+    "column_name": "content",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Post",
+    "column_name": "mediaUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Post",
+    "column_name": "type",
+    "data_type": "USER-DEFINED",
+    "column_default": "'TEXT'::\"PostType\""
+  },
+  {
+    "table_name": "Post",
+    "column_name": "authorId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Post",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Post",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Post",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "Post",
+    "column_name": "scope",
+    "data_type": "USER-DEFINED",
+    "column_default": "'CAMPUS'::\"ContentScope\""
+  },
+  {
+    "table_name": "Post",
+    "column_name": "category",
+    "data_type": "text",
+    "column_default": "'General'::text"
+  },
+  {
+    "table_name": "Post",
+    "column_name": "quotedPostId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Post",
+    "column_name": "viewCount",
+    "data_type": "integer",
+    "column_default": "0"
+  },
+  {
+    "table_name": "Post",
+    "column_name": "isPinned",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "PostPoll",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "PostPoll",
+    "column_name": "postId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "PostPoll",
+    "column_name": "question",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "PostPoll",
+    "column_name": "expiresAt",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "PostPoll",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "PostPollOption",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "PostPollOption",
+    "column_name": "pollId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "PostPollOption",
+    "column_name": "text",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "PostPollOption",
+    "column_name": "displayOrder",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "PostPollVote",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "PostPollVote",
+    "column_name": "pollId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "PostPollVote",
+    "column_name": "optionId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "PostPollVote",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "PostPollVote",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "PostReaction",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "PostReaction",
+    "column_name": "postId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "PostReaction",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "PostReaction",
+    "column_name": "emoji",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "PostReaction",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "email",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "universityEmail",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "username",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "fullName",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "avatarUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "bio",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "role",
+    "data_type": "USER-DEFINED",
+    "column_default": "'STUDENT'::\"UserRole\""
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "department",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "yearOfStudy",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "embedding",
+    "data_type": "USER-DEFINED",
+    "column_default": null
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "universityName",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "lastSeenAt",
+    "data_type": "timestamp with time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "showOnlineStatus",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "portfolioUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "skills",
+    "data_type": "ARRAY",
+    "column_default": "'{}'::text[]"
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "openToWork",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "preferredRoles",
+    "data_type": "ARRAY",
+    "column_default": "'{}'::text[]"
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "preferredLocations",
+    "data_type": "ARRAY",
+    "column_default": "'{}'::text[]"
+  },
+  {
+    "table_name": "Profile",
+    "column_name": "reputationPoints",
+    "data_type": "integer",
+    "column_default": "0"
+  },
+  {
+    "table_name": "ProjectCollaborator",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ProjectCollaborator",
+    "column_name": "projectId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ProjectCollaborator",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ProjectCollaborator",
+    "column_name": "role",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Quiz",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "Quiz",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Quiz",
+    "column_name": "courseId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Quiz",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Quiz",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "QuizAttempt",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "QuizAttempt",
+    "column_name": "quizId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "QuizAttempt",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "QuizAttempt",
+    "column_name": "score",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "QuizAttempt",
+    "column_name": "totalQuestions",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "QuizAttempt",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "QuizQuestion",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "QuizQuestion",
+    "column_name": "quizId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "QuizQuestion",
+    "column_name": "question",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "QuizQuestion",
+    "column_name": "options",
+    "data_type": "jsonb",
+    "column_default": null
+  },
+  {
+    "table_name": "QuizQuestion",
+    "column_name": "correctAnswer",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "QuizQuestion",
+    "column_name": "explanation",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ResearchProject",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ResearchProject",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ResearchProject",
+    "column_name": "description",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ResearchProject",
+    "column_name": "status",
+    "data_type": "text",
+    "column_default": "'OPEN'::text"
+  },
+  {
+    "table_name": "ResearchProject",
+    "column_name": "leadId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ResearchProject",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "ResearchProject",
+    "column_name": "scope",
+    "data_type": "USER-DEFINED",
+    "column_default": "'CAMPUS'::\"ContentScope\""
+  },
+  {
+    "table_name": "ResearchProject",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Resource",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "Resource",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Resource",
+    "column_name": "description",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Resource",
+    "column_name": "fileUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Resource",
+    "column_name": "type",
+    "data_type": "USER-DEFINED",
+    "column_default": null
+  },
+  {
+    "table_name": "Resource",
+    "column_name": "courseId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Resource",
+    "column_name": "uploaderId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Resource",
+    "column_name": "upvotes",
+    "data_type": "integer",
+    "column_default": "0"
+  },
+  {
+    "table_name": "Resource",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "ResourceEmbedding",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ResourceEmbedding",
+    "column_name": "resourceId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ResourceEmbedding",
+    "column_name": "content",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ResourceEmbedding",
+    "column_name": "embedding",
+    "data_type": "USER-DEFINED",
+    "column_default": null
+  },
+  {
+    "table_name": "ResourceVote",
+    "column_name": "resourceId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ResourceVote",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "ResourceVote",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Resume",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "Resume",
+    "column_name": "fileUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Resume",
+    "column_name": "fileName",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Resume",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Resume",
+    "column_name": "score",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "Resume",
+    "column_name": "feedback",
+    "data_type": "jsonb",
+    "column_default": null
+  },
+  {
+    "table_name": "Resume",
+    "column_name": "satsCheck",
+    "data_type": "boolean",
+    "column_default": null
+  },
+  {
+    "table_name": "Resume",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "Resume",
+    "column_name": "label",
+    "data_type": "text",
+    "column_default": "'Default'::text"
+  },
+  {
+    "table_name": "Resume",
+    "column_name": "isActive",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "Resume",
+    "column_name": "skillsExtracted",
+    "data_type": "ARRAY",
+    "column_default": "'{}'::text[]"
+  },
+  {
+    "table_name": "RideOffer",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "RideOffer",
+    "column_name": "from",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "RideOffer",
+    "column_name": "to",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "RideOffer",
+    "column_name": "date",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "RideOffer",
+    "column_name": "seats",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "RideOffer",
+    "column_name": "price",
+    "data_type": "double precision",
+    "column_default": null
+  },
+  {
+    "table_name": "RideOffer",
+    "column_name": "driverId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "RideOffer",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "RideOffer",
+    "column_name": "scope",
+    "data_type": "USER-DEFINED",
+    "column_default": "'CAMPUS'::\"ContentScope\""
+  },
+  {
+    "table_name": "RideOffer",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "RideRequest",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "RideRequest",
+    "column_name": "offerId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "RideRequest",
+    "column_name": "passengerId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "RideRequest",
+    "column_name": "status",
+    "data_type": "text",
+    "column_default": "'PENDING'::text"
+  },
+  {
+    "table_name": "SalaryReport",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "SalaryReport",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "SalaryReport",
+    "column_name": "role",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "SalaryReport",
+    "column_name": "company",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "SalaryReport",
+    "column_name": "location",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "SalaryReport",
+    "column_name": "baseSalary",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "SalaryReport",
+    "column_name": "totalCompensation",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "SalaryReport",
+    "column_name": "experienceYears",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "SalaryReport",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "SalaryReport",
+    "column_name": "reportYear",
+    "data_type": "integer",
+    "column_default": "(EXTRACT(year FROM now()))::integer"
+  },
+  {
+    "table_name": "SalaryReport",
+    "column_name": "currency",
+    "data_type": "text",
+    "column_default": "'USD'::text"
+  },
+  {
+    "table_name": "SalaryReport",
+    "column_name": "isAnonymous",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "SalaryReport",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "SavedJob",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "SavedJob",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "SavedJob",
+    "column_name": "jobId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "SavedJob",
+    "column_name": "savedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "StudyGroup",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "StudyGroup",
+    "column_name": "name",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyGroup",
+    "column_name": "description",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyGroup",
+    "column_name": "courseId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyGroup",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyGroup",
+    "column_name": "isPublic",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "StudyGroup",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "StudyGroup",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "StudyGroup",
+    "column_name": "conversationId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyGroupMember",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "StudyGroupMember",
+    "column_name": "studyGroupId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyGroupMember",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyGroupMember",
+    "column_name": "role",
+    "data_type": "text",
+    "column_default": "'MEMBER'::text"
+  },
+  {
+    "table_name": "StudyPlan",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "StudyPlan",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyPlan",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyPlan",
+    "column_name": "targetGpa",
+    "data_type": "double precision",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyPlan",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "StudyPlanSession",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "StudyPlanSession",
+    "column_name": "planId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyPlanSession",
+    "column_name": "courseId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyPlanSession",
+    "column_name": "date",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyPlanSession",
+    "column_name": "durationMinutes",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyPlanSession",
+    "column_name": "topic",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudyPlanSession",
+    "column_name": "completed",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "StudySession",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "StudySession",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudySession",
+    "column_name": "duration",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "StudySession",
+    "column_name": "mode",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudySession",
+    "column_name": "courseId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "StudySession",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "University",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "University",
+    "column_name": "name",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "University",
+    "column_name": "abbreviation",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "University",
+    "column_name": "location",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "University",
+    "column_name": "logoUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "University",
+    "column_name": "domains",
+    "data_type": "ARRAY",
+    "column_default": null
+  },
+  {
+    "table_name": "University",
+    "column_name": "studentIdPattern",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "University",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "CURRENT_TIMESTAMP"
+  },
+  {
+    "table_name": "University",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "University",
+    "column_name": "adminEmail",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "University",
+    "column_name": "adminName",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "University",
+    "column_name": "adminPhone",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "University",
+    "column_name": "status",
+    "data_type": "USER-DEFINED",
+    "column_default": "'PENDING'::\"UniversityStatus\""
+  },
+  {
+    "table_name": "University",
+    "column_name": "website",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "University",
+    "column_name": "crisisSupport",
+    "data_type": "jsonb",
+    "column_default": "'[]'::jsonb"
+  },
+  {
+    "table_name": "University",
+    "column_name": "campusMapData",
+    "data_type": "jsonb",
+    "column_default": "'{\"buildings\": []}'::jsonb"
+  },
+  {
+    "table_name": "UniversityAdminRole",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UniversityAdminRole",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UniversityAdminRole",
+    "column_name": "isSuper",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "UniversityAdminRole",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "UniversityStatusHistory",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "(gen_random_uuid())::text"
+  },
+  {
+    "table_name": "UniversityStatusHistory",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UniversityStatusHistory",
+    "column_name": "fromStatus",
+    "data_type": "USER-DEFINED",
+    "column_default": null
+  },
+  {
+    "table_name": "UniversityStatusHistory",
+    "column_name": "toStatus",
+    "data_type": "USER-DEFINED",
+    "column_default": null
+  },
+  {
+    "table_name": "UniversityStatusHistory",
+    "column_name": "reviewedBy",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UniversityStatusHistory",
+    "column_name": "note",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UniversityStatusHistory",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "UpdateFeedback",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UpdateFeedback",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UpdateFeedback",
+    "column_name": "type",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UpdateFeedback",
+    "column_name": "description",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UpdateFeedback",
+    "column_name": "status",
+    "data_type": "text",
+    "column_default": "'NEW'::text"
+  },
+  {
+    "table_name": "UpdateFeedback",
+    "column_name": "createdAt",
+    "data_type": "timestamp with time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "UpdateFeedback",
+    "column_name": "updatedAt",
+    "data_type": "timestamp with time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "UserQuestionAttempt",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "UserQuestionAttempt",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UserQuestionAttempt",
+    "column_name": "questionId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UserQuestionAttempt",
+    "column_name": "selfRating",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "UserQuestionAttempt",
+    "column_name": "notes",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UserQuestionAttempt",
+    "column_name": "isStarred",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "UserQuestionAttempt",
+    "column_name": "attemptedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "profileVisibility",
+    "data_type": "text",
+    "column_default": "'campus'::text"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "showOnlineStatus",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "resumeVisibility",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "genderFilterEnabled",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "shareLiveTrip",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "privateMoodLogs",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "theme",
+    "data_type": "text",
+    "column_default": "'dark'::text"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "glassmorphism",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "notifyDirectMessages",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "notifyMentions",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "notifyReplies",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "notifyDeadlines",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "notifyStudyGroups",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "notifyEvents",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "notifyJobAlerts",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "notifyResearchUpdates",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "notifyRideUpdates",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "notifyMoodReminder",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "googleCalendarConnected",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "githubConnected",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "linkedinConnected",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "zoomConnected",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "fontScale",
+    "data_type": "integer",
+    "column_default": "100"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "highContrast",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "reduceMotion",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "screenReader",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "dyslexicFont",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "phone",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "linkedin",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "github",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "UserSettings",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "brand",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "offer",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "code",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "category",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "link",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "expiresAt",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "eligibility",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "termsUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "redeemType",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "campusLocation",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "isActive",
+    "data_type": "boolean",
+    "column_default": "true"
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "UtilityDiscount",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "UtilityService",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "UtilityService",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityService",
+    "column_name": "name",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityService",
+    "column_name": "category",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityService",
+    "column_name": "description",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityService",
+    "column_name": "location",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityService",
+    "column_name": "hours",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityService",
+    "column_name": "contact",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityService",
+    "column_name": "website",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityService",
+    "column_name": "mapX",
+    "data_type": "numeric",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityService",
+    "column_name": "mapY",
+    "data_type": "numeric",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityService",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "UtilityService",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "UtilityShuttle",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "UtilityShuttle",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityShuttle",
+    "column_name": "routeName",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityShuttle",
+    "column_name": "routeNumber",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityShuttle",
+    "column_name": "status",
+    "data_type": "text",
+    "column_default": "'On Time'::text"
+  },
+  {
+    "table_name": "UtilityShuttle",
+    "column_name": "nextStop",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityShuttle",
+    "column_name": "etaMinutes",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityShuttle",
+    "column_name": "schedule",
+    "data_type": "ARRAY",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityShuttle",
+    "column_name": "operatingHours",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityShuttle",
+    "column_name": "serviceAlerts",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilityShuttle",
+    "column_name": "isAccessible",
+    "data_type": "boolean",
+    "column_default": "false"
+  },
+  {
+    "table_name": "UtilityShuttle",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "UtilityShuttle",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "UtilityShuttle",
+    "column_name": "routeMapData",
+    "data_type": "jsonb",
+    "column_default": "'{\"stops\": [], \"routePath\": []}'::jsonb"
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "suggestedBy",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "category",
+    "data_type": "USER-DEFINED",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "status",
+    "data_type": "USER-DEFINED",
+    "column_default": "'PENDING'::\"UtilitySuggestionStatus\""
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "title",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "description",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "location",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "hours",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "contact",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "website",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "mapX",
+    "data_type": "numeric",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "mapY",
+    "data_type": "numeric",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "serviceCategory",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "routeName",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "routeNumber",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "nextStop",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "etaMinutes",
+    "data_type": "integer",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "schedule",
+    "data_type": "ARRAY",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "brand",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "offer",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "code",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "link",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "expiresAt",
+    "data_type": "timestamp without time zone",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "eligibility",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "termsUrl",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "redeemType",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "campusLocation",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "discountCategory",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "notes",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "adminNote",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "UtilitySuggestion",
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone",
+    "column_default": "now()"
+  }
+]

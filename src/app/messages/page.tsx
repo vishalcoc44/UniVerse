@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { MessageSquareDashed, MessageSquare, Loader2, Plus, Users, Sparkle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { UserSearchModal } from "@/components/messages/UserSearchModal";
-import { useRouter } from "next/navigation";
 import { GroupCreateDialog } from "@/components/messages/GroupCreateDialog";
+import { toast } from "sonner";
 
 interface Profile {
 	id: string;
@@ -48,7 +48,6 @@ interface RawConversation {
 }
 
 export default function Messages() {
-	const router = useRouter();
 	const [activeChatId, setActiveChatId] = useState<string | null>(null);
 
 	interface UIConversation {
@@ -68,6 +67,7 @@ export default function Messages() {
 		primaryRole?: string;
 		isPinned?: boolean;
 		status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+		peerStatus: 'PENDING' | 'ACCEPTED' | 'REJECTED';
 	}
 
 	const [conversations, setConversations] = useState<UIConversation[]>([]);
@@ -170,6 +170,7 @@ export default function Messages() {
 							const isArchived = Boolean(pref?.isArchived); // Updated to use isArchived boolean
 							const isMuted = Boolean(pref?.isMuted);
 							const myParticipant = participants.find(p => p.userId === user.id);
+							const peerParticipant = participants.find(p => p.userId !== user.id);
 
 							return {
 								id: c.id,
@@ -191,7 +192,8 @@ export default function Messages() {
 								isArchived,
 								isPinned: Boolean(pref?.isPinned),
 								primaryRole: c.isGroup ? undefined : primaryOther?.role || undefined,
-								status: myParticipant?.status || 'PENDING'
+								status: myParticipant?.status || 'PENDING',
+								peerStatus: peerParticipant?.status || 'ACCEPTED'
 							};
 						});
 						setConversations(formatted);
@@ -275,73 +277,52 @@ export default function Messages() {
 		setIsGroupCreateOpen(true);
 	};
 
-	const handleSelectUser = async (userId: string) => {
+	const handleSelectUser = async (userId: string, isFriend: boolean) => {
 		setIsUserSearchOpen(false);
 		if (!currentUser) return;
 
-		// Check if conversation exists
-		// 1. Get my conversations
-		const { data: myConvos } = await supabase
-			.from('ConversationParticipant')
-			.select('conversationId')
-			.eq('userId', currentUser.id);
+		try {
+			// If they're already a friend, auto-accept on their side so chat is immediate.
+			// Otherwise, leave PENDING — messages will queue until they accept the request.
+			const peerStatus = isFriend ? 'ACCEPTED' : 'PENDING';
 
-		const myConvoIds = myConvos?.map(c => c.conversationId) || [];
+			// Atomic RPC: reuses existing 1-1 convo if any, else creates Conversation
+			// + both participant rows. Bypasses RLS via SECURITY DEFINER.
+			const { data: convoId, error: rpcError } = await supabase.rpc('start_direct_conversation', {
+				p_peer_id: userId,
+				p_peer_status: peerStatus,
+			});
 
-		if (myConvoIds.length > 0) {
-			// 2. Check if other user is in any of these
-			const { data: existing } = await supabase
-				.from('ConversationParticipant')
-				.select('conversationId')
-				.eq('userId', userId)
-				.in('conversationId', myConvoIds)
-				.maybeSingle();
-
-			if (existing) {
-				setActiveChatId(existing.conversationId);
-				return;
+			if (rpcError || !convoId) {
+				throw rpcError || new Error('Failed to start conversation');
 			}
-		}
 
-		// Create new conversation
-		const { data: newConvo, error: createError } = await supabase
-			.from('Conversation')
-			.insert({
-				isGroup: false,
-				updatedAt: new Date().toISOString()
-			})
-			.select()
-			.single();
+			// Detect "new" vs "reused" by checking if peer participant just got created.
+			// Cheap heuristic: if the convo isn't in our local list yet, treat as new.
+			const isNew = !conversations.some(c => c.id === convoId);
+			if (isNew && !isFriend) {
+				toast.info("Chat request sent. Your messages will be queued and delivered once they accept.", {
+					duration: 5000,
+				});
+			}
 
-		if (createError || !newConvo) {
-			console.error("Error creating conversation", createError);
-			return;
-		}
-
-		// Add participants (insert self first for RLS safety)
-		await supabase
-			.from('ConversationParticipant')
-			.insert({
-				conversationId: newConvo.id,
-				userId: currentUser.id,
-				role: 'ADMIN',
-				status: 'ACCEPTED' // Creator is auto-accepted
+			setActiveChatId(convoId);
+		} catch (error: any) {
+			// Supabase PostgrestError fields aren't always own-enumerable —
+			// extract them explicitly so they actually show up in the console.
+			console.error('Error creating/selecting conversation:', {
+				message: error?.message,
+				code: error?.code,
+				details: error?.details,
+				hint: error?.hint,
+				raw: error,
 			});
-
-		await supabase
-			.from('ConversationParticipant')
-			.insert({
-				conversationId: newConvo.id,
-				userId: userId,
-				role: 'MEMBER',
-				status: 'PENDING' // Recipient is pending
-			});
-
-		// Reload to show new conversation
-		router.refresh();
-		// Since router.refresh() might not trigger a state re-fetch here if it is handled in useEffect [],
-		// we might want to manually trigger re-fetch or rely on Realtime.
-		// For now, mirroring original behavior but safer.
+			const message = error?.message || error?.details || 'Could not start conversation.';
+			toast.error(message);
+		} finally {
+			// Safety reset: if Radix overlay cleanup misses during async flow, restore interactions.
+			document.body.style.pointerEvents = '';
+		}
 	};
 
 	const activeChat = conversations.find(c => c.id === activeChatId);
@@ -401,16 +382,8 @@ export default function Messages() {
 
 	return (
 		<DashboardLayout
-			title={
-				<div className="flex items-center gap-3">
-					<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
-						<MessageSquare className="h-6 w-6" />
-					</div>
-					<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-						Direct <span className="text-primary">Messages</span>
-					</h1>
-				</div>
-			}
+			icon={MessageSquare}
+			title={<>Direct <span className="text-primary">Messages</span></>}
 			subtitle="Connect with peers and faculty."
 			breadcrumb={["UniVerse", "Messages"]}
 			noPadding
@@ -506,6 +479,7 @@ export default function Messages() {
 				isOpen={isUserSearchOpen}
 				onClose={() => setIsUserSearchOpen(false)}
 				onSelectUser={handleSelectUser}
+				currentUserId={currentUser?.id}
 			/>
 			<GroupCreateDialog
 				isOpen={isGroupCreateOpen}

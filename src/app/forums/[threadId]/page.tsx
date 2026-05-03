@@ -127,6 +127,23 @@ export default function ThreadDetailPage() {
       return;
     }
 
+    // FC-22 fix: enforce university scope client-side. CAMPUS-scoped threads
+    // are only visible to users from the same university; UNIVERSE-scoped
+    // threads are visible to everyone. Defense-in-depth — also fix RLS
+    // (audit/REPORT.md FC-8) so direct anon-key access is also blocked.
+    if (threadData.scope === 'CAMPUS' && user) {
+      const { data: profile } = await supabase
+        .from('Profile')
+        .select('universityId')
+        .eq('id', user.id)
+        .single();
+      if (!profile?.universityId || profile.universityId !== threadData.universityId) {
+        toast.error("Thread not accessible from your university");
+        router.push('/forums');
+        return;
+      }
+    }
+
     setThread(threadData);
 
     // Increment view count (fire and forget)
@@ -359,7 +376,7 @@ export default function ThreadDetailPage() {
 
   if (loading) {
     return (
-      <DashboardLayout title="Thread" breadcrumb={["UniVerse", "Forums", "Thread"]}>
+      <DashboardLayout icon={MessageSquare} title="Thread Discussion" breadcrumb={["UniVerse", "Forums", "Thread"]}>
         <div className="flex flex-col items-center justify-center p-20 gap-4">
           <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
           <p className="text-xs font-black italic tracking-widest text-muted-foreground uppercase">
@@ -377,7 +394,8 @@ export default function ThreadDetailPage() {
 
   return (
     <DashboardLayout
-      title="Thread"
+      icon={MessageSquare}
+      title="Thread Discussion"
       breadcrumb={["UniVerse", "Forums", "Thread"]}
     >
       <div className="max-w-4xl mx-auto space-y-6">

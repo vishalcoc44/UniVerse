@@ -22,10 +22,8 @@ import {
 	FileText,
 	Users,
 	Mic,
-	Sparkles,
 	Briefcase,
 	TrendingUp,
-	Search,
 	ChevronRight,
 	Target,
 	Award,
@@ -165,11 +163,12 @@ export default function Career() {
 	const [companiesLoaded, setCompaniesLoaded] = useState(false);
 	const [achieveCount, setAchieveCount] = useState(0);
 	const [isAdmin, setIsAdmin] = useState(false);
+	const [prepTips, setPrepTips] = useState<{ tip: string; category: string }[]>([]);
 	const [showCompanyForm, setShowCompanyForm] = useState(false);
 	const [addingCompany, setAddingCompany] = useState(false);
 	const [companyForm, setCompanyForm] = useState({
 		name: '', industry: '', description: '', website: '',
-		headquarters: '', size: 'STARTUP', logoUrl: '',
+		headquarters: '', size: 'STARTUP', logoUrl: '', verified: false,
 	});
 
 	const submitCompany = async () => {
@@ -183,14 +182,14 @@ export default function Career() {
 			headquarters: companyForm.headquarters || null,
 			size: companyForm.size || 'STARTUP',
 			logoUrl: companyForm.logoUrl || null,
-			verified: true,
+			verified: companyForm.verified,
 		});
 		if (error) {
 			alert(error.message);
 			setAddingCompany(false);
 			return;
 		}
-		setCompanyForm({ name: '', industry: '', description: '', website: '', headquarters: '', size: 'STARTUP', logoUrl: '' });
+		setCompanyForm({ name: '', industry: '', description: '', website: '', headquarters: '', size: 'STARTUP', logoUrl: '', verified: false });
 		setShowCompanyForm(false);
 		// Reload companies
 		const { data } = await supabase.from('Company').select('id, name, logoUrl, industry, size, description, website, verified, headquarters').order('name').limit(30);
@@ -210,10 +209,11 @@ export default function Career() {
 			if (!user) return;
 			const [{ count }, { data: profile }] = await Promise.all([
 				supabase.from('CareerAchievement').select('id', { count: 'exact', head: true }).eq('userId', user.id),
-				supabase.from('Profile').select('role').eq('id', user.id).single(),
+				supabase.from('Profile').select('role, universityId').eq('id', user.id).single(),
 			]);
 			setAchieveCount(count ?? 0);
-			setIsAdmin(profile?.role === 'ADMIN');
+			// FC-1 fix: career-wide admin tools are platform-managed.
+			setIsAdmin(profile?.role === 'ADMIN' && !profile?.universityId);
 		})();
 	}, []);
 
@@ -227,18 +227,27 @@ export default function Career() {
 		}
 	}, [activeTab, companiesLoaded]);
 
+	useEffect(() => {
+		if (activeTab === "interview" && prepTips.length === 0) {
+			(async () => {
+				const { data } = await supabase
+					.from('InterviewQuestion')
+					.select('tip, category')
+					.not('tip', 'is', null)
+					.limit(20);
+				if (data && data.length > 0) {
+					// Pick 3 random tips for variety on each visit.
+					const shuffled = [...data].sort(() => Math.random() - 0.5).slice(0, 3);
+					setPrepTips(shuffled as { tip: string; category: string }[]);
+				}
+			})();
+		}
+	}, [activeTab, prepTips.length]);
+
 	return (
 		<DashboardLayout
-			title={
-				<div className="flex items-center gap-3">
-					<div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
-						<Briefcase className="h-6 w-6" />
-					</div>
-					<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-						Career <span className="text-primary">Hub</span>
-					</h1>
-				</div>
-			}
+			icon={Briefcase}
+			title={<>Career <span className="text-primary">Hub</span></>}
 			subtitle="AI-powered tools to accelerate your professional journey."
 			breadcrumb={["UniVerse", "Career"]}
 		>
@@ -271,33 +280,6 @@ export default function Career() {
 								))}
 							</div>
 
-							<div className="mt-6 pt-5 border-t border-border/10 space-y-4">
-								<div>
-									<h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 mb-3 px-1">Market Pulse</h4>
-									<div className="space-y-2">
-										{[
-											{ label: "Tech Hiring", trend: "+12%", color: "text-green-500" },
-											{ label: "Internships", trend: "+8%",  color: "text-blue-500" },
-											{ label: "AI Roles",    trend: "+24%", color: "text-violet-500" },
-										].map(insight => (
-											<div key={insight.label} className="flex items-center justify-between px-1">
-												<span className="text-xs font-bold text-muted-foreground">{insight.label}</span>
-												<span className={cn("text-[10px] font-black italic", insight.color)}>{insight.trend}</span>
-											</div>
-										))}
-									</div>
-								</div>
-
-								<div className="bg-gradient-to-br from-primary/10 to-transparent rounded-2xl p-4 border border-primary/5">
-									<Target className="h-5 w-5 text-primary mb-2" />
-									<p className="text-[10px] font-bold italic tracking-tight leading-relaxed">
-										Next: <span className="text-primary block">Land your first interview</span>
-									</p>
-									<div className="mt-2 h-1.5 w-full bg-primary/10 rounded-full overflow-hidden">
-										<div className="h-full w-[45%] bg-primary rounded-full" />
-									</div>
-								</div>
-							</div>
 						</div>
 					</div>
 
@@ -379,6 +361,15 @@ export default function Career() {
 													</select>
 													<textarea placeholder="Description" value={companyForm.description} onChange={e => setCompanyForm(p => ({ ...p, description: e.target.value }))}
 														rows={2} className="sm:col-span-2 bg-card/40 border border-border/40 rounded-xl px-3 py-2 text-xs resize-none text-foreground placeholder:text-muted-foreground outline-none focus:border-blue-500/50" />
+													<label className="sm:col-span-2 flex items-center gap-2 text-xs font-bold text-muted-foreground cursor-pointer">
+														<input
+															type="checkbox"
+															checked={companyForm.verified}
+															onChange={e => setCompanyForm(p => ({ ...p, verified: e.target.checked }))}
+															className="rounded"
+														/>
+														Mark as verified
+													</label>
 												</div>
 													<Button size="sm" className="h-8 text-[11px] font-black rounded-xl w-full" onClick={submitCompany} disabled={addingCompany || !companyForm.name}>
 														{addingCompany ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Save Company'}
@@ -423,20 +414,6 @@ export default function Career() {
 											</div>
 											<div className="bg-card/40 backdrop-blur-xl border border-border/50 rounded-[2.5rem] p-6">
 												<div className="flex items-center gap-3 mb-4">
-													<div className="p-2 rounded-2xl bg-primary/10 text-primary"><Sparkles className="h-4 w-4" /></div>
-													<h3 className="font-black text-lg italic tracking-tight uppercase">Trending Keywords</h3>
-													<Badge variant="outline" className="border-green-500/20 text-green-500 bg-green-500/5 font-black text-[9px] ml-auto">Live</Badge>
-												</div>
-												<div className="flex flex-wrap gap-2">
-													{["React Native", "PostgreSQL", "Next.js 15", "System Design", "AWS Lambda", "TensorFlow", "Kubernetes", "GraphQL"].map((skill, idx) => (
-														<span key={skill} className={cn("px-4 py-2 rounded-xl text-xs font-black italic tracking-tight border border-border/30", idx < 3 ? "bg-primary text-white border-transparent" : "bg-card/60 text-muted-foreground")}>
-															{skill}
-														</span>
-													))}
-												</div>
-											</div>
-											<div className="bg-card/40 backdrop-blur-xl border border-border/50 rounded-[2.5rem] p-6">
-												<div className="flex items-center gap-3 mb-4">
 													<FileText className="h-5 w-5 text-primary" />
 													<h3 className="font-black text-lg italic tracking-tight uppercase">Resume History</h3>
 												</div>
@@ -466,23 +443,25 @@ export default function Career() {
 												<div className="p-2 rounded-2xl bg-violet-500/10 text-violet-500"><Award className="h-4 w-4" /></div>
 												<h4 className="font-black text-base italic tracking-tight uppercase">Prep Guide</h4>
 											</div>
-											<ul className="space-y-4">
-												{[
-													{ title: "Eye Contact", desc: "Keep your gaze at the camera.", icon: Search },
-													{ title: "STAR Method", desc: "Situation, Task, Action, Result.", icon: Target },
-													{ title: "Pace", desc: "Avoid filler words, speak steadily.", icon: Mic },
-												].map((tip, idx) => (
-													<li key={idx} className="flex gap-3 group">
-														<div className="shrink-0 w-7 h-7 rounded-xl bg-card border border-border/50 flex items-center justify-center text-violet-500 group-hover:scale-110 transition-transform">
-															<tip.icon className="h-3.5 w-3.5" />
-														</div>
-														<div>
-															<p className="text-xs font-black italic">{tip.title}</p>
-															<p className="text-[10px] text-muted-foreground mt-0.5">{tip.desc}</p>
-														</div>
-													</li>
-												))}
-											</ul>
+											{prepTips.length === 0 ? (
+												<p className="text-[11px] text-muted-foreground italic">
+													No tips yet. Admins can add tips when creating questions in the Question Bank.
+												</p>
+											) : (
+												<ul className="space-y-4">
+													{prepTips.map((tip, idx) => (
+														<li key={idx} className="flex gap-3 group">
+															<div className="shrink-0 w-7 h-7 rounded-xl bg-card border border-border/50 flex items-center justify-center text-violet-500 group-hover:scale-110 transition-transform">
+																<Target className="h-3.5 w-3.5" />
+															</div>
+															<div>
+																<p className="text-[10px] font-black uppercase tracking-widest text-violet-400">{tip.category?.replace('_', ' ')}</p>
+																<p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">{tip.tip}</p>
+															</div>
+														</li>
+													))}
+												</ul>
+											)}
 										</div>
 									</div>
 								</motion.div>

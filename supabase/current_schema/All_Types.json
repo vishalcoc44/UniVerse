@@ -1,0 +1,1190 @@
+[
+  {
+    "type_name": "AcademicAIChat",
+    "enum_value": null
+  },
+  {
+    "type_name": "AcademicAIChatMessage",
+    "enum_value": null
+  },
+  {
+    "type_name": "AchievementType",
+    "enum_value": "RESUME_UPLOADED"
+  },
+  {
+    "type_name": "AchievementType",
+    "enum_value": "INTERVIEW_COMPLETED"
+  },
+  {
+    "type_name": "AchievementType",
+    "enum_value": "JOB_APPLIED"
+  },
+  {
+    "type_name": "AchievementType",
+    "enum_value": "MENTOR_SESSION"
+  },
+  {
+    "type_name": "AchievementType",
+    "enum_value": "OFFER_RECEIVED"
+  },
+  {
+    "type_name": "AchievementType",
+    "enum_value": "PROFILE_COMPLETE"
+  },
+  {
+    "type_name": "AchievementType",
+    "enum_value": "FIVE_APPLICATIONS"
+  },
+  {
+    "type_name": "AchievementType",
+    "enum_value": "FIRST_INTERVIEW"
+  },
+  {
+    "type_name": "AchievementType",
+    "enum_value": "QUESTION_BANK_MASTERED"
+  },
+  {
+    "type_name": "AnnouncementScopeType",
+    "enum_value": "UNIVERSITY"
+  },
+  {
+    "type_name": "AnnouncementScopeType",
+    "enum_value": "DEPARTMENT"
+  },
+  {
+    "type_name": "AnnouncementScopeType",
+    "enum_value": "SECTION"
+  },
+  {
+    "type_name": "ApplicationStatus",
+    "enum_value": "SAVED"
+  },
+  {
+    "type_name": "ApplicationStatus",
+    "enum_value": "APPLIED"
+  },
+  {
+    "type_name": "ApplicationStatus",
+    "enum_value": "SCREENING"
+  },
+  {
+    "type_name": "ApplicationStatus",
+    "enum_value": "INTERVIEW"
+  },
+  {
+    "type_name": "ApplicationStatus",
+    "enum_value": "OFFER"
+  },
+  {
+    "type_name": "ApplicationStatus",
+    "enum_value": "REJECTED"
+  },
+  {
+    "type_name": "ApplicationStatus",
+    "enum_value": "WITHDRAWN"
+  },
+  {
+    "type_name": "ApplicationStatusHistory",
+    "enum_value": null
+  },
+  {
+    "type_name": "Bookmark",
+    "enum_value": null
+  },
+  {
+    "type_name": "CareerAchievement",
+    "enum_value": null
+  },
+  {
+    "type_name": "CareerEventType",
+    "enum_value": "CAREER_FAIR"
+  },
+  {
+    "type_name": "CareerEventType",
+    "enum_value": "WORKSHOP"
+  },
+  {
+    "type_name": "CareerEventType",
+    "enum_value": "WEBINAR"
+  },
+  {
+    "type_name": "CareerEventType",
+    "enum_value": "CAMPUS_DRIVE"
+  },
+  {
+    "type_name": "CareerEventType",
+    "enum_value": "INFO_SESSION"
+  },
+  {
+    "type_name": "CareerEventType",
+    "enum_value": "NETWORKING"
+  },
+  {
+    "type_name": "Club",
+    "enum_value": null
+  },
+  {
+    "type_name": "ClubMember",
+    "enum_value": null
+  },
+  {
+    "type_name": "Comment",
+    "enum_value": null
+  },
+  {
+    "type_name": "Company",
+    "enum_value": null
+  },
+  {
+    "type_name": "CompanyReview",
+    "enum_value": null
+  },
+  {
+    "type_name": "CompanySize",
+    "enum_value": "STARTUP"
+  },
+  {
+    "type_name": "CompanySize",
+    "enum_value": "SME"
+  },
+  {
+    "type_name": "CompanySize",
+    "enum_value": "ENTERPRISE"
+  },
+  {
+    "type_name": "ContentScope",
+    "enum_value": "CAMPUS"
+  },
+  {
+    "type_name": "ContentScope",
+    "enum_value": "UNIVERSE"
+  },
+  {
+    "type_name": "Conversation",
+    "enum_value": null
+  },
+  {
+    "type_name": "ConversationParticipant",
+    "enum_value": null
+  },
+  {
+    "type_name": "ConversationPreference",
+    "enum_value": null
+  },
+  {
+    "type_name": "ConversationStatus",
+    "enum_value": "PENDING"
+  },
+  {
+    "type_name": "ConversationStatus",
+    "enum_value": "ACCEPTED"
+  },
+  {
+    "type_name": "ConversationStatus",
+    "enum_value": "REJECTED"
+  },
+  {
+    "type_name": "Course",
+    "enum_value": null
+  },
+  {
+    "type_name": "CourseEnrollment",
+    "enum_value": null
+  },
+  {
+    "type_name": "Department",
+    "enum_value": null
+  },
+  {
+    "type_name": "DepartmentAdminAssignment",
+    "enum_value": null
+  },
+  {
+    "type_name": "DepartmentAnnouncement",
+    "enum_value": null
+  },
+  {
+    "type_name": "DepartmentSection",
+    "enum_value": null
+  },
+  {
+    "type_name": "DepartmentStudentAssignment",
+    "enum_value": null
+  },
+  {
+    "type_name": "DepartmentTeacherAssignment",
+    "enum_value": null
+  },
+  {
+    "type_name": "EmployerProfile",
+    "enum_value": null
+  },
+  {
+    "type_name": "Event",
+    "enum_value": null
+  },
+  {
+    "type_name": "EventRSVP",
+    "enum_value": null
+  },
+  {
+    "type_name": "Flashcard",
+    "enum_value": null
+  },
+  {
+    "type_name": "FlashcardSet",
+    "enum_value": null
+  },
+  {
+    "type_name": "ForumBookmark",
+    "enum_value": null
+  },
+  {
+    "type_name": "ForumPoll",
+    "enum_value": null
+  },
+  {
+    "type_name": "ForumPollOption",
+    "enum_value": null
+  },
+  {
+    "type_name": "ForumPollVote",
+    "enum_value": null
+  },
+  {
+    "type_name": "ForumReply",
+    "enum_value": null
+  },
+  {
+    "type_name": "ForumReport",
+    "enum_value": null
+  },
+  {
+    "type_name": "ForumThread",
+    "enum_value": null
+  },
+  {
+    "type_name": "ForumVote",
+    "enum_value": null
+  },
+  {
+    "type_name": "Friendship",
+    "enum_value": null
+  },
+  {
+    "type_name": "FriendshipStatus",
+    "enum_value": "PENDING"
+  },
+  {
+    "type_name": "FriendshipStatus",
+    "enum_value": "ACCEPTED"
+  },
+  {
+    "type_name": "FriendshipStatus",
+    "enum_value": "DECLINED"
+  },
+  {
+    "type_name": "FriendshipStatus",
+    "enum_value": "BLOCKED"
+  },
+  {
+    "type_name": "InterviewCategory",
+    "enum_value": "BEHAVIORAL"
+  },
+  {
+    "type_name": "InterviewCategory",
+    "enum_value": "TECHNICAL"
+  },
+  {
+    "type_name": "InterviewCategory",
+    "enum_value": "SYSTEM_DESIGN"
+  },
+  {
+    "type_name": "InterviewCategory",
+    "enum_value": "CASE_STUDY"
+  },
+  {
+    "type_name": "InterviewCategory",
+    "enum_value": "HR"
+  },
+  {
+    "type_name": "InterviewDifficulty",
+    "enum_value": "EASY"
+  },
+  {
+    "type_name": "InterviewDifficulty",
+    "enum_value": "MEDIUM"
+  },
+  {
+    "type_name": "InterviewDifficulty",
+    "enum_value": "HARD"
+  },
+  {
+    "type_name": "InterviewQuestion",
+    "enum_value": null
+  },
+  {
+    "type_name": "InterviewSession",
+    "enum_value": null
+  },
+  {
+    "type_name": "Job",
+    "enum_value": null
+  },
+  {
+    "type_name": "JobApplication",
+    "enum_value": null
+  },
+  {
+    "type_name": "JobStatus",
+    "enum_value": "ACTIVE"
+  },
+  {
+    "type_name": "JobStatus",
+    "enum_value": "CLOSED"
+  },
+  {
+    "type_name": "JobStatus",
+    "enum_value": "DRAFT"
+  },
+  {
+    "type_name": "JobStatus",
+    "enum_value": "PAUSED"
+  },
+  {
+    "type_name": "JobType",
+    "enum_value": "FULL_TIME"
+  },
+  {
+    "type_name": "JobType",
+    "enum_value": "PART_TIME"
+  },
+  {
+    "type_name": "JobType",
+    "enum_value": "INTERNSHIP"
+  },
+  {
+    "type_name": "JobType",
+    "enum_value": "CONTRACT"
+  },
+  {
+    "type_name": "JobType",
+    "enum_value": "FREELANCE"
+  },
+  {
+    "type_name": "Like",
+    "enum_value": null
+  },
+  {
+    "type_name": "ListingType",
+    "enum_value": "SELL"
+  },
+  {
+    "type_name": "ListingType",
+    "enum_value": "BUY"
+  },
+  {
+    "type_name": "ListingType",
+    "enum_value": "LOST"
+  },
+  {
+    "type_name": "ListingType",
+    "enum_value": "FOUND"
+  },
+  {
+    "type_name": "MarketplaceListing",
+    "enum_value": null
+  },
+  {
+    "type_name": "MentorProfile",
+    "enum_value": null
+  },
+  {
+    "type_name": "MentorshipRequest",
+    "enum_value": null
+  },
+  {
+    "type_name": "MentorshipSession",
+    "enum_value": null
+  },
+  {
+    "type_name": "MentorshipSkill",
+    "enum_value": null
+  },
+  {
+    "type_name": "MentorshipStatus",
+    "enum_value": "PENDING"
+  },
+  {
+    "type_name": "MentorshipStatus",
+    "enum_value": "ACCEPTED"
+  },
+  {
+    "type_name": "MentorshipStatus",
+    "enum_value": "REJECTED"
+  },
+  {
+    "type_name": "MentorshipStatus",
+    "enum_value": "COMPLETED"
+  },
+  {
+    "type_name": "MentorshipStatus",
+    "enum_value": "CANCELLED"
+  },
+  {
+    "type_name": "Message",
+    "enum_value": null
+  },
+  {
+    "type_name": "MessageAttachment",
+    "enum_value": null
+  },
+  {
+    "type_name": "MessageHidden",
+    "enum_value": null
+  },
+  {
+    "type_name": "MessageReaction",
+    "enum_value": null
+  },
+  {
+    "type_name": "MoodLog",
+    "enum_value": null
+  },
+  {
+    "type_name": "Note",
+    "enum_value": null
+  },
+  {
+    "type_name": "Notification",
+    "enum_value": null
+  },
+  {
+    "type_name": "NotificationType",
+    "enum_value": "MESSAGE"
+  },
+  {
+    "type_name": "NotificationType",
+    "enum_value": "EVENT_REMINDER"
+  },
+  {
+    "type_name": "NotificationType",
+    "enum_value": "MENTION"
+  },
+  {
+    "type_name": "NotificationType",
+    "enum_value": "REPLY"
+  },
+  {
+    "type_name": "NotificationType",
+    "enum_value": "FRIEND_REQUEST"
+  },
+  {
+    "type_name": "NotificationType",
+    "enum_value": "STUDY_GROUP"
+  },
+  {
+    "type_name": "NotificationType",
+    "enum_value": "JOB_ALERT"
+  },
+  {
+    "type_name": "NotificationType",
+    "enum_value": "RESEARCH_UPDATE"
+  },
+  {
+    "type_name": "NotificationType",
+    "enum_value": "RIDE_UPDATE"
+  },
+  {
+    "type_name": "NotificationType",
+    "enum_value": "MOOD_REMINDER"
+  },
+  {
+    "type_name": "NotificationType",
+    "enum_value": "SYSTEM"
+  },
+  {
+    "type_name": "ParticipantRole",
+    "enum_value": "MEMBER"
+  },
+  {
+    "type_name": "ParticipantRole",
+    "enum_value": "ADMIN"
+  },
+  {
+    "type_name": "Post",
+    "enum_value": null
+  },
+  {
+    "type_name": "PostPoll",
+    "enum_value": null
+  },
+  {
+    "type_name": "PostPollOption",
+    "enum_value": null
+  },
+  {
+    "type_name": "PostPollVote",
+    "enum_value": null
+  },
+  {
+    "type_name": "PostReaction",
+    "enum_value": null
+  },
+  {
+    "type_name": "PostType",
+    "enum_value": "TEXT"
+  },
+  {
+    "type_name": "PostType",
+    "enum_value": "IMAGE"
+  },
+  {
+    "type_name": "PostType",
+    "enum_value": "VIDEO"
+  },
+  {
+    "type_name": "PostType",
+    "enum_value": "LINK"
+  },
+  {
+    "type_name": "PostType",
+    "enum_value": "POLL"
+  },
+  {
+    "type_name": "Profile",
+    "enum_value": null
+  },
+  {
+    "type_name": "ProjectCollaborator",
+    "enum_value": null
+  },
+  {
+    "type_name": "Quiz",
+    "enum_value": null
+  },
+  {
+    "type_name": "QuizAttempt",
+    "enum_value": null
+  },
+  {
+    "type_name": "QuizQuestion",
+    "enum_value": null
+  },
+  {
+    "type_name": "ResearchProject",
+    "enum_value": null
+  },
+  {
+    "type_name": "Resource",
+    "enum_value": null
+  },
+  {
+    "type_name": "ResourceEmbedding",
+    "enum_value": null
+  },
+  {
+    "type_name": "ResourceType",
+    "enum_value": "NOTE"
+  },
+  {
+    "type_name": "ResourceType",
+    "enum_value": "PAST_PAPER"
+  },
+  {
+    "type_name": "ResourceType",
+    "enum_value": "ASSIGNMENT"
+  },
+  {
+    "type_name": "ResourceType",
+    "enum_value": "OTHER"
+  },
+  {
+    "type_name": "ResourceVote",
+    "enum_value": null
+  },
+  {
+    "type_name": "Resume",
+    "enum_value": null
+  },
+  {
+    "type_name": "RideOffer",
+    "enum_value": null
+  },
+  {
+    "type_name": "RideRequest",
+    "enum_value": null
+  },
+  {
+    "type_name": "SalaryReport",
+    "enum_value": null
+  },
+  {
+    "type_name": "SavedJob",
+    "enum_value": null
+  },
+  {
+    "type_name": "StudyGroup",
+    "enum_value": null
+  },
+  {
+    "type_name": "StudyGroupMember",
+    "enum_value": null
+  },
+  {
+    "type_name": "StudyPlan",
+    "enum_value": null
+  },
+  {
+    "type_name": "StudyPlanSession",
+    "enum_value": null
+  },
+  {
+    "type_name": "StudySession",
+    "enum_value": null
+  },
+  {
+    "type_name": "SuggestionStatus",
+    "enum_value": "PENDING"
+  },
+  {
+    "type_name": "SuggestionStatus",
+    "enum_value": "APPROVED"
+  },
+  {
+    "type_name": "SuggestionStatus",
+    "enum_value": "REJECTED"
+  },
+  {
+    "type_name": "University",
+    "enum_value": null
+  },
+  {
+    "type_name": "UniversityAdminRole",
+    "enum_value": null
+  },
+  {
+    "type_name": "UniversityStatus",
+    "enum_value": "PENDING"
+  },
+  {
+    "type_name": "UniversityStatus",
+    "enum_value": "APPROVED"
+  },
+  {
+    "type_name": "UniversityStatus",
+    "enum_value": "REJECTED"
+  },
+  {
+    "type_name": "UniversityStatusHistory",
+    "enum_value": null
+  },
+  {
+    "type_name": "UpdateFeedback",
+    "enum_value": null
+  },
+  {
+    "type_name": "UserQuestionAttempt",
+    "enum_value": null
+  },
+  {
+    "type_name": "UserRole",
+    "enum_value": "STUDENT"
+  },
+  {
+    "type_name": "UserRole",
+    "enum_value": "FACULTY"
+  },
+  {
+    "type_name": "UserRole",
+    "enum_value": "ALUMNI"
+  },
+  {
+    "type_name": "UserRole",
+    "enum_value": "ADMIN"
+  },
+  {
+    "type_name": "UserRole",
+    "enum_value": "EMPLOYER"
+  },
+  {
+    "type_name": "UserSettings",
+    "enum_value": null
+  },
+  {
+    "type_name": "UtilityCategory",
+    "enum_value": "SERVICE"
+  },
+  {
+    "type_name": "UtilityCategory",
+    "enum_value": "SHUTTLE"
+  },
+  {
+    "type_name": "UtilityCategory",
+    "enum_value": "DISCOUNT"
+  },
+  {
+    "type_name": "UtilityDiscount",
+    "enum_value": null
+  },
+  {
+    "type_name": "UtilityService",
+    "enum_value": null
+  },
+  {
+    "type_name": "UtilityShuttle",
+    "enum_value": null
+  },
+  {
+    "type_name": "UtilitySuggestion",
+    "enum_value": null
+  },
+  {
+    "type_name": "UtilitySuggestionStatus",
+    "enum_value": "PENDING"
+  },
+  {
+    "type_name": "UtilitySuggestionStatus",
+    "enum_value": "APPROVED"
+  },
+  {
+    "type_name": "UtilitySuggestionStatus",
+    "enum_value": "REJECTED"
+  },
+  {
+    "type_name": "_AcademicAIChat",
+    "enum_value": null
+  },
+  {
+    "type_name": "_AcademicAIChatMessage",
+    "enum_value": null
+  },
+  {
+    "type_name": "_AchievementType",
+    "enum_value": null
+  },
+  {
+    "type_name": "_AnnouncementScopeType",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ApplicationStatus",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ApplicationStatusHistory",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Bookmark",
+    "enum_value": null
+  },
+  {
+    "type_name": "_CareerAchievement",
+    "enum_value": null
+  },
+  {
+    "type_name": "_CareerEventType",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Club",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ClubMember",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Comment",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Company",
+    "enum_value": null
+  },
+  {
+    "type_name": "_CompanyReview",
+    "enum_value": null
+  },
+  {
+    "type_name": "_CompanySize",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ContentScope",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Conversation",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ConversationParticipant",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ConversationPreference",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ConversationStatus",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Course",
+    "enum_value": null
+  },
+  {
+    "type_name": "_CourseEnrollment",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Department",
+    "enum_value": null
+  },
+  {
+    "type_name": "_DepartmentAdminAssignment",
+    "enum_value": null
+  },
+  {
+    "type_name": "_DepartmentAnnouncement",
+    "enum_value": null
+  },
+  {
+    "type_name": "_DepartmentSection",
+    "enum_value": null
+  },
+  {
+    "type_name": "_DepartmentStudentAssignment",
+    "enum_value": null
+  },
+  {
+    "type_name": "_DepartmentTeacherAssignment",
+    "enum_value": null
+  },
+  {
+    "type_name": "_EmployerProfile",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Event",
+    "enum_value": null
+  },
+  {
+    "type_name": "_EventRSVP",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Flashcard",
+    "enum_value": null
+  },
+  {
+    "type_name": "_FlashcardSet",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ForumBookmark",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ForumPoll",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ForumPollOption",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ForumPollVote",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ForumReply",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ForumReport",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ForumThread",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ForumVote",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Friendship",
+    "enum_value": null
+  },
+  {
+    "type_name": "_FriendshipStatus",
+    "enum_value": null
+  },
+  {
+    "type_name": "_InterviewCategory",
+    "enum_value": null
+  },
+  {
+    "type_name": "_InterviewDifficulty",
+    "enum_value": null
+  },
+  {
+    "type_name": "_InterviewQuestion",
+    "enum_value": null
+  },
+  {
+    "type_name": "_InterviewSession",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Job",
+    "enum_value": null
+  },
+  {
+    "type_name": "_JobApplication",
+    "enum_value": null
+  },
+  {
+    "type_name": "_JobStatus",
+    "enum_value": null
+  },
+  {
+    "type_name": "_JobType",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Like",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ListingType",
+    "enum_value": null
+  },
+  {
+    "type_name": "_MarketplaceListing",
+    "enum_value": null
+  },
+  {
+    "type_name": "_MentorProfile",
+    "enum_value": null
+  },
+  {
+    "type_name": "_MentorshipRequest",
+    "enum_value": null
+  },
+  {
+    "type_name": "_MentorshipSession",
+    "enum_value": null
+  },
+  {
+    "type_name": "_MentorshipSkill",
+    "enum_value": null
+  },
+  {
+    "type_name": "_MentorshipStatus",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Message",
+    "enum_value": null
+  },
+  {
+    "type_name": "_MessageAttachment",
+    "enum_value": null
+  },
+  {
+    "type_name": "_MessageHidden",
+    "enum_value": null
+  },
+  {
+    "type_name": "_MessageReaction",
+    "enum_value": null
+  },
+  {
+    "type_name": "_MoodLog",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Note",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Notification",
+    "enum_value": null
+  },
+  {
+    "type_name": "_NotificationType",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ParticipantRole",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Post",
+    "enum_value": null
+  },
+  {
+    "type_name": "_PostPoll",
+    "enum_value": null
+  },
+  {
+    "type_name": "_PostPollOption",
+    "enum_value": null
+  },
+  {
+    "type_name": "_PostPollVote",
+    "enum_value": null
+  },
+  {
+    "type_name": "_PostReaction",
+    "enum_value": null
+  },
+  {
+    "type_name": "_PostType",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Profile",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ProjectCollaborator",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Quiz",
+    "enum_value": null
+  },
+  {
+    "type_name": "_QuizAttempt",
+    "enum_value": null
+  },
+  {
+    "type_name": "_QuizQuestion",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ResearchProject",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Resource",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ResourceEmbedding",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ResourceType",
+    "enum_value": null
+  },
+  {
+    "type_name": "_ResourceVote",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Resume",
+    "enum_value": null
+  },
+  {
+    "type_name": "_RideOffer",
+    "enum_value": null
+  },
+  {
+    "type_name": "_RideRequest",
+    "enum_value": null
+  },
+  {
+    "type_name": "_SalaryReport",
+    "enum_value": null
+  },
+  {
+    "type_name": "_SavedJob",
+    "enum_value": null
+  },
+  {
+    "type_name": "_StudyGroup",
+    "enum_value": null
+  },
+  {
+    "type_name": "_StudyGroupMember",
+    "enum_value": null
+  },
+  {
+    "type_name": "_StudyPlan",
+    "enum_value": null
+  },
+  {
+    "type_name": "_StudyPlanSession",
+    "enum_value": null
+  },
+  {
+    "type_name": "_StudySession",
+    "enum_value": null
+  },
+  {
+    "type_name": "_SuggestionStatus",
+    "enum_value": null
+  },
+  {
+    "type_name": "_University",
+    "enum_value": null
+  },
+  {
+    "type_name": "_UniversityAdminRole",
+    "enum_value": null
+  },
+  {
+    "type_name": "_UniversityStatus",
+    "enum_value": null
+  },
+  {
+    "type_name": "_UniversityStatusHistory",
+    "enum_value": null
+  },
+  {
+    "type_name": "_UpdateFeedback",
+    "enum_value": null
+  },
+  {
+    "type_name": "_UserQuestionAttempt",
+    "enum_value": null
+  },
+  {
+    "type_name": "_UserRole",
+    "enum_value": null
+  },
+  {
+    "type_name": "_UserSettings",
+    "enum_value": null
+  },
+  {
+    "type_name": "_UtilityCategory",
+    "enum_value": null
+  },
+  {
+    "type_name": "_UtilityDiscount",
+    "enum_value": null
+  },
+  {
+    "type_name": "_UtilityService",
+    "enum_value": null
+  },
+  {
+    "type_name": "_UtilityShuttle",
+    "enum_value": null
+  },
+  {
+    "type_name": "_UtilitySuggestion",
+    "enum_value": null
+  },
+  {
+    "type_name": "_UtilitySuggestionStatus",
+    "enum_value": null
+  }
+]

@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/server-supabase";
 import { revalidatePath } from "next/cache";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { rateLimit } from "@/lib/rate-limit";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -18,6 +19,10 @@ export async function generateStudyPlanAction(data: {
 		const supabase = await createClient();
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) throw new Error("Unauthorized");
+
+		// FC-19: 5 study plan generations per 10 minutes per user (heavier AI call)
+		const r = rateLimit(`ai-study-plan:${user.id}`, { maxRequests: 5, windowMs: 10 * 60_000 });
+		if (!r.allowed) return { success: false, error: `Too many requests. Try again in ${r.resetInSeconds}s.` };
 
 		const model = genAI.getGenerativeModel({
 			model: "gemini-2.5-flash",

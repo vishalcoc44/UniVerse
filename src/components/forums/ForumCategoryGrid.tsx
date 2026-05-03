@@ -3,6 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { BookOpen, Coffee, GraduationCap, HelpCircle, UserPlus, FileText, Sparkles, TrendingUp, Zap, Ghost } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useUserUniversity } from "@/hooks/useUserUniversity";
 
 interface Category {
   id: string;
@@ -18,15 +21,60 @@ interface ForumCategoryGridProps {
   activeId: string;
 }
 
+export const FORUM_CATEGORIES = [
+  { id: "general", name: "General Discussion", icon: Sparkles, color: "text-amber-500", description: "Everything and anything" },
+  { id: "confidential", name: "Confidential", icon: Ghost, color: "text-emerald-500", description: "Sensitive & anonymous" },
+  { id: "cs", name: "Computer Science", icon: Zap, color: "text-blue-500", description: "Tech & coding" },
+  { id: "campus", name: "Campus Life", icon: Coffee, color: "text-rose-500", description: "Student experiences" },
+  { id: "admissions", name: "New Students", icon: UserPlus, color: "text-purple-500", description: "Getting started" },
+  { id: "help", name: "Help & Support", icon: HelpCircle, color: "text-cyan-500", description: "Questions & answers" },
+];
+
 export function ForumCategoryGrid({ onSelect, activeId }: ForumCategoryGridProps) {
-  const categories: Category[] = [
-    { id: "all", name: "GLOBAL FEED", count: "2.4k", icon: Sparkles, color: "text-amber-500", description: "Everything everywhere" },
-    { id: "whispers", name: "WHISPERS", count: "840", icon: Ghost, color: "text-emerald-500", description: "Deeply anonymous" },
-    { id: "cs", name: "TERMINAL", count: "420", icon: Zap, color: "text-blue-500", description: "Geeks & Coders" },
-    { id: "campus", name: "LIFESTYLE", count: "310", icon: Coffee, color: "text-rose-500", description: "Campus vibes" },
-    { id: "admissions", name: "HATCHERY", count: "120", icon: UserPlus, color: "text-purple-500", description: "New arrivals" },
-    { id: "help", name: "SOS", count: "95", icon: HelpCircle, color: "text-cyan-500", description: "Mutual aid" },
-  ];
+  const { universityId } = useUserUniversity();
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategoryCounts = async () => {
+      setLoading(true);
+      try {
+        const counts: Record<string, number> = {};
+
+        // Fetch counts for each category
+        for (const cat of FORUM_CATEGORIES) {
+          const { count } = await supabase
+            .from("ForumThread")
+            .select("id", { count: "exact", head: true })
+            .eq("scope", "CAMPUS")
+            .eq("universityId", universityId)
+            .eq("category", cat.id);
+
+          counts[cat.id] = count || 0;
+        }
+
+        setCategoryCounts(counts);
+      } catch (error) {
+        console.error("Error fetching category counts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (universityId) {
+      fetchCategoryCounts();
+    }
+  }, [universityId]);
+
+  const formatCount = (count: number): string => {
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
+    return count.toString();
+  };
+
+  const categories: Category[] = FORUM_CATEGORIES.map((cat) => ({
+    ...cat,
+    count: formatCount(categoryCounts[cat.id] || 0),
+  }));
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

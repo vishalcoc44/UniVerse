@@ -14,6 +14,8 @@ interface PostedJob {
   status: string;
   applicationCount: number;
   createdAt: string;
+  postedById: string;
+  canManage: boolean;
 }
 
 interface Applicant {
@@ -82,48 +84,55 @@ export function EmployerPortal() {
           if (resolvedCompanyId) setAdminCompanyId(resolvedCompanyId);
           else if (companies?.[0]) setAdminCompanyId(companies[0].id);
 
-          if (userRole !== 'ADMIN') {
-            const { data: jobsByPoster } = await supabase
-              .from('Job')
-              .select('id, title, status, createdAt, JobApplication(count)')
-              .eq('postedById', user.id)
-              .order('createdAt', { ascending: false });
-            setPostedJobs((jobsByPoster ?? []).map((j: Record<string, unknown>) => ({
+          // Map a Job row to the UI shape, computing canManage = admin || own job.
+          const mapJob = (j: Record<string, unknown>): PostedJob => {
+            const postedById = j.postedById as string;
+            return {
               id: j.id as string,
               title: j.title as string,
               status: j.status as string,
               applicationCount: (j.JobApplication as Array<{count: number}>)?.[0]?.count ?? 0,
               createdAt: j.createdAt as string,
-            })));
+              postedById,
+              canManage: userRole === 'ADMIN' || postedById === user.id,
+            };
+          };
+
+          if (userRole !== 'ADMIN') {
+            const { data: jobsByPoster } = await supabase
+              .from('Job')
+              .select('id, title, status, createdAt, postedById, JobApplication(count)')
+              .eq('postedById', user.id)
+              .order('createdAt', { ascending: false });
+            setPostedJobs((jobsByPoster ?? []).map(mapJob));
           }
 
           if (userRole === 'ADMIN') {
           // Admin sees ALL jobs across all companies
             const { data: jobs } = await supabase
               .from('Job')
-              .select('id, title, status, createdAt, JobApplication(count)')
+              .select('id, title, status, createdAt, postedById, JobApplication(count)')
               .order('createdAt', { ascending: false });
-            setPostedJobs((jobs ?? []).map((j: Record<string, unknown>) => ({
+            setPostedJobs((jobs ?? []).map(mapJob));
+          }
+        } else if (resolvedCompanyId) {
+          const { data: jobs } = await supabase
+            .from('Job')
+            .select('id, title, status, createdAt, postedById, JobApplication(count)')
+            .eq('companyId', resolvedCompanyId)
+            .order('createdAt', { ascending: false });
+          setPostedJobs((jobs ?? []).map((j: Record<string, unknown>) => {
+            const postedById = j.postedById as string;
+            return {
               id: j.id as string,
               title: j.title as string,
               status: j.status as string,
               applicationCount: (j.JobApplication as Array<{count: number}>)?.[0]?.count ?? 0,
               createdAt: j.createdAt as string,
-            })));
-          }
-        } else if (resolvedCompanyId) {
-          const { data: jobs } = await supabase
-            .from('Job')
-            .select('id, title, status, createdAt, JobApplication(count)')
-            .eq('companyId', resolvedCompanyId)
-            .order('createdAt', { ascending: false });
-          setPostedJobs((jobs ?? []).map((j: Record<string, unknown>) => ({
-            id: j.id as string,
-            title: j.title as string,
-            status: j.status as string,
-            applicationCount: (j.JobApplication as Array<{count: number}>)?.[0]?.count ?? 0,
-            createdAt: j.createdAt as string,
-          })));
+              postedById,
+              canManage: userRole === 'ADMIN' || postedById === user.id,
+            };
+          }));
         }
       }
       setLoading(false);
@@ -136,7 +145,7 @@ export function EmployerPortal() {
     setApplicantsLoading(true);
     const { data } = await supabase
       .from('JobApplication')
-      .select('id, userId, status, appliedAt, Profile:userId(name, avatarUrl)')
+      .select('id, userId, status, appliedAt, Profile:userId(fullName, avatarUrl)')
       .eq('jobId', jobId)
       .order('appliedAt', { ascending: false });
 
@@ -146,7 +155,7 @@ export function EmployerPortal() {
       status: a.status as string,
       appliedAt: a.appliedAt as string,
       user: {
-        name: (a.Profile as {name: string | null})?.name ?? null,
+        name: (a.Profile as {fullName: string | null})?.fullName ?? null,
         email: null,
         avatarUrl: (a.Profile as {avatarUrl: string | null})?.avatarUrl ?? null,
       },
@@ -185,7 +194,7 @@ export function EmployerPortal() {
         type: form.jobType,
         applyUrl: form.applyUrl || null,
         skills,
-      }).eq('id', editingJobId).select('id, title, status, createdAt, JobApplication(count)').single();
+      }).eq('id', editingJobId).select('id, title, status, createdAt, postedById, JobApplication(count)').single();
 
       if (error) {
         alert(error.message);
@@ -195,11 +204,13 @@ export function EmployerPortal() {
 
       if (updated) {
         setPostedJobs(prev => prev.map(j => j.id === editingJobId ? {
+          ...j,
           id: updated.id as string,
           title: updated.title as string,
           status: updated.status as string,
           applicationCount: (updated.JobApplication as Array<{count: number}>)?.[0]?.count ?? 0,
           createdAt: updated.createdAt as string,
+          postedById: updated.postedById as string,
         } : j));
       }
 
@@ -222,7 +233,7 @@ export function EmployerPortal() {
       applyUrl: form.applyUrl || null,
       skills,
       status: 'ACTIVE',
-    }).select('id, title, status, createdAt, JobApplication(count)').single();
+    }).select('id, title, status, createdAt, postedById, JobApplication(count)').single();
 
     if (error) {
       alert(error.message);
@@ -237,6 +248,8 @@ export function EmployerPortal() {
         status: created.status as string,
         applicationCount: (created.JobApplication as Array<{count: number}>)?.[0]?.count ?? 0,
         createdAt: created.createdAt as string,
+        postedById: created.postedById as string,
+        canManage: true, // current user just created it
       }, ...prev]);
     }
     setForm(POST_FORM_DEFAULTS);
@@ -424,29 +437,31 @@ export function EmployerPortal() {
                     <span>· Posted {new Date(job.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      startEditJob(job.id);
-                    }}
-                    className="p-1.5 rounded-lg hover:bg-primary/10 text-muted-foreground"
-                    title="Edit job"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteJob(job.id);
-                    }}
-                    disabled={actionId === `delete-${job.id}`}
-                    className="p-1.5 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-400"
-                    title="Delete job"
-                  >
-                    {actionId === `delete-${job.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-                  </button>
-                </div>
+                {job.canManage && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEditJob(job.id);
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-primary/10 text-muted-foreground"
+                      title="Edit job"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteJob(job.id);
+                      }}
+                      disabled={actionId === `delete-${job.id}`}
+                      className="p-1.5 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-400"
+                      title="Delete job"
+                    >
+                      {actionId === `delete-${job.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                    </button>
+                  </div>
+                )}
                 <ChevronRight className={cn("h-4 w-4 text-muted-foreground transition-transform",
                   selectedJobId === job.id ? "rotate-90" : "")} />
               </div>

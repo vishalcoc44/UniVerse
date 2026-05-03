@@ -79,7 +79,9 @@ const emptySuggestionForm = {
 
 export function DiscountHub() {
   const { universityId, userId, role, loading: userContextLoading } = useUserUniversity();
-  const isAdmin = role === "ADMIN";
+  // FC-1 fix: utility tables are platform-managed (per RLS in audit/fixes/05).
+  // Platform admin = role=ADMIN AND universityId IS NULL.
+  const isAdmin = role === "ADMIN" && !universityId;
   const [discounts, setDiscounts] = useState<UtilityDiscount[]>([]);
   const [pendingSuggestions, setPendingSuggestions] = useState<UtilitySuggestion[]>([]);
   const [userSuggestions, setUserSuggestions] = useState<UtilitySuggestion[]>([]);

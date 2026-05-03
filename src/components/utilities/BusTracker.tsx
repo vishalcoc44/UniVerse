@@ -166,7 +166,8 @@ const getRouteCenter = (routeMapData: RouteMapData | null | undefined) => {
 
 export function BusTracker() {
   const { universityId, userId, role, loading: userContextLoading } = useUserUniversity();
-  const isAdmin = role === "ADMIN";
+  // FC-1 fix: shuttle/bus data is platform-managed.
+  const isAdmin = role === "ADMIN" && !universityId;
   const [hasRouteMapDataColumn, setHasRouteMapDataColumn] = useState(true);
 
   const [routes, setRoutes] = useState<UtilityShuttle[]>([]);

@@ -4,14 +4,30 @@ import { createClient } from "@/lib/server-supabase";
 import { revalidatePath } from "next/cache"; // Removed cookies import as per recent changes not using it directly here in imports seen
 // import pdf from 'pdf-parse'; // Will be imported dynamically to avoid build issues with fs
 import { GoogleGenerativeAI, TaskType } from "@google/generative-ai";
+import { rateLimit } from "@/lib/rate-limit";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+
+// FC-19 helper: standard rate-limit guard for any AI-calling server action.
+// Uses the in-memory limiter (per-instance, FC-5 known limitation). Returns
+// a result object the caller can return directly if rate-limited.
+function aiRateLimit(userId: string, key: string, maxRequests = 20, windowMs = 60_000) {
+	const r = rateLimit(`${key}:${userId}`, { maxRequests, windowMs });
+	if (!r.allowed) {
+		return { success: false as const, error: `Too many requests. Try again in ${r.resetInSeconds}s.` };
+	}
+	return null;
+}
 
 export async function chatAction(history: { role: 'user' | 'assistant'; content: string }[]) {
 	try {
 		const supabase = await createClient();
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return { success: false, error: "Authentication required" };
+
+		// FC-19: 30 chat messages per minute per user
+		const limited = aiRateLimit(user.id, 'ai-chat', 30, 60_000);
+		if (limited) return limited;
 
 		const userMsg = history[history.length - 1].content;
 		if (!userMsg || userMsg.length > 10000) {
@@ -32,18 +48,16 @@ export async function chatAction(history: { role: 'user' | 'assistant'; content:
 		}
 
 		// 2. Retrieve Context (Vector Search) if embedding succeeded
+		// FC-15 fix: do NOT pass filter_university_id from caller — the RPC now
+		// derives it server-side from auth.uid(). Apply the matching SQL change in
+		// audit/fixes/03-fc15-match-documents.sql to drop the parameter.
 		let documents: any[] | null = null;
 		if (embedding && Array.isArray(embedding)) {
 			try {
-				let universityId: string | null = null;
-				const { data: profile } = await supabase.from('Profile').select('universityId').eq('id', user.id).single();
-				universityId = profile?.universityId || null;
-
 				const rpcResult = await supabase.rpc('match_documents', {
 					query_embedding: embedding,
 					match_threshold: 0.1,
-					match_count: 8,
-					filter_university_id: universityId
+					match_count: 8
 				});
 				documents = (rpcResult as any).data || null;
 			} catch (vecErr: any) {
@@ -201,9 +215,21 @@ export async function saveChatMessage(chatId: string, role: 'user' | 'assistant'
 	}
 }
 
-export async function getResources(universityId: string) {
+export async function getResources(_universityId?: string) {
 	try {
 		const supabase = await createClient();
+		// FC-23: caller-supplied universityId ignored — derive from authenticated session.
+		// Also adds an auth check that was previously missing.
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) return { success: false, error: "Authentication required" };
+
+		const { data: profile } = await supabase
+			.from('Profile')
+			.select('universityId')
+			.eq('id', user.id)
+			.single();
+		if (!profile?.universityId) return { success: false, error: "No university affiliation" };
+
 		const { data, error } = await supabase
 			.from('Resource')
 			.select(`
@@ -211,7 +237,7 @@ export async function getResources(universityId: string) {
 				course:Course!inner(code, universityId),
 				uploader:Profile(fullName, username, avatarUrl)
 			`)
-			.eq('course.universityId', universityId)
+			.eq('course.universityId', profile.universityId)
 			.order('createdAt', { ascending: false });
 
 		if (error) throw error;
@@ -252,6 +278,10 @@ export async function generateFlashcardsAction(topic: string) {
 		const supabase = await createClient();
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) throw new Error("Unauthorized");
+
+		// FC-19: 10 flashcard generations per 5 minutes per user
+		const limited = aiRateLimit(user.id, 'ai-flashcards', 10, 5 * 60_000);
+		if (limited) return limited;
 
 		const model = genAI.getGenerativeModel({
 			model: "gemini-2.5-flash",
@@ -332,16 +362,27 @@ export async function getFlashcardSets() {
 	}
 }
 
-export async function getStudyGroups(universityId: string) {
+export async function getStudyGroups(_universityId?: string) {
 	try {
 		const supabase = await createClient();
+		// FC-23: caller-supplied universityId ignored — derive from authenticated session.
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) return { success: false, error: "Authentication required" };
+
+		const { data: profile } = await supabase
+			.from('Profile')
+			.select('universityId')
+			.eq('id', user.id)
+			.single();
+		if (!profile?.universityId) return { success: false, error: "No university affiliation" };
+
 		const { data, error } = await supabase
 			.from('StudyGroup')
 			.select(`
 				*,
 				members:StudyGroupMember(count)
 			`)
-			.eq('universityId', universityId)
+			.eq('universityId', profile.universityId)
 			.order('createdAt', { ascending: false });
 
 		if (error) throw error;
@@ -361,16 +402,27 @@ export async function getStudyGroups(universityId: string) {
 	}
 }
 
-export async function createStudyGroup(data: { name: string; description: string; universityId: string }) {
+export async function createStudyGroup(data: { name: string; description: string; universityId?: string }) {
 	try {
 		const supabase = await createClient();
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) throw new Error("Unauthorized - Please log in again");
 
+		// FC-23: derive universityId server-side from the caller's Profile.
+		// Caller-supplied data.universityId is ignored to prevent attribution spoofing.
+		const { data: profile } = await supabase
+			.from('Profile')
+			.select('universityId')
+			.eq('id', user.id)
+			.single();
+		if (!profile?.universityId) throw new Error("University profile not found");
+
 		const { data: group, error } = await supabase
 			.from('StudyGroup')
 			.insert({
-				...data,
+				name: data.name,
+				description: data.description,
+				universityId: profile.universityId,
 				isPublic: true
 			})
 			.select()
@@ -417,15 +469,31 @@ export async function createStudyGroup(data: { name: string; description: string
 export async function getStudyGroupDetails(groupId: string) {
 	try {
 		const supabase = await createClient();
-		
+
+		// FC-22/FC-23: require auth + verify the requested group belongs to the
+		// caller's university. Without this, any user with a groupId could read
+		// any group's details cross-university.
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) return { success: false, error: "Authentication required" };
+
+		const { data: profile } = await supabase
+			.from('Profile')
+			.select('universityId')
+			.eq('id', user.id)
+			.single();
+		if (!profile?.universityId) return { success: false, error: "No university affiliation" };
+
 		// 1. Fetch Group Info
 		const { data: group, error: groupError } = await supabase
 			.from('StudyGroup')
 			.select('*')
 			.eq('id', groupId)
 			.single();
-		
+
 		if (groupError) throw groupError;
+		if (group.universityId !== profile.universityId) {
+			return { success: false, error: "Group not accessible from your university" };
+		}
 
 		// 2. Fetch Members with Profiles
 		const { data: members, error: memberError } = await supabase
@@ -467,14 +535,39 @@ export async function getStudyGroupDetails(groupId: string) {
 export async function getStudyGroupMessages(groupId: string) {
 	try {
 		const supabase = await createClient();
-		
+
+		// FC-22/FC-23: require auth + verify the group is in the caller's university
+		// AND the caller is a member of the group.
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) return { success: false, error: "Authentication required" };
+
+		const { data: profile } = await supabase
+			.from('Profile')
+			.select('universityId')
+			.eq('id', user.id)
+			.single();
+		if (!profile?.universityId) return { success: false, error: "No university affiliation" };
+
 		// Use direct FK link if available, fallback to name-based lookup
 		const { data: group } = await supabase
 			.from('StudyGroup')
-			.select('name, conversationId')
+			.select('name, conversationId, universityId')
 			.eq('id', groupId)
 			.single();
 		if (!group) throw new Error("Group not found");
+		if (group.universityId !== profile.universityId) {
+			return { success: false, error: "Group not accessible from your university" };
+		}
+
+		const { data: membership } = await supabase
+			.from('StudyGroupMember')
+			.select('id')
+			.eq('studyGroupId', groupId)
+			.eq('userId', user.id)
+			.maybeSingle();
+		if (!membership) {
+			return { success: false, error: "You are not a member of this group" };
+		}
 
 		let convId = group.conversationId;
 		
@@ -501,12 +594,15 @@ export async function getStudyGroupMessages(groupId: string) {
 			.order('createdAt', { ascending: true })
 			.limit(50);
 
-		if (error) throw error;
+		if (error) {
+			console.error("Message SELECT error:", error.message, error.details, error.hint);
+			return { success: false, error: `Could not load messages: ${error.message}` };
+		}
 
 		return { success: true, messages };
 	} catch (error: any) {
 		console.error("Error fetching group messages:", error?.message || error);
-		return { success: false, error: "Failed to fetch group messages." };
+		return { success: false, error: error?.message || "Failed to fetch group messages." };
 	}
 }
 
@@ -514,7 +610,7 @@ export async function sendStudyGroupMessage(groupId: string, content: string) {
 	try {
 		const supabase = await createClient();
 		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) throw new Error("Unauthorized");
+		if (!user) return { success: false, error: "Authentication required" };
 
 		if (!content || content.trim().length === 0 || content.length > 5000) {
 			return { success: false, error: "Invalid message content" };
@@ -526,22 +622,22 @@ export async function sendStudyGroupMessage(groupId: string, content: string) {
 			.select('id')
 			.eq('studyGroupId', groupId)
 			.eq('userId', user.id)
-			.single();
+			.maybeSingle();
 
 		if (!membership) {
 			return { success: false, error: "You must be a group member to send messages" };
 		}
 
-		const { data: group } = await supabase
+		// Resolve / create the linked conversation
+		const { data: group, error: groupErr } = await supabase
 			.from('StudyGroup')
 			.select('name, conversationId')
 			.eq('id', groupId)
 			.single();
-		if (!group) throw new Error("Group not found");
+		if (groupErr || !group) return { success: false, error: "Group not found" };
 
 		let convId = group.conversationId;
 
-		// Fallback to name-based lookup, or create new conversation
 		if (!convId) {
 			const { data: existingConv } = await supabase
 				.from('Conversation')
@@ -549,32 +645,37 @@ export async function sendStudyGroupMessage(groupId: string, content: string) {
 				.eq('name', `Circle: ${group.name}`)
 				.limit(1)
 				.maybeSingle();
-			
+
 			if (existingConv) {
 				convId = existingConv.id;
-				// Backfill the FK
-				await supabase.from('StudyGroup').update({ conversationId: convId }).eq('id', groupId);
 			} else {
-				const { data: newConv } = await supabase
+				const { data: newConv, error: convErr } = await supabase
 					.from('Conversation')
 					.insert({ name: `Circle: ${group.name}`, isGroup: true, createdBy: user.id })
 					.select()
 					.single();
-				
-				if (newConv) {
-					convId = newConv.id;
-					await supabase.from('ConversationParticipant').insert({
-						conversationId: convId,
-						userId: user.id,
-						role: "ADMIN",
-						status: "ACCEPTED"
-					});
-					await supabase.from('StudyGroup').update({ conversationId: convId }).eq('id', groupId);
+				if (convErr || !newConv) {
+					return { success: false, error: `Could not create conversation: ${convErr?.message ?? "unknown"}` };
 				}
+				convId = newConv.id;
 			}
 		}
 
-		if (!convId) throw new Error("Failed to access conversation channel");
+		if (!convId) return { success: false, error: "Conversation channel unavailable" };
+
+		// Atomically: link Conversation to StudyGroup (if not yet linked) AND
+		// add caller as ACCEPTED ConversationParticipant. Uses SECURITY DEFINER
+		// to bypass the StudyGroup UPDATE policy (which only allows group admins)
+		// and the ConversationParticipant INSERT policy (which only allows PENDING).
+		// Requires audit/fixes/08-fix-study-group-conversation-linking.sql to be applied.
+		const { error: rpcErr } = await supabase.rpc('prepare_study_group_chat', {
+			p_group_id: groupId,
+			p_conversation_id: convId,
+		});
+		if (rpcErr) {
+			console.error("prepare_study_group_chat failed:", rpcErr.message);
+			return { success: false, error: `Chat access setup failed: ${rpcErr.message}` };
+		}
 
 		const { error } = await supabase.from('Message').insert({
 			conversationId: convId,
@@ -582,12 +683,15 @@ export async function sendStudyGroupMessage(groupId: string, content: string) {
 			content
 		});
 
-		if (error) throw error;
+		if (error) {
+			console.error("Message INSERT error:", error.message, error.details, error.hint);
+			return { success: false, error: `Could not save message: ${error.message}` };
+		}
 
 		return { success: true };
 	} catch (error: any) {
 		console.error("Error sending group message:", error?.message || error);
-		return { success: false, error: "Failed to send message." };
+		return { success: false, error: error?.message || "Failed to send message." };
 	}
 }
 
@@ -603,10 +707,14 @@ export async function joinStudyGroup(groupId: string) {
 			role: "MEMBER"
 		});
 
-		if (error) {
-			if (error.code === '23505') return { success: false, error: "Already a member" }; // Unique violation
-			throw error;
-		}
+		if (error && error.code !== '23505') throw error;
+
+		// Link the user to the group's conversation chat. The ConversationParticipant
+		// INSERT policy only allows PENDING for non-creators, so we use a SECURITY
+		// DEFINER helper that adds the row with status='ACCEPTED'. Idempotent —
+		// also covers existing members who joined before this fix shipped.
+		// See audit/fixes/07-fix-study-group-chat-access.sql.
+		await supabase.rpc('ensure_study_group_chat_access', { p_group_id: groupId });
 
 		revalidatePath('/academic');
 		return { success: true };
@@ -621,12 +729,31 @@ export async function createResource(data: {
 	fileUrl: string;
 	type: string;
 	courseId: string;
-	universityId: string;
+	universityId?: string;
 }) {
 	try {
 		const supabase = await createClient();
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) throw new Error("Unauthorized");
+
+		// FC-23: caller-supplied data.universityId is ignored. Verify the courseId
+		// belongs to a course in the caller's university — prevents attaching
+		// Resource rows to courses in other universities.
+		const { data: profile } = await supabase
+			.from('Profile')
+			.select('universityId')
+			.eq('id', user.id)
+			.single();
+		if (!profile?.universityId) throw new Error("University profile not found");
+
+		const { data: course } = await supabase
+			.from('Course')
+			.select('universityId')
+			.eq('id', data.courseId)
+			.single();
+		if (!course || course.universityId !== profile.universityId) {
+			throw new Error("Course does not belong to your university");
+		}
 
 		// 1. Create Resource Entry
 		const { data: resource, error } = await supabase.from('Resource').insert({
@@ -738,18 +865,28 @@ export async function deleteResource(resourceId: string) {
 	}
 }
 
-export async function getRecommendedStudyGroups(universityId: string) {
+export async function getRecommendedStudyGroups(_universityId?: string) {
 	try {
 		const supabase = await createClient();
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) throw new Error("Unauthorized");
 
-		const { data: profile } = await supabase.from('Profile').select('major, bio').eq('id', user.id).single();
+		// FC-19: 10 AI recommendations per 5 minutes per user
+		const limited = aiRateLimit(user.id, 'ai-recommend-groups', 10, 5 * 60_000);
+		if (limited) return limited;
+
+		// FC-23: caller-supplied universityId ignored — derive server-side.
+		const { data: profile } = await supabase
+			.from('Profile')
+			.select('major, bio, universityId')
+			.eq('id', user.id)
+			.single();
+		if (!profile?.universityId) return { success: false, error: "No university affiliation" };
 
 		const { data: allGroups } = await supabase
 			.from('StudyGroup')
 			.select(`*, members:StudyGroupMember(count)`)
-			.eq('universityId', universityId);
+			.eq('universityId', profile.universityId);
 
 		if (!allGroups || allGroups.length === 0) return { success: true, recommendations: [] };
 
@@ -790,11 +927,19 @@ Return ONLY a JSON array of strings representing the recommended group IDs. Exam
 	}
 }
 
-export async function getCourses(universityId: string) {
+export async function getCourses(_universityId?: string) {
 	try {
 		const supabase = await createClient();
 		const { data: { user } } = await supabase.auth.getUser();
 		if (!user) return { success: false, error: "Unauthorized" };
+
+		// FC-23: caller-supplied universityId ignored — derive server-side.
+		const { data: profile } = await supabase
+			.from('Profile')
+			.select('universityId')
+			.eq('id', user.id)
+			.single();
+		if (!profile?.universityId) return { success: false, error: "No university affiliation" };
 
 		const { data: courses, error } = await supabase
 			.from('Course')
@@ -802,7 +947,7 @@ export async function getCourses(universityId: string) {
 				*,
 				enrollments:CourseEnrollment(count)
 			`)
-			.eq('universityId', universityId)
+			.eq('universityId', profile.universityId)
 			.order('name', { ascending: true });
 
 		if (error) throw error;

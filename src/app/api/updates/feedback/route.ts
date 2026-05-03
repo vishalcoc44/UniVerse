@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/server-supabase";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -30,6 +31,18 @@ export async function POST(req: Request) {
 
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    }
+
+    const { allowed, resetInSeconds } = rateLimit(`feedback:${user.id}`, {
+      maxRequests: 5,
+      windowMs: 60_000,
+    });
+
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many feedback submissions. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(resetInSeconds) } }
+      );
     }
 
     const { error } = await supabase.from("UpdateFeedback").insert({

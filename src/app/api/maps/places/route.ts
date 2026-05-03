@@ -18,9 +18,9 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const query = searchParams.get("query");
+  const query = searchParams.get("query")?.trim() ?? "";
 
-  if (!query || query.trim().length < 2) {
+  if (query.length < 2 || query.length > 120) {
     return NextResponse.json({ error: "query is required" }, { status: 400 });
   }
 
