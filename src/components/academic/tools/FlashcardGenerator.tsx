@@ -86,6 +86,7 @@ export function FlashcardGenerator() {
 				setIsFlipped(false);
 				setActiveTopic(topic.trim());
 				setTopic("");
+				void import("@/lib/analytics").then(({ track }) => track("generate_flashcards", { count: flashcards.length }));
 				toast.success(`Generated ${flashcards.length} flashcards!`);
 				loadSavedSets();
 			} else {

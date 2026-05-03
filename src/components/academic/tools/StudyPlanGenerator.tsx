@@ -47,6 +47,7 @@ export function StudyPlanGenerator() {
 
 			if (result.success && result.plan) {
 				setPlan(result.plan as StudyPlan);
+				void import("@/lib/analytics").then(({ track }) => track("generate_study_plan", { sessions: result.plan.sessions.length }));
 				toast.success("Study plan generated successfully!");
 			} else {
 				toast.error(result.error || "Failed to generate study plan");
@@ -75,6 +76,7 @@ export function StudyPlanGenerator() {
 
 		if (session.id) {
 			await markSessionCompleteAction(session.id, session.completed);
+			if (session.completed) void import("@/lib/analytics").then(({ track }) => track("complete_study_session"));
 		}
 	};
 

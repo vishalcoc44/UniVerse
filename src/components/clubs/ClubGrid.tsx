@@ -174,6 +174,7 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 				});
 				// Count only decreases if they were approved
 				setMemberCounts((prev) => ({ ...prev, [clubId]: Math.max(0, (prev[clubId] || 1) - 1) }));
+				void import("@/lib/analytics").then(({ track }) => track("leave_club"));
 				toast.success("Withdrew application or left club.");
 			} else {
 				const newMemberId = crypto.randomUUID();
@@ -191,6 +192,7 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 				await supabase.from('ClubMember').update({ status: 'PENDING' }).eq('id', newMemberId);
 				setJoinedClubIds((prev) => new Set(prev).add(clubId));
 				setPendingClubIds((prev) => new Set(prev).add(clubId));
+				void import("@/lib/analytics").then(({ track }) => track("apply_to_club"));
 				toast.success("Application sent! Awaiting club approval.");
 			}
 		} catch (error: any) {

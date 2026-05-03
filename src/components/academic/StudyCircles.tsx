@@ -71,6 +71,7 @@ export function StudyCircles() {
 		const { success, error } = await createStudyGroup({ ...newGroup, universityId });
 
 		if (success) {
+			void import("@/lib/analytics").then(({ track }) => track("create_study_group"));
 			toast.success("Study circle created!");
 			setIsCreateOpen(false);
 			setNewGroup({ name: "", description: "" });
@@ -85,6 +86,7 @@ export function StudyCircles() {
 		setJoiningId(group.id);
 		const { success, error } = await joinStudyGroup(group.id);
 		if (success) {
+			void import("@/lib/analytics").then(({ track }) => track("join_study_group", { groupId: group.id }));
 			toast.success(`Joined ${group.name}!`);
 			fetchGroups();
 			setSelectedGroup(group);

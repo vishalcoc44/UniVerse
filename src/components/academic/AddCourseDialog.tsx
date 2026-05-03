@@ -51,6 +51,7 @@ export function AddCourseDialog({ universityId, onCourseAdded }: AddCourseDialog
 
 			if (error) throw error;
 
+			void import("@/lib/analytics").then(({ track }) => track("create_course"));
 			toast.success("Course added successfully!");
 			setOpen(false);
 			setCode("");

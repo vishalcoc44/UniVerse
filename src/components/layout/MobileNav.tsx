@@ -23,6 +23,7 @@ import {
   Sun,
   Moon,
   ShieldCheck,
+  BarChart3,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -86,6 +87,7 @@ export function MobileNav({ open, onOpenChange, activeItem, onNavigate }: Mobile
       ? [
           { icon: ShieldCheck, label: "Admin Panel", href: "/admin" },
           { icon: ShieldCheck, label: "Platform Admins", href: "/admin/platform-admins" },
+          { icon: BarChart3, label: "Analytics", href: "/admin/analytics" },
         ]
       : []),
     ...(profile?.role === "ADMIN" && !!profile?.universityId

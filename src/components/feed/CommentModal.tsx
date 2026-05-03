@@ -69,6 +69,7 @@ export function CommentModal({ isOpen, onClose, postId, postAuthorName }: Commen
 
 			if (error) throw error;
 
+			void import("@/lib/analytics").then(({ track }) => track("comment_post"));
 			setNewComment("");
 			fetchComments(); // Refresh list
 		} catch (err: any) {

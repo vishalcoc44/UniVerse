@@ -113,6 +113,7 @@ export function ProductGrid({ refreshKey, scope = "campus" }: { refreshKey?: num
 			if (error) throw error;
 
 			setProducts(prev => prev.filter(p => p.id !== id));
+			void import("@/lib/analytics").then(({ track }) => track("delete_marketplace_listing"));
 			toast.success("Listing removed successfully.");
 		} catch (error: any) {
 			toast.error(`Failed to delete listing: ${error.message}`);

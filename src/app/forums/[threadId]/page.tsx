@@ -257,6 +257,7 @@ export default function ThreadDetailPage() {
     }
     setThreadTotalVotes(prev => prev - threadVote + newValue);
     setThreadVote(newValue);
+    if (newValue !== 0) void import("@/lib/analytics").then(({ track }) => track("vote_forum_thread", { value: newValue }));
   };
 
   const handleReplyVote = async (replyId: string, value: number) => {
@@ -278,6 +279,7 @@ export default function ThreadDetailPage() {
     setReplies(prev => prev.map(r =>
       r.id === replyId ? { ...r, totalVotes: r.totalVotes - current + newValue } : r
     ));
+    if (newValue !== 0) void import("@/lib/analytics").then(({ track }) => track("vote_forum_reply", { value: newValue }));
   };
 
   const handleBookmark = async () => {
@@ -289,12 +291,14 @@ export default function ThreadDetailPage() {
       await supabase.from('ForumBookmark').delete()
         .eq('threadId', threadId).eq('userId', user.id);
       setIsBookmarked(false);
+      void import("@/lib/analytics").then(({ track }) => track("unbookmark_thread"));
       toast.success("Bookmark removed");
     } else {
       await supabase.from('ForumBookmark').insert({
         id: crypto.randomUUID(), threadId, userId: user.id
       });
       setIsBookmarked(true);
+      void import("@/lib/analytics").then(({ track }) => track("bookmark_thread"));
       toast.success("Thread bookmarked");
     }
     setBookmarkLoading(false);
@@ -318,6 +322,9 @@ export default function ThreadDetailPage() {
     setReportOpen(false);
     setReportReason("");
     setReportLoading(false);
+    void import("@/lib/analytics").then(({ track }) => track("report_forum_content", {
+      target: reportTarget.replyId ? "reply" : "thread"
+    }));
     toast.success("Report submitted — our team will review it.");
   };
 
@@ -339,6 +346,7 @@ export default function ThreadDetailPage() {
       toast.error("Failed to post reply");
     } else {
       setReplyContent("");
+      void import("@/lib/analytics").then(({ track }) => track("create_forum_reply", { isAnonymous: replyAnon }));
       toast.success("Reply posted");
       fetchThread();
     }
@@ -371,6 +379,7 @@ export default function ThreadDetailPage() {
       )
     } : null);
     setPollVoting(false);
+    void import("@/lib/analytics").then(({ track }) => track("vote_forum_poll"));
     toast.success("Vote recorded");
   };
 

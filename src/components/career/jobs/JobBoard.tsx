@@ -159,9 +159,11 @@ export function JobBoard() {
     if (savedIds.has(jobId)) {
       await supabase.from('SavedJob').delete().eq('userId', userId).eq('jobId', jobId);
       setSavedIds(prev => { const n = new Set(prev); n.delete(jobId); return n; });
+      void import("@/lib/analytics").then(({ track }) => track("unsave_job"));
     } else {
       await supabase.from('SavedJob').insert({ userId, jobId });
       setSavedIds(prev => new Set([...prev, jobId]));
+      void import("@/lib/analytics").then(({ track }) => track("save_job"));
     }
   };
 
@@ -176,8 +178,9 @@ export function JobBoard() {
       jobTitle: job.title,
       jobUrl: job.applyUrl,
     });
-    if (!error && job.applyUrl) {
-      window.open(job.applyUrl, '_blank');
+    if (!error) {
+      void import("@/lib/analytics").then(({ track }) => track("apply_to_job", { hasUrl: !!job.applyUrl }));
+      if (job.applyUrl) window.open(job.applyUrl, '_blank');
     }
     setApplyModal({ open: false });
   };

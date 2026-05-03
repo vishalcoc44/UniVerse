@@ -103,6 +103,7 @@ export function SalaryInsights() {
       experienceYears: form.experienceYears ? parseInt(form.experienceYears) : null,
       isAnonymous: form.isAnonymous,
     });
+    void import("@/lib/analytics").then(({ track }) => track("submit_salary_report", { isAnonymous: form.isAnonymous }));
     setForm({ role: '', company: '', location: '', baseSalary: '', experienceYears: '', isAnonymous: true });
     setShowForm(false);
     await fetchReports();

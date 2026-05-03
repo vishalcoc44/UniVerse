@@ -59,6 +59,8 @@ export function ResourceGrid() {
       toast.error("Failed to upvote");
       // Revert
       setResources(prev => prev.map(r => r.id === id ? { ...r, upvotes: r.upvotes - 1 } : r));
+    } else {
+      void import("@/lib/analytics").then(({ track }) => track("upvote_resource"));
     }
   };
 
@@ -114,6 +116,7 @@ export function ResourceGrid() {
 
       if (!success) throw new Error(dbError);
 
+      void import("@/lib/analytics").then(({ track }) => track("upload_resource", { type: file.type }));
       toast.success("Resource uploaded successfully!");
       fetchResources();
     } catch (error: any) {

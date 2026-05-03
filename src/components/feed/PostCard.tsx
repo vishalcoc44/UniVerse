@@ -126,10 +126,12 @@ export function PostCard({
 
   const handleReactClick = (emoji: string) => {
     setShowEmojiPicker(false);
+    void import("@/lib/analytics").then(({ track }) => track("react_to_post", { emoji }));
     onReact?.(id, emoji);
   };
 
   const handleRepost = () => {
+    void import("@/lib/analytics").then(({ track }) => track("repost", { hasQuote: !!quoteText }));
     onRepost?.(id, quoteText);
     setShowRepostBox(false);
     setQuoteText("");

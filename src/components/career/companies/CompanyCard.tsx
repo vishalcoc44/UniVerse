@@ -104,6 +104,7 @@ function CompanyProfileDrawer({ companyId, onClose, currentUserId }: CompanyProf
       userId: currentUserId,
       ...reviewForm,
     });
+    void import("@/lib/analytics").then(({ track }) => track("submit_company_review", { rating: reviewForm.rating }));
     setSubmitting(false);
     setSubmitted(true);
   };

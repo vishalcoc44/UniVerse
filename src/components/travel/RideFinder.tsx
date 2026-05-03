@@ -371,6 +371,7 @@ export function RideFinder() {
 
       if (error) throw error;
 
+      void import("@/lib/analytics").then(({ track }) => track("create_ride_offer", { seats: offerSeats }));
       toast.success("Ride offer posted.");
       setOfferFrom("");
       setOfferTo("");
@@ -408,6 +409,7 @@ export function RideFinder() {
           throw error;
         }
       } else {
+        void import("@/lib/analytics").then(({ track }) => track("request_ride_seat"));
         toast.success("Seat request sent.");
       }
 

@@ -37,6 +37,7 @@ export function FeedbackWidget() {
 				throw new Error(payload?.error || "Could not submit feedback.");
 			}
 
+			void import("@/lib/analytics").then(({ track }) => track("submit_feedback", { type: feedbackType }));
 			setDescription("");
 			setFeedbackType("feature");
 			toast.success("Feedback submitted. Thank you!");

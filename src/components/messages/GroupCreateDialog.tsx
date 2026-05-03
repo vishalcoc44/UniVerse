@@ -104,6 +104,7 @@ export function GroupCreateDialog({ isOpen, onClose, currentUserId, onCreated }:
 
 			if (partError) throw partError;
 
+			void import("@/lib/analytics").then(({ track }) => track("create_group_chat", { members: participants.length }));
 			toast.success("Group created successfully!");
 			onCreated(conversation.id);
 			onClose();

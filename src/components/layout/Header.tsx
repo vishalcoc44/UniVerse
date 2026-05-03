@@ -165,6 +165,7 @@ export function Header({ title, subtitle, breadcrumb, action, icon: Icon, onMobi
             size="icon"
             className="h-8 w-8 text-muted-foreground hover:text-destructive"
             onClick={async () => {
+              void import("@/lib/analytics").then(({ track }) => track("logout"));
               await supabase.auth.signOut();
               router.push("/auth");
             }}

@@ -51,6 +51,7 @@ export function PollCard({ pollId, question, options = [], votes = [], currentUs
 				userId: currentUserId,
 			});
 			if (error) throw error;
+			void import("@/lib/analytics").then(({ track }) => track("vote_post_poll"));
 			toast.success('Vote recorded!');
 			onVoted?.();
 		} catch (err: any) {

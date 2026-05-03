@@ -109,6 +109,7 @@ export function GroupDetails({ group, onBack, userId }: GroupDetailsProps) {
 		setIsSending(true);
 		const res = await sendStudyGroupMessage(group.id, newMessage);
 		if (res.success) {
+			void import("@/lib/analytics").then(({ track }) => track("send_study_group_message"));
 			setNewMessage("");
 			// Refresh messages immediately
 			const mRes = await getStudyGroupMessages(group.id);

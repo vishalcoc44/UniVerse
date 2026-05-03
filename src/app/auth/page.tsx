@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { track } from "@/lib/analytics";
 import { Loader2, LogIn } from "lucide-react";
 
 export default function Login() {
@@ -30,6 +31,7 @@ export default function Login() {
 
 			if (authError) throw authError;
 
+			track("login");
 			router.push("/feed"); // Redirect to Feed on success
 		} catch (err: any) {
 			setError(err.message || "Failed to sign in");

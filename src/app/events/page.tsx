@@ -221,6 +221,7 @@ export default function EventsPage() {
 				setUserRSVPs(prev => prev.filter(id => id !== eventId));
 				// Update local event attendee count
 				setEvents(prev => prev.map(e => e.id === eventId ? { ...e, attendees: Math.max(0, e.attendees - 1) } : e));
+				void import("@/lib/analytics").then(({ track }) => track("cancel_rsvp"));
 				toast.info("RSVP cancelled.");
 			} else {
 				// Join RSVP
@@ -236,6 +237,7 @@ export default function EventsPage() {
 				setUserRSVPs(prev => [...prev, eventId]);
 				// Update local event attendee count
 				setEvents(prev => prev.map(e => e.id === eventId ? { ...e, attendees: e.attendees + 1 } : e));
+				void import("@/lib/analytics").then(({ track }) => track("rsvp_event"));
 				toast.success("Spot secured! See you there.");
 			}
 		} catch (error: any) {

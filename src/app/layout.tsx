@@ -5,6 +5,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { TopLoader } from "@/components/layout/TopLoader";
 import { PWAInstallPrompt } from "@/components/layout/PWAInstallPrompt";
+import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import Script from 'next/script';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -38,6 +39,9 @@ export default function RootLayout({
 				<Providers>
 					<Suspense fallback={null}>
 						<TopLoader />
+					</Suspense>
+					<Suspense fallback={null}>
+						<AnalyticsTracker />
 					</Suspense>
 					<PWAInstallPrompt />
 					{children}

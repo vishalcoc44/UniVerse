@@ -106,6 +106,7 @@ export function ResearchProjectsCard({ canManage, onChange }: ResearchProjectsCa
       } else {
         const { error } = await supabase.from("ResearchProject").insert({ id: crypto.randomUUID(), ...payload });
         if (error) throw error;
+        void import("@/lib/analytics").then(({ track }) => track("create_research_project"));
         toast.success("Project created.");
       }
 
@@ -191,6 +192,7 @@ export function ResearchProjectsCard({ canManage, onChange }: ResearchProjectsCa
     setInviting(true);
     try {
       const { error } = await supabase.from("ProjectCollaborator").insert({ id: crypto.randomUUID(), projectId: managingProjectId, userId: userIdToInvite, role });
+      if (!error) void import("@/lib/analytics").then(({ track }) => track("invite_research_collaborator", { role }));
       if (error) throw error;
       toast.success("User invited to project.");
       setInviteQuery("");

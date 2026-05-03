@@ -393,6 +393,8 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 				toast.error("Failed to send message");
 				setMessages(prev => prev.filter(m => m.id !== tempId));
 				setInputValue(newMessageText);
+			} else {
+				void import("@/lib/analytics").then(({ track }) => track("send_message", { isGroup: chat.isGroup, hasReply: !!replyingTo }));
 			}
 		}
 	};
@@ -516,6 +518,7 @@ export function ChatWindow({ chat, currentUserId, onChatUpdated }: ChatWindowPro
 			await supabase.from('MessageReaction').delete().eq('id', existing.id);
 		} else {
 			await supabase.from('MessageReaction').insert({ messageId, userId: currentUserId, emoji });
+			void import("@/lib/analytics").then(({ track }) => track("react_to_message", { emoji }));
 		}
 	};
 

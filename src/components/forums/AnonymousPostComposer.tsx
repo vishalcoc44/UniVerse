@@ -92,6 +92,7 @@ export function AnonymousPostComposer({ refreshThreads, activeCategory: initialC
             setTags([]);
             setIsExpanded(false);
             if (refreshThreads) refreshThreads();
+            void import("@/lib/analytics").then(({ track }) => track("create_forum_thread", { isAnonymous: isIncognito }));
             toast.success("Thread shared securely!");
 
         } catch (error: any) {

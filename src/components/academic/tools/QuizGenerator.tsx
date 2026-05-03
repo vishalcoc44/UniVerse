@@ -49,6 +49,7 @@ export function QuizGenerator() {
 					setCompletedScore(null);
 					setSelectedAnswer(null);
 					setIsFinished(false);
+					void import("@/lib/analytics").then(({ track }) => track("generate_quiz", { questions: result.quiz.questions.length }));
 					toast.success("Quiz generated successfully!");
 				} else {
 					toast.error("The AI generated an invalid quiz format. Try again.");
@@ -87,6 +88,11 @@ export function QuizGenerator() {
 			const result = await saveQuizAttemptAction(quiz.id, finalScore, quiz.questions.length);
 			if (!result.success) {
 				toast.error("Could not save your attempt to the database.");
+			} else {
+				void import("@/lib/analytics").then(({ track }) => track("complete_quiz_attempt", {
+					score: finalScore,
+					total: quiz.questions.length
+				}));
 			}
 		}
 	};

@@ -96,6 +96,7 @@ export function MoodSelector({ onLogComplete }: MoodSelectorProps) {
         if (retryError) throw retryError;
         toast.info("Mood logged (Activities skipped - DB update required)");
       } else {
+        void import("@/lib/analytics").then(({ track }) => track("log_mood", { score: mood.score, activities: selectedActivities.length }));
         toast.success("Mood logged successfully!");
       }
 

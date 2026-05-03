@@ -83,6 +83,7 @@ export default function ClubsPage() {
 				await supabase.from("ClubMember").update({ status: "APPROVED" }).eq("id", ownerMemberId);
 			}
 
+			void import("@/lib/analytics").then(({ track }) => track("create_club", { scope: form.scope }));
 			toast.success("Club created successfully.");
 			setCreateOpen(false);
 			setForm({ name: "", description: "", category: "", scope: "CAMPUS" });

@@ -115,6 +115,7 @@ export function ProfileSettings() {
 			});
 
 			if (settingsError) throw new Error(String(settingsError));
+			void import("@/lib/analytics").then(({ track }) => track("update_profile"));
 			toast.success("Profile updated successfully!");
 		} catch (error: any) {
 			toast.error("Error updating profile");
@@ -173,6 +174,7 @@ export function ProfileSettings() {
 			if (updateError) throw updateError;
 
 			setProfile((prev: any) => ({ ...prev, avatar_url: avatarUrl }));
+			void import("@/lib/analytics").then(({ track }) => track("upload_avatar"));
 			toast.success('Avatar updated!');
 		} catch (error: any) {
 			console.error('Avatar upload error:', error);

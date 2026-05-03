@@ -178,6 +178,7 @@ export default function NewsPage() {
 			});
 			if (error) throw error;
 
+			void import("@/lib/analytics").then(({ track }) => track("publish_news"));
 			toast.success("News article published!");
 			setPublishContent("");
 			setPublishImageUrl("");

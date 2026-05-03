@@ -300,6 +300,9 @@ export default function Messages() {
 			// Detect "new" vs "reused" by checking if peer participant just got created.
 			// Cheap heuristic: if the convo isn't in our local list yet, treat as new.
 			const isNew = !conversations.some(c => c.id === convoId);
+			if (isNew) {
+				void import("@/lib/analytics").then(({ track }) => track("start_direct_conversation", { isFriend }));
+			}
 			if (isNew && !isFriend) {
 				toast.info("Chat request sent. Your messages will be queued and delivered once they accept.", {
 					duration: 5000,

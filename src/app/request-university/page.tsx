@@ -71,6 +71,7 @@ export default function RequestUniversity() {
 				throw insertError;
 			}
 
+			void import("@/lib/analytics").then(({ track }) => track("request_university"));
 			setSuccess(true);
 		} catch (err: any) {
 			setError(err.message || "Failed to submit request.");

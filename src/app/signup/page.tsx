@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { track } from "@/lib/analytics";
 import { Loader2, GraduationCap } from "lucide-react";
 
 export default function Signup() {
@@ -121,6 +122,7 @@ export default function Signup() {
 				}
 			}
 
+			track("signup", { universityId: matchedUni.id });
 			router.push("/feed"); // Redirect to Feed
 		} catch (err: any) {
 			setError(err.message);

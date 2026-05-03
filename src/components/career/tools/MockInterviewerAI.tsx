@@ -105,7 +105,10 @@ export function MockInterviewerAI() {
       const { data } = await supabase.functions.invoke('evaluate-interview', {
         body: { question: q.text, answer, category: q.category },
       });
-      if (data) return data as SessionFeedback;
+      if (data) {
+        void import("@/lib/analytics").then(({ track }) => track("mock_interview_evaluated", { category: q.category }));
+        return data as SessionFeedback;
+      }
     } catch {}
     return {
       clarity: 7, starCompliance: 7, confidence: 7,

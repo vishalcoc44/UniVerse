@@ -101,6 +101,9 @@ export function ChatInterface() {
 
       if (!success || !response) throw new Error(chatError || "Failed to get AI response");
 
+      // Analytics: count chat messages sent
+      void import("@/lib/analytics").then(({ track }) => track("ai_chat_message"));
+
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",

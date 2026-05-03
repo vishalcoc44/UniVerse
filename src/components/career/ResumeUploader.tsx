@@ -118,6 +118,8 @@ if (!aiFeedback || !Number.isFinite(aiScore)) {
 throw new Error("Analysis failed: invalid response format.");
 }
 
+void import("@/lib/analytics").then(({ track }) => track("resume_analyzed", { score: Math.round(aiScore) }));
+
 const { error: dbError } = await supabase.from('Resume').insert({
 id: crypto.randomUUID(),
 userId: user.id,

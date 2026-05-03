@@ -37,7 +37,10 @@ export function SmartNotesEditor() {
 			if (result.success) {
 				setNoteId(result.noteId || null);
 				setLastSaved(new Date());
-				if (!silent) toast.success("Note saved successfully");
+				if (!silent) {
+					void import("@/lib/analytics").then(({ track }) => track("save_note", { isNew: !noteId }));
+					toast.success("Note saved successfully");
+				}
 			} else {
 				if (!silent) toast.error(result.error || "Failed to save note");
 			}
@@ -59,6 +62,7 @@ export function SmartNotesEditor() {
 			const result = await summarizeTextAction(content);
 			if (result.success && result.summary) {
 				setContent(content + "\n\n--- AI Summary ---\n" + result.summary);
+				void import("@/lib/analytics").then(({ track }) => track("ai_summarize_note"));
 				toast.success("Summary generated!");
 			} else {
 				toast.error(result.error || "Failed to summarize");
@@ -84,6 +88,7 @@ export function SmartNotesEditor() {
 			const result = await explainConceptAction(selectedText.slice(0, 1000)); // Limit to first 1000 chars for explanation
 			if (result.success && result.explanation) {
 				setContent(content + "\n\n--- AI Explanation ---\n" + result.explanation);
+				void import("@/lib/analytics").then(({ track }) => track("ai_explain_concept"));
 				toast.success("Explanation generated!");
 			} else {
 				toast.error(result.error || "Failed to explain");

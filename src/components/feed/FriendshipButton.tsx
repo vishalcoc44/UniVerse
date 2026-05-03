@@ -58,6 +58,7 @@ export function FriendshipButton({ targetUserId, currentUserId, size = "sm", cla
       toast.error("Failed to send friend request");
     } else {
       setStatus('pending_sent');
+      void import("@/lib/analytics").then(({ track }) => track("send_friend_request"));
       toast.success("Friend request sent!");
     }
     setActing(false);
@@ -74,6 +75,7 @@ export function FriendshipButton({ targetUserId, currentUserId, size = "sm", cla
       toast.error("Failed to accept request");
     } else {
       setStatus('accepted');
+      void import("@/lib/analytics").then(({ track }) => track("accept_friend_request"));
       toast.success("Friend request accepted!");
     }
     setActing(false);
@@ -86,6 +88,7 @@ export function FriendshipButton({ targetUserId, currentUserId, size = "sm", cla
       .delete()
       .or(`and(requesterId.eq.${currentUserId},addresseeId.eq.${targetUserId}),and(requesterId.eq.${targetUserId},addresseeId.eq.${currentUserId})`);
     setStatus('none');
+    void import("@/lib/analytics").then(({ track }) => track("remove_friendship"));
     toast.success("Removed");
     setActing(false);
   };

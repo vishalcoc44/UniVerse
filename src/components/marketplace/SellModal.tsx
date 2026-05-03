@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from "react";
 import { createListing, updateListing } from "@/app/marketplace/actions";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
+import { track } from "@/lib/analytics";
 import { toast } from "sonner";
 
 export interface ListingToEdit {
@@ -130,6 +131,7 @@ export function SellModal({ onListingCreated, listingToEdit, activeScope = 'camp
 					imageUrl,
 				});
 				if (!result.success) throw new Error(result.error);
+				track("create_marketplace_listing", { scope: formData.scope, hasImage: !!imageUrl });
 				toast.success("Listing created successfully!");
 			}
 

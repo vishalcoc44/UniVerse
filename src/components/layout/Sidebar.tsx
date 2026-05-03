@@ -23,6 +23,7 @@ import {
   Sun,
   Moon,
   ShieldCheck,
+  BarChart3,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -83,6 +84,7 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
       ? [
           { icon: ShieldCheck, label: "Admin Panel", href: "/admin", isActive: pathname === "/admin" },
           { icon: ShieldCheck, label: "Platform Admins", href: "/admin/platform-admins", isActive: pathname === "/admin/platform-admins" },
+          { icon: BarChart3, label: "Analytics", href: "/admin/analytics", isActive: pathname === "/admin/analytics" },
         ]
       : []),
     ...(profile?.role === "ADMIN" && !!profile?.universityId

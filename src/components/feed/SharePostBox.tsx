@@ -111,6 +111,7 @@ export function SharePostBox({ onPostCreated }: { onPostCreated?: () => void }) 
 			setShowPoll(false);
 			setPollQuestion("");
 			setPollOptions(["Option A", "Option B"]);
+			void import("@/lib/analytics").then(({ track }) => track("create_post", { scope: feedType === 'campus' ? 'CAMPUS' : 'UNIVERSE', hasPoll: showPoll }));
 			toast.success("Post deployed!");
 			if (onPostCreated) onPostCreated();
 

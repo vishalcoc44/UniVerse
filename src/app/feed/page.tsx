@@ -257,8 +257,10 @@ export default function Feed() {
 		try {
 			if (post.isLiked) {
 				await supabase.from('Like').delete().eq('postId', postId).eq('userId', user.id);
+				void import("@/lib/analytics").then(({ track }) => track("unlike_post"));
 			} else {
 				await supabase.from('Like').insert({ id: crypto.randomUUID(), postId, userId: user.id });
+				void import("@/lib/analytics").then(({ track }) => track("like_post"));
 			}
 		} catch { fetchPosts(); }
 	};
@@ -272,9 +274,11 @@ export default function Feed() {
 		try {
 			if (post.isBookmarked) {
 				await supabase.from('Bookmark').delete().eq('postId', postId).eq('userId', user.id);
+				void import("@/lib/analytics").then(({ track }) => track("unbookmark_post"));
 				if (activeTab === 'bookmarks') setPosts(prev => prev.filter(p => p.id !== postId));
 			} else {
 				await supabase.from('Bookmark').insert({ id: crypto.randomUUID(), postId, userId: user.id });
+				void import("@/lib/analytics").then(({ track }) => track("bookmark_post"));
 			}
 		} catch { fetchPosts(); }
 	};
@@ -303,6 +307,7 @@ export default function Feed() {
 			type: 'TEXT', category: 'General', quotedPostId,
 			updatedAt: new Date().toISOString()
 		});
+		if (!error) void import("@/lib/analytics").then(({ track }) => track("repost", { hasQuote: !!quoteText }));
 		if (error) toast.error("Failed to repost"); else toast.success("Reposted!"); fetchPosts();
 	};
 

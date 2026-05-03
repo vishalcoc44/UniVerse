@@ -274,6 +274,7 @@ export default function AdminDashboard() {
         error.message || `Failed to ${action.toLowerCase()} university.`
       );
     } else {
+      void import("@/lib/analytics").then(({ track }) => track("admin_review_university", { action }));
       toast.success(
         `University ${action === "APPROVED" ? "approved" : "rejected"} successfully.`
       );
@@ -297,6 +298,7 @@ export default function AdminDashboard() {
     if (error) {
       toast.error("Failed to dismiss report.");
     } else {
+      void import("@/lib/analytics").then(({ track }) => track("admin_dismiss_report"));
       toast.success("Report dismissed.");
       setReports((prev) => prev.filter((r) => r.id !== report.id));
       setCounts((prev) => ({
@@ -336,6 +338,9 @@ export default function AdminDashboard() {
       .update({ status: "RESOLVED" })
       .eq("id", report.id);
 
+    void import("@/lib/analytics").then(({ track }) => track("admin_remove_content", {
+      target: report.replyId ? "reply" : "thread"
+    }));
     toast.success("Reported content removed and report resolved.");
     setReports((prev) => prev.filter((r) => r.id !== report.id));
     setCounts((prev) => ({

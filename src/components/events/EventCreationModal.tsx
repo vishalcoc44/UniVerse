@@ -200,6 +200,7 @@ export function EventCreationModal({
           ...payload
         });
         if (error) throw error;
+        void import("@/lib/analytics").then(({ track }) => track("create_event", { scope: selectedScope }));
       }
 
       setOpen(false);

@@ -62,6 +62,7 @@ export function ReportLostFoundModal({ onListingCreated, activeScope = 'campus' 
 				throw new Error(result.error);
 			}
 
+			void import("@/lib/analytics").then(({ track }) => track("create_lost_found", { type: formData.type, scope: formData.scope }));
 			toast.success(`${formData.type === 'LOST' ? 'Lost' : 'Found'} item reported successfully!`);
 			setOpen(false);
 			setFormData({ title: "", type: "LOST", location: "", date: "", description: "", scope: (activeScope?.toUpperCase() as 'CAMPUS' | 'UNIVERSE') || 'CAMPUS' });
