@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start -p 3001",
     "lint": "eslint .",
-    "update-schema": "node sync-schema.js"
+    "update-schema": "node scripts/sync-schema.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
