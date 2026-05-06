@@ -60,6 +60,102 @@
     "column_default": "now()"
   },
   {
+    "table_name": "Analytics_Event",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "(gen_random_uuid())::text"
+  },
+  {
+    "table_name": "Analytics_Event",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Analytics_Event",
+    "column_name": "sessionId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Analytics_Event",
+    "column_name": "eventName",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Analytics_Event",
+    "column_name": "properties",
+    "data_type": "jsonb",
+    "column_default": null
+  },
+  {
+    "table_name": "Analytics_Event",
+    "column_name": "path",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Analytics_Event",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Analytics_Event",
+    "column_name": "createdAt",
+    "data_type": "timestamp with time zone",
+    "column_default": "now()"
+  },
+  {
+    "table_name": "Analytics_PageView",
+    "column_name": "id",
+    "data_type": "text",
+    "column_default": "(gen_random_uuid())::text"
+  },
+  {
+    "table_name": "Analytics_PageView",
+    "column_name": "userId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Analytics_PageView",
+    "column_name": "sessionId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Analytics_PageView",
+    "column_name": "path",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Analytics_PageView",
+    "column_name": "referrer",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Analytics_PageView",
+    "column_name": "userAgent",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Analytics_PageView",
+    "column_name": "universityId",
+    "data_type": "text",
+    "column_default": null
+  },
+  {
+    "table_name": "Analytics_PageView",
+    "column_name": "createdAt",
+    "data_type": "timestamp with time zone",
+    "column_default": "now()"
+  },
+  {
     "table_name": "ApplicationStatusHistory",
     "column_name": "id",
     "data_type": "text",

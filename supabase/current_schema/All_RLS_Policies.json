@@ -21,6 +21,16 @@
   },
   {
     "schemaname": "public",
+    "tablename": "Analytics_PageView",
+    "policyname": "Anyone can record a page view",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "true"
+  },
+  {
+    "schemaname": "public",
     "tablename": "UtilityDiscount",
     "policyname": "Utility discounts are viewable by everyone",
     "permissive": "PERMISSIVE",
@@ -38,6 +48,16 @@
     "cmd": "ALL",
     "qual": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (( SELECT auth.uid() AS uid))::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\") AND (\"Profile\".\"universityId\" = \"UtilityService\".\"universityId\"))))",
     "with_check": "(EXISTS ( SELECT 1\n   FROM \"Profile\"\n  WHERE ((\"Profile\".id = (( SELECT auth.uid() AS uid))::text) AND (\"Profile\".role = 'ADMIN'::\"UserRole\") AND (\"Profile\".\"universityId\" = \"UtilityService\".\"universityId\"))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Analytics_PageView",
+    "policyname": "Platform admins can read page views",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "is_platform_admin()",
+    "with_check": null
   },
   {
     "schemaname": "public",
@@ -67,6 +87,26 @@
     "roles": "{public}",
     "cmd": "ALL",
     "qual": "((auth.uid())::text = \"userId\")",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Analytics_Event",
+    "policyname": "Anyone can record an event",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "true"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "Analytics_Event",
+    "policyname": "Platform admins can read events",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "is_platform_admin()",
     "with_check": null
   },
   {

@@ -28,6 +28,7 @@ import {
 	Monitor,
 	Trophy,
 	Hash,
+	Download,
 } from "lucide-react";
 import {
 	Line,
@@ -213,6 +214,143 @@ const EVENT_LABELS: Record<string, string> = {
 
 function labelEvent(name: string): string {
 	return EVENT_LABELS[name] ?? name.replace(/_/g, " ");
+}
+
+// Generate friendly analytics export text
+function generateAnalyticsExport(
+	totals: any,
+	daily: DailyPoint[],
+	topPaths: PathRow[],
+	topEvents: EventRow[],
+	topUsers: UserRow[],
+	features: FeatureSlice[],
+	deviceSplit: { mobile: number; desktop: number },
+	hottestEvent: { name: string; count: number } | null,
+	aiSpotlight: EventRow[],
+	dow: DowPoint[]
+): string {
+	const now = new Date().toLocaleString();
+	const totalDevices = deviceSplit.mobile + deviceSplit.desktop;
+	const mobilePct = totalDevices > 0 ? Math.round((deviceSplit.mobile / totalDevices) * 100) : 0;
+
+	let txt = `📊 UNIVERSE ANALYTICS REPORT\n`;
+	txt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+	txt += `Generated: ${now}\n`;
+	txt += `Period: Last ${RANGE_DAYS} days\n\n`;
+
+	// 🎯 KEY METRICS
+	txt += `🎯 KEY METRICS (Last ${RANGE_DAYS} Days)\n`;
+	txt += `──────────────────────────────────\n`;
+	txt += `📍 Page Views:        ${totals.pageViews.toLocaleString()} ${totals.viewsTrend.positive ? '📈' : '📉'} (${totals.viewsTrend.value}%)\n`;
+	txt += `⚡ Tracked Events:    ${totals.events.toLocaleString()} ${totals.eventsTrend.positive ? '📈' : '📉'} (${totals.eventsTrend.value}%)\n`;
+	txt += `👥 Unique Users:      ${totals.uniqueUsers.toLocaleString()} ${totals.usersTrend.positive ? '📈' : '📉'} (${totals.usersTrend.value}%)\n`;
+	txt += `💬 Engagement Rate:   ${totals.engagementRate}% ${totals.engagementTrend.positive ? '📈' : '📉'} (${totals.engagementTrend.value}%)\n\n`;
+
+	// 👤 USER ACTIVITY
+	txt += `👤 USER ACTIVITY\n`;
+	txt += `──────────────────────────────────\n`;
+	txt += `🌅 Daily Active Users (DAU):   ${totals.dau.toLocaleString()}\n`;
+	txt += `📅 Weekly Active Users (WAU):  ${totals.wau.toLocaleString()}\n`;
+	txt += `📊 Sessions:                    ${totals.sessions.toLocaleString()}\n`;
+	txt += `⚙️ Events per Session:          ${totals.avgEventsPerSession.toFixed(1)}\n\n`;
+
+	// 🔥 RIGHT NOW
+	txt += `🔥 RIGHT NOW\n`;
+	txt += `──────────────────────────────────\n`;
+	txt += `🌞 Active Today:                ${totals.dau.toLocaleString()}\n`;
+	txt += `👁️ Page Views Today:            ${totals.todayViews.toLocaleString()}\n`;
+	txt += `⚡ Events Today:                ${totals.todayEvents.toLocaleString()}\n`;
+	txt += `🔥 Events This Week:            ${totals.weekEvents.toLocaleString()}\n\n`;
+
+	// 🏆 TRENDING NOW
+	if (hottestEvent) {
+		txt += `🏆 TRENDING NOW\n`;
+		txt += `──────────────────────────────────\n`;
+		txt += `${labelEvent(hottestEvent.name)}\n`;
+		txt += `Fired ${hottestEvent.count} times in the last hour\n\n`;
+	}
+
+	// 📱 DEVICE BREAKDOWN
+	txt += `📱 DEVICE SPLIT\n`;
+	txt += `──────────────────────────────────\n`;
+	txt += `💻 Desktop:  ${deviceSplit.desktop.toLocaleString()} sessions (${100 - mobilePct}%)\n`;
+	txt += `📱 Mobile:   ${deviceSplit.mobile.toLocaleString()} sessions (${mobilePct}%)\n\n`;
+
+	// 📅 BUSIEST DAYS
+	txt += `📅 BUSIEST DAYS OF THE WEEK\n`;
+	txt += `──────────────────────────────────\n`;
+	const sortedDow = [...dow].sort((a, b) => b.count - a.count);
+	sortedDow.slice(0, 3).forEach((d, i) => {
+		txt += `${i + 1}. ${d.day.padEnd(10)} ${d.count.toLocaleString().padStart(8)} activities\n`;
+	});
+	txt += `\n`;
+
+	// 🎯 TOP PAGES
+	txt += `🎯 TOP PAGES (${topPaths.length})\n`;
+	txt += `──────────────────────────────────\n`;
+	topPaths.slice(0, 5).forEach((row, i) => {
+		const pct = ((row.views / totals.pageViews) * 100).toFixed(1);
+		txt += `${i + 1}. ${row.path.padEnd(28)} ${row.views.toLocaleString().padStart(6)} views (${pct}%)\n`;
+	});
+	txt += `\n`;
+
+	// ✨ TOP FEATURES
+	txt += `✨ MOST-USED FEATURES\n`;
+	txt += `──────────────────────────────────\n`;
+	features.slice(0, 5).forEach((f, i) => {
+		txt += `${i + 1}. ${f.name.padEnd(30)} ${f.value.toLocaleString().padStart(6)} visits\n`;
+	});
+	txt += `\n`;
+
+	// ⚡ TOP ACTIONS
+	txt += `⚡ TOP ACTIONS\n`;
+	txt += `──────────────────────────────────\n`;
+	topEvents.slice(0, 8).forEach((evt, i) => {
+		const friendlyName = labelEvent(evt.eventName);
+		const pct = ((evt.count / totals.events) * 100).toFixed(1);
+		txt += `${i + 1}. ${friendlyName.padEnd(40)} ${evt.count.toLocaleString().padStart(6)} (${pct}%)\n`;
+	});
+	txt += `\n`;
+
+	// 🤖 AI USAGE
+	if (aiSpotlight.length > 0) {
+		txt += `🤖 AI USAGE\n`;
+		txt += `──────────────────────────────────\n`;
+		aiSpotlight.forEach((evt, i) => {
+			const friendlyName = labelEvent(evt.eventName);
+			txt += `${i + 1}. ${friendlyName.padEnd(35)} ${evt.count.toLocaleString().padStart(6)} uses\n`;
+		});
+		txt += `\n`;
+	}
+
+	// 🏅 TOP USERS
+	if (topUsers.length > 0) {
+		txt += `🏅 TOP USERS (by event count)\n`;
+		txt += `──────────────────────────────────\n`;
+		topUsers.forEach((user, i) => {
+			const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
+			txt += `${medal} ${user.userId.slice(0, 12).padEnd(14)} ${user.count.toLocaleString().padStart(6)} events\n`;
+		});
+		txt += `\n`;
+	}
+
+	// 📈 DAILY TREND (summary)
+	txt += `📈 ACTIVITY TREND (Last 7 Days)\n`;
+	txt += `──────────────────────────────────\n`;
+	const last7Days = daily.slice(-7);
+	last7Days.forEach((day) => {
+		const barLength = Math.ceil((day.views / 50));
+		const bar = '█'.repeat(Math.min(barLength, 30));
+		txt += `${day.day} ${bar} ${day.views.toLocaleString()} views, ${day.events.toLocaleString()} events\n`;
+	});
+	txt += `\n`;
+
+	// Footer
+	txt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+	txt += `✨ End of Report\n`;
+	txt += `💡 For detailed breakdowns, visit the Analytics Dashboard\n`;
+
+	return txt;
 }
 
 // Postgres `timestamp without time zone` columns return an ISO string with no
@@ -577,6 +715,34 @@ export default function AnalyticsDashboard() {
 		toast.success("Stats refreshed");
 	};
 
+	const handleExportAnalytics = () => {
+		const text = generateAnalyticsExport(
+			totals,
+			daily,
+			topPaths,
+			topEvents,
+			topUsers,
+			features,
+			deviceSplit,
+			hottestEvent,
+			aiSpotlight,
+			dow
+		);
+
+		// Create blob and download
+		const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = `analytics-${new Date().toISOString().slice(0, 10)}.txt`;
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		URL.revokeObjectURL(url);
+
+		toast.success("Analytics exported as text file");
+	};
+
 	// Format a path for display (truncate if too long)
 	const formatPath = (p: string) => (p.length > 36 ? p.slice(0, 33) + "…" : p);
 
@@ -648,6 +814,24 @@ export default function AnalyticsDashboard() {
 						))}
 					</div>
 
+					{/* Controls - Export & Refresh */}
+					<div className="flex items-center justify-end gap-2">
+						<Button 
+							variant="outline" 
+							size="sm" 
+							onClick={handleExportAnalytics} 
+							disabled={loading}
+							className="gap-1.5"
+						>
+							<Download className="h-4 w-4" />
+							Export as Text
+						</Button>
+						<Button variant="ghost" size="sm" onClick={handleRefresh} disabled={refreshing} className="gap-1.5">
+							<RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+							Refresh
+						</Button>
+					</div>
+
 					{/* Activity Over Time */}
 					<section className="bg-card rounded-xl border border-border p-5 shadow-card">
 						<div className="flex items-center justify-between mb-4">
@@ -655,10 +839,6 @@ export default function AnalyticsDashboard() {
 								<h2 className="text-lg font-semibold text-foreground">Activity Over Time</h2>
 								<Badge variant="secondary" className="text-xs">last {RANGE_DAYS} days</Badge>
 							</div>
-							<Button variant="ghost" size="sm" onClick={handleRefresh} disabled={refreshing} className="gap-1.5">
-								<RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-								Refresh
-							</Button>
 						</div>
 						{loading ? (
 							<SkeletonChart />

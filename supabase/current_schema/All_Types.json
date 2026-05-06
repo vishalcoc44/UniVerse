@@ -44,6 +44,14 @@
     "enum_value": "QUESTION_BANK_MASTERED"
   },
   {
+    "type_name": "Analytics_Event",
+    "enum_value": null
+  },
+  {
+    "type_name": "Analytics_PageView",
+    "enum_value": null
+  },
+  {
     "type_name": "AnnouncementScopeType",
     "enum_value": "UNIVERSITY"
   },
@@ -761,6 +769,14 @@
   },
   {
     "type_name": "_AchievementType",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Analytics_Event",
+    "enum_value": null
+  },
+  {
+    "type_name": "_Analytics_PageView",
     "enum_value": null
   },
   {
