@@ -29,6 +29,12 @@ import { PollCard } from "@/components/feed/PollCard";
 
 const EMOJIS = ["❤️", "👍", "😂", "😮", "😢", "🔥"];
 
+const LinkedInIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+    <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/>
+  </svg>
+);
+
 interface PollData {
   id: string;
   question: string;
@@ -124,6 +130,17 @@ export function PostCard({
     navigator.clipboard.writeText(textToShare).then(() => alert("Post content copied to clipboard!"));
   };
 
+  const handleShareToLinkedIn = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const shareUrl = typeof window !== "undefined"
+      ? `${window.location.origin}/feed?post=${id}`
+      : "";
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+    window.open(url, "_blank", "noopener,noreferrer,width=600,height=600");
+    void import("@/lib/analytics").then(({ track }) => track("share_to_linkedin", { postId: id })).catch(() => {});
+  };
+
   const handleReactClick = (emoji: string) => {
     setShowEmojiPicker(false);
     void import("@/lib/analytics").then(({ track }) => track("react_to_post", { emoji }));
@@ -209,7 +226,10 @@ export function PostCard({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-40 p-1 rounded-lg border-border/50 backdrop-blur-xl bg-background/95 shadow-lg">
                   <DropdownMenuItem onClick={handleShare} className="rounded-md py-1.5 focus:bg-primary/10 cursor-pointer">
-                    <Share2 className="h-3 w-3 mr-2" /><span className="font-semibold text-[11px]">Share</span>
+                    <Share2 className="h-3 w-3 mr-2" /><span className="font-semibold text-[11px]">Copy Link</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleShareToLinkedIn} className="rounded-md py-1.5 focus:bg-primary/10 cursor-pointer">
+                    <LinkedInIcon className="h-3 w-3 mr-2 text-[#0A66C2]" /><span className="font-semibold text-[11px]">Share to LinkedIn</span>
                   </DropdownMenuItem>
                   {onPin && canPin && (
                     <DropdownMenuItem onClick={() => onPin(id, !isPinned)} className="rounded-md py-1.5 focus:bg-primary/10 cursor-pointer">

@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin, Users, Ticket, Share2, Info, Building } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Ticket, Share2, Info, Building, CalendarPlus } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -31,6 +31,25 @@ export function EventDetailsModal({
 	if (!event) return null;
 
 	const eventDate = event.rawDate || new Date();
+
+	const buildGoogleCalendarUrl = () => {
+		const start = event.rawDate ? new Date(event.rawDate) : new Date();
+		const end = new Date(start.getTime() + 2 * 60 * 60 * 1000); // default 2-hour duration
+		const fmt = (d: Date) => d.toISOString().replace(/[-:]|\.\d{3}/g, '');
+		const params = new URLSearchParams({
+			action: 'TEMPLATE',
+			text: event.title || 'Event',
+			dates: `${fmt(start)}/${fmt(end)}`,
+			details: event.description || '',
+			location: event.location || '',
+		});
+		return `https://calendar.google.com/calendar/render?${params.toString()}`;
+	};
+
+	const handleAddToCalendar = () => {
+		window.open(buildGoogleCalendarUrl(), '_blank', 'noopener,noreferrer');
+		void import('@/lib/analytics').then(({ track }) => track('add_to_google_calendar', { eventId: event.id })).catch(() => {});
+	};
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -151,9 +170,19 @@ export function EventDetailsModal({
 								)}
 							</div>
 						</div>
-						<Button variant="outline" size="icon" className="rounded-2xl h-14 w-14 border-border/50 hover:bg-primary/10 hover:text-primary transition-all shrink-0">
-							<Share2 className="h-6 w-6" />
-						</Button>
+						<div className="flex items-center gap-2 shrink-0">
+							<Button
+								variant="outline"
+								onClick={handleAddToCalendar}
+								className="rounded-2xl h-14 px-5 border-border/50 hover:bg-primary/10 hover:text-primary transition-all gap-2 font-bold"
+							>
+								<CalendarPlus className="h-5 w-5" />
+								<span className="hidden sm:inline">Add to Calendar</span>
+							</Button>
+							<Button variant="outline" size="icon" className="rounded-2xl h-14 w-14 border-border/50 hover:bg-primary/10 hover:text-primary transition-all">
+								<Share2 className="h-6 w-6" />
+							</Button>
+						</div>
 					</div>
 				</div>
 			</DialogContent>

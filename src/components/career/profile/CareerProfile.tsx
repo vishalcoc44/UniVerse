@@ -6,6 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, User, Briefcase, MapPin, Globe, Plus, X, ToggleLeft, ToggleRight, Save, Link } from 'lucide-react';
+
+const LinkedInIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+    <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/>
+  </svg>
+);
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -18,6 +24,7 @@ interface CareerProfileData {
   preferredRoles: string[];
   preferredLocations: string[];
   portfolioUrl: string | null;
+  linkedinUrl: string | null;
 }
 
 const ROLE_SUGGESTIONS = ['Software Engineer', 'Data Scientist', 'Product Manager', 'UX Designer', 'DevOps Engineer', 'ML Engineer', 'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'Business Analyst'];
@@ -26,7 +33,7 @@ const LOCATION_SUGGESTIONS = ['Remote', 'New York', 'San Francisco', 'Austin', '
 export function CareerProfile() {
   const [profileData, setProfileData] = useState<CareerProfileData>({
     name: null, bio: null, avatarUrl: null, skills: [], openToWork: false,
-    preferredRoles: [], preferredLocations: [], portfolioUrl: null,
+    preferredRoles: [], preferredLocations: [], portfolioUrl: null, linkedinUrl: null,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -43,7 +50,7 @@ export function CareerProfile() {
 
       const { data, error } = await supabase
         .from('Profile')
-        .select('fullName, bio, avatarUrl, skills, openToWork, preferredRoles, preferredLocations, portfolioUrl')
+        .select('fullName, bio, avatarUrl, skills, openToWork, preferredRoles, preferredLocations, portfolioUrl, linkedinUrl')
         .eq('id', user.id)
         .single();
 
@@ -63,6 +70,7 @@ export function CareerProfile() {
           preferredRoles: data.preferredRoles ?? [],
           preferredLocations: data.preferredLocations ?? [],
           portfolioUrl: data.portfolioUrl,
+          linkedinUrl: data.linkedinUrl ?? null,
         });
       }
       setLoading(false);
@@ -81,6 +89,7 @@ export function CareerProfile() {
       preferredRoles: profileData.preferredRoles,
       preferredLocations: profileData.preferredLocations,
       portfolioUrl: profileData.portfolioUrl || null,
+      linkedinUrl: profileData.linkedinUrl || null,
       updatedAt: new Date().toISOString(),
     }).eq('id', user.id);
 
@@ -149,6 +158,19 @@ export function CareerProfile() {
           placeholder="https://yourportfolio.dev"
           value={profileData.portfolioUrl ?? ''}
           onChange={e => setProfileData(prev => ({ ...prev, portfolioUrl: e.target.value }))}
+          className="h-9 bg-card/40 border-border/40 rounded-xl text-xs"
+        />
+      </div>
+
+      {/* LinkedIn URL */}
+      <div className="space-y-1.5">
+        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+          <LinkedInIcon className="h-3 w-3 text-[#0A66C2]" /> LinkedIn URL
+        </label>
+        <Input
+          placeholder="https://www.linkedin.com/in/your-handle"
+          value={profileData.linkedinUrl ?? ''}
+          onChange={e => setProfileData(prev => ({ ...prev, linkedinUrl: e.target.value }))}
           className="h-9 bg-card/40 border-border/40 rounded-xl text-xs"
         />
       </div>

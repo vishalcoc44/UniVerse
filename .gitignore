@@ -140,6 +140,7 @@ supabase/migrations/
 # Claude agent workspace
 .claude/
 audit/
+docs/
 
 # Audit + huddle + agent config (private — never push)
 security-audit-plan.md
@@ -150,3 +151,5 @@ CLAUDE.md
 # Transient audit / build output (regenerated each run)
 lighthouse-*.json
 build_output.txt
+
+docs

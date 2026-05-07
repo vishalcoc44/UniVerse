@@ -35,8 +35,16 @@ interface ProfileData {
   department: string | null;
   yearOfStudy: number | null;
   reputationPoints: number;
+  linkedinUrl: string | null;
+  portfolioUrl: string | null;
   University: { name: string; abbreviation: string } | null;
 }
+
+const LinkedInIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+    <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/>
+  </svg>
+);
 
 interface PostData {
   id: string;
@@ -92,7 +100,7 @@ export default function PublicProfile() {
       const [profileRes, postsRes, clubsRes, researchRes] = await Promise.all([
         supabase
           .from('Profile')
-          .select('id, fullName, username, bio, avatarUrl, department, yearOfStudy, reputationPoints, University(name, abbreviation)')
+          .select('id, fullName, username, bio, avatarUrl, department, yearOfStudy, reputationPoints, linkedinUrl, portfolioUrl, University(name, abbreviation)')
           .eq('id', userId)
           .single(),
         supabase
@@ -227,6 +235,36 @@ export default function PublicProfile() {
                 <>
                   <Separator className="my-4" />
                   <p className="text-sm text-muted-foreground leading-relaxed">{profile.bio}</p>
+                </>
+              )}
+
+              {(profile.linkedinUrl || profile.portfolioUrl) && (
+                <>
+                  {!profile.bio && <Separator className="my-4" />}
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
+                    {profile.linkedinUrl && (
+                      <a
+                        href={profile.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0A66C2]/10 text-[#0A66C2] hover:bg-[#0A66C2]/15 text-xs font-semibold transition-colors"
+                      >
+                        <LinkedInIcon className="h-3.5 w-3.5" />
+                        LinkedIn
+                      </a>
+                    )}
+                    {profile.portfolioUrl && (
+                      <a
+                        href={profile.portfolioUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted hover:bg-muted/70 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <BookOpen className="h-3.5 w-3.5" />
+                        Portfolio
+                      </a>
+                    )}
+                  </div>
                 </>
               )}
             </CardContent>
