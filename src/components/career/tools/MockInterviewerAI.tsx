@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Question { id: string; text: string; category: string; difficulty: string; }
-interface SessionFeedback { clarity: number; starCompliance: number; confidence: number; summary: string; improvements: string[]; strengths: string[]; }
+interface SessionFeedback { clarity: number; starCompliance: number; confidence: number; summary: string; improvements: string[]; strengths: string[]; isLocal?: boolean }
 interface PastSession { id: string; role?: string; overallScore?: number; createdAt: string; questions: Question[]; feedback: SessionFeedback[]; }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -41,6 +41,7 @@ export function MockInterviewerAI() {
   const [userId, setUserId] = useState<string | null>(null);
   const [role, setRole] = useState('Software Engineer');
   const [loadingQ, setLoadingQ] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
@@ -79,6 +80,8 @@ export function MockInterviewerAI() {
           setTranscript(Array.from(e.results).map((r: any) => r[0].transcript).join(' '));
         };
         recognitionRef.current = rec;
+      } else {
+        setSpeechSupported(false);
       }
     }
   }, []);
@@ -100,22 +103,66 @@ export function MockInterviewerAI() {
     };
   }, [isRecording]);
 
+  const localFeedback = (answer: string): SessionFeedback => {
+    // Content-aware fallback so two different answers don't get identical
+    // scores when the evaluate-interview edge function is unavailable.
+    const text = (answer || '').trim();
+    const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+    const lower = text.toLowerCase();
+    const hasNumbers = /\d/.test(text);
+    const hasHedging = /(maybe|kind of|sort of|i think|i guess|\bum\b|\buh\b)/.test(lower);
+    const starHits = ['situation', 'task', 'action', 'result', 'because', 'so that', 'led to', 'resulted in']
+      .filter(k => lower.includes(k)).length;
+
+    const clamp = (n: number) => Math.max(2, Math.min(10, Math.round(n)));
+    const clarity = clamp(3 + Math.log2(words + 1) * 0.9);
+    const starCompliance = clamp(3 + starHits + (hasNumbers ? 1 : 0));
+    const confidence = clamp(7 - (hasHedging ? 3 : 0) + (words > 80 ? 1 : 0));
+
+    return {
+      clarity, starCompliance, confidence,
+      strengths: [
+        words > 80 ? 'Detailed, well-developed response' : 'Concise and to the point',
+        hasNumbers ? 'Quantified impact with concrete numbers' : 'Clear narrative structure',
+        starHits >= 2 ? 'Includes situational and outcome context' : 'Stays focused on the question',
+      ].slice(0, 3),
+      improvements: [
+        words < 60 ? 'Expand with a specific example or scenario' : null,
+        !hasNumbers ? 'Add quantifiable outcomes (percentages, time saved, scale)' : null,
+        starHits < 2 ? 'Use STAR structure: Situation → Task → Action → Result' : null,
+        hasHedging ? 'Reduce hedging words for stronger delivery' : null,
+      ].filter((s): s is string => Boolean(s)).slice(0, 3),
+      summary: words < 30
+        ? 'Answer is too short — interviewers expect richer context and outcomes.'
+        : `Solid foundation${hasNumbers ? ' with concrete metrics' : ''}. ${starHits >= 2 ? 'Good structure.' : 'Tighten the structure to highlight cause-and-effect.'}`,
+    };
+  };
+
   const evaluateAnswer = async (q: Question, answer: string): Promise<SessionFeedback> => {
+    const startedAt = Date.now();
     try {
-      const { data } = await supabase.functions.invoke('evaluate-interview', {
+      const { data, error } = await supabase.functions.invoke('evaluate-interview', {
         body: { question: q.text, answer, category: q.category },
       });
-      if (data) {
+      if (!error && data && typeof data === 'object'
+          && 'clarity' in data && 'starCompliance' in data && 'confidence' in data) {
         void import("@/lib/analytics").then(({ track }) => track("mock_interview_evaluated", { category: q.category }));
-        return data as SessionFeedback;
+        return { ...(data as SessionFeedback), isLocal: false };
       }
-    } catch {}
-    return {
-      clarity: 7, starCompliance: 7, confidence: 7,
-      summary: 'Good answer. Consider using more specific examples with measurable outcomes.',
-      improvements: ['Be more specific with examples', 'Quantify your impact'],
-      strengths: ['Clear communication', 'Relevant experience mentioned'],
-    };
+      // The edge function responded but with a shape we don't trust.
+      console.warn('[MockInterview] evaluate-interview returned unexpected shape — falling back to local analysis', error);
+    } catch (err) {
+      // Function not deployed, network blocked, etc.
+      console.warn('[MockInterview] evaluate-interview unreachable — falling back to local analysis. Deploy the edge function and set OPENAI_API_KEY for AI evaluation.', err);
+    }
+
+    // Pad the local heuristic to ~1.2s so the UX matches the cadence of a
+    // real evaluation call and doesn't feel jarring/fake.
+    const elapsed = Date.now() - startedAt;
+    if (elapsed < 1200) {
+      await new Promise(resolve => setTimeout(resolve, 1200 - elapsed));
+    }
+    return { ...localFeedback(answer), isLocal: true };
   };
 
   const nextQuestion = async () => {
@@ -186,9 +233,25 @@ export function MockInterviewerAI() {
               <RotateCcw className="h-4 w-4 mr-2" /> New Session
             </Button>
           </div>
+          {feedback.some(fb => fb.isLocal) && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl px-4 py-2.5 flex items-start gap-2">
+              <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-amber-300 leading-snug">
+                <span className="font-black">Local analysis used</span> — the AI evaluator (evaluate-interview edge function) couldn't be reached.
+                Scores are computed from heuristics on your answer text. Deploy the edge function and set <span className="font-bold">OPENAI_API_KEY</span> for full AI feedback.
+              </p>
+            </div>
+          )}
           {feedback.map((fb, i) => (
             <div key={i} className="bg-card/40 border border-border/50 rounded-2xl p-4 space-y-2">
-              <p className="text-xs font-black italic text-muted-foreground">Q{i + 1}: {questions[i]?.text}</p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs font-black italic text-muted-foreground">Q{i + 1}: {questions[i]?.text}</p>
+                {fb.isLocal && (
+                  <span className="shrink-0 text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                    Local
+                  </span>
+                )}
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 {[['Clarity', fb.clarity], ['STAR', fb.starCompliance], ['Confidence', fb.confidence]].map(([l, s]) => (
                   <div key={String(l)} className="text-center bg-violet-500/5 rounded-xl p-2">
@@ -251,13 +314,25 @@ export function MockInterviewerAI() {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Transcript */}
-              {(transcript || isRecording) && (
-                <div className="bg-card/30 border border-border/30 rounded-2xl p-4 min-h-16">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-2">Your answer</p>
-                  <p className="text-sm text-foreground/80 italic">{transcript || <span className="opacity-30">Listening...</span>}</p>
+              {/* Answer — editable textarea (works whether or not speech recognition is supported) */}
+              <div className="bg-card/30 border border-border/30 rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">
+                    Your answer
+                    {!speechSupported && <span className="ml-1.5 text-amber-400 normal-case tracking-normal">(type your answer — voice not supported in this browser)</span>}
+                  </p>
+                  <p className="text-[10px] font-bold text-muted-foreground/50">
+                    {transcript.trim().split(/\s+/).filter(Boolean).length} words
+                  </p>
                 </div>
-              )}
+                <textarea
+                  value={transcript}
+                  onChange={e => setTranscript(e.target.value)}
+                  placeholder={isRecording ? 'Listening… you can also type or edit here.' : 'Type your answer here, or tap the mic to speak.'}
+                  rows={4}
+                  className="w-full bg-transparent text-sm text-foreground/90 italic resize-none focus:outline-none placeholder:text-muted-foreground/40 leading-relaxed"
+                />
+              </div>
 
               {/* Controls */}
               <div className="flex items-center gap-3">

@@ -16,9 +16,16 @@ interface Question {
   question: string;
   sampleAnswer: string | null;
   tags: string[];
+  companyId: string | null;
+  universityId: string | null;
+  Company?: { id: string; name: string; logoUrl: string | null } | null;
+  University?: { id: string; name: string; abbreviation: string | null } | null;
   isPracticed: boolean;
   isStarred: boolean;
 }
+
+interface CompanyOption { id: string; name: string; logoUrl: string | null }
+interface UniversityOption { id: string; name: string; abbreviation: string | null }
 
 const CATEGORY_COLORS: Record<string, string> = {
   BEHAVIORAL: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
@@ -45,27 +52,42 @@ export function InterviewQuestionBank() {
   const [actionId, setActionId] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [addForm, setAddForm] = useState({ question: '', category: 'BEHAVIORAL', difficulty: 'MEDIUM', tags: '', sampleAnswer: '', tip: '', companyTags: '' });
+  const [addForm, setAddForm] = useState({
+    question: '', category: 'BEHAVIORAL', difficulty: 'MEDIUM',
+    tags: '', sampleAnswer: '', tip: '', companyTags: '',
+    companyId: '', universityId: '',
+  });
   const [addingQuestion, setAddingQuestion] = useState(false);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+  const [companies, setCompanies] = useState<CompanyOption[]>([]);
+  const [universities, setUniversities] = useState<UniversityOption[]>([]);
+  const [filterCompany, setFilterCompany] = useState<string | null>(null);
 
   const reloadQuestions = async (practiced: Set<string>, starred: Set<string>) => {
     const { data: qData } = await supabase
       .from('InterviewQuestion')
-      .select('id, category, difficulty, question, sampleAnswer, tags')
+      .select('id, category, difficulty, question, sampleAnswer, tags, companyId, universityId, Company(id, name, logoUrl), University(id, name, abbreviation)')
       .order('category')
       .order('difficulty');
     if (qData) {
-      setQuestions(qData.map((q: Record<string, unknown>) => ({
-        id: q.id as string,
-        category: q.category as string,
-        difficulty: q.difficulty as string,
-        question: q.question as string,
-        sampleAnswer: q.sampleAnswer as string | null,
-        tags: (q.tags as string[]) ?? [],
-        isPracticed: practiced.has(q.id as string),
-        isStarred: starred.has(q.id as string),
-      })));
+      setQuestions(qData.map((q: Record<string, unknown>) => {
+        const co = q.Company as { id: string; name: string; logoUrl: string | null } | { id: string; name: string; logoUrl: string | null }[] | null;
+        const un = q.University as { id: string; name: string; abbreviation: string | null } | { id: string; name: string; abbreviation: string | null }[] | null;
+        return {
+          id: q.id as string,
+          category: q.category as string,
+          difficulty: q.difficulty as string,
+          question: q.question as string,
+          sampleAnswer: q.sampleAnswer as string | null,
+          tags: (q.tags as string[]) ?? [],
+          companyId: (q.companyId as string | null) ?? null,
+          universityId: (q.universityId as string | null) ?? null,
+          Company: Array.isArray(co) ? (co[0] ?? null) : co,
+          University: Array.isArray(un) ? (un[0] ?? null) : un,
+          isPracticed: practiced.has(q.id as string),
+          isStarred: starred.has(q.id as string),
+        };
+      }));
     }
     return qData;
   };
@@ -74,16 +96,26 @@ export function InterviewQuestionBank() {
     if (!addForm.question) return;
     setAddingQuestion(true);
 
+    const payload = {
+      question: addForm.question,
+      category: addForm.category,
+      difficulty: addForm.difficulty,
+      tags: addForm.tags.split(',').map(t => t.trim()).filter(Boolean),
+      sampleAnswer: addForm.sampleAnswer || null,
+      tip: addForm.tip || null,
+      companyTags: addForm.companyTags.split(',').map(t => t.trim()).filter(Boolean),
+      companyId: addForm.companyId || null,
+      universityId: addForm.universityId || null,
+    };
+    const emptyForm = {
+      question: '', category: 'BEHAVIORAL', difficulty: 'MEDIUM',
+      tags: '', sampleAnswer: '', tip: '', companyTags: '',
+      companyId: '', universityId: '',
+    };
+
     if (editingQuestionId) {
-      const { error, data: updated } = await supabase.from('InterviewQuestion').update({
-        question: addForm.question,
-        category: addForm.category,
-        difficulty: addForm.difficulty,
-        tags: addForm.tags.split(',').map(t => t.trim()).filter(Boolean),
-        sampleAnswer: addForm.sampleAnswer || null,
-        tip: addForm.tip || null,
-        companyTags: addForm.companyTags.split(',').map(t => t.trim()).filter(Boolean),
-      }).eq('id', editingQuestionId).select('id, category, difficulty, question, sampleAnswer, tags').single();
+      const { error, data: updated } = await supabase.from('InterviewQuestion').update(payload)
+        .eq('id', editingQuestionId).select('id').single();
 
       if (error) {
         alert(error.message);
@@ -98,22 +130,19 @@ export function InterviewQuestionBank() {
       }
 
       setEditingQuestionId(null);
-      setAddForm({ question: '', category: 'BEHAVIORAL', difficulty: 'MEDIUM', tags: '', sampleAnswer: '', tip: '', companyTags: '' });
+      setAddForm(emptyForm);
       setShowAddForm(false);
       setAddingQuestion(false);
       return;
     }
 
-    await supabase.from('InterviewQuestion').insert({
-      question: addForm.question,
-      category: addForm.category,
-      difficulty: addForm.difficulty,
-      tags: addForm.tags.split(',').map(t => t.trim()).filter(Boolean),
-      sampleAnswer: addForm.sampleAnswer || null,
-      tip: addForm.tip || null,
-      companyTags: addForm.companyTags.split(',').map(t => t.trim()).filter(Boolean),
-    });
-    setAddForm({ question: '', category: 'BEHAVIORAL', difficulty: 'MEDIUM', tags: '', sampleAnswer: '', tip: '', companyTags: '' });
+    const { error } = await supabase.from('InterviewQuestion').insert(payload);
+    if (error) {
+      alert(error.message);
+      setAddingQuestion(false);
+      return;
+    }
+    setAddForm(emptyForm);
     setShowAddForm(false);
     const practiced = new Set(questions.filter(q => q.isPracticed).map(q => q.id));
     const starred = new Set(questions.filter(q => q.isStarred).map(q => q.id));
@@ -133,6 +162,8 @@ export function InterviewQuestionBank() {
       sampleAnswer: q.sampleAnswer || '',
       tip: '',
       companyTags: '',
+      companyId: q.companyId ?? '',
+      universityId: q.universityId ?? '',
     });
     setShowAddForm(true);
   };
@@ -153,38 +184,50 @@ export function InterviewQuestionBank() {
         setIsAdmin(profile?.role === 'ADMIN' && !profile?.universityId);
       }
 
-      const { data: qData } = await supabase
-        .from('InterviewQuestion')
-        .select('id, category, difficulty, question, sampleAnswer, tags')
-        .order('category')
-        .order('difficulty');
-
       let practiced = new Set<string>();
       let starred = new Set<string>();
 
-      if (user && qData) {
-        const { data: attempts } = await supabase
-          .from('UserQuestionAttempt')
-          .select('questionId, isStarred')
-          .eq('userId', user.id);
-        if (attempts) {
-          attempts.forEach(a => {
-            practiced.add(a.questionId);
-            if (a.isStarred) starred.add(a.questionId);
-          });
-        }
+      const [qRes, companiesRes, universitiesRes, attemptsRes] = await Promise.all([
+        supabase
+          .from('InterviewQuestion')
+          .select('id, category, difficulty, question, sampleAnswer, tags, companyId, universityId, Company(id, name, logoUrl), University(id, name, abbreviation)')
+          .order('category')
+          .order('difficulty'),
+        supabase.from('Company').select('id, name, logoUrl').order('name').limit(200),
+        supabase.from('University').select('id, name, abbreviation').order('name').limit(200),
+        user
+          ? supabase.from('UserQuestionAttempt').select('questionId, isStarred').eq('userId', user.id)
+          : Promise.resolve({ data: null }),
+      ]);
+
+      if (companiesRes.data) setCompanies(companiesRes.data as CompanyOption[]);
+      if (universitiesRes.data) setUniversities(universitiesRes.data as UniversityOption[]);
+
+      if (attemptsRes.data) {
+        attemptsRes.data.forEach((a: { questionId: string; isStarred: boolean }) => {
+          practiced.add(a.questionId);
+          if (a.isStarred) starred.add(a.questionId);
+        });
       }
 
-      setQuestions((qData ?? []).map((q: Record<string, unknown>) => ({
-        id: q.id as string,
-        category: q.category as string,
-        difficulty: q.difficulty as string,
-        question: q.question as string,
-        sampleAnswer: q.sampleAnswer as string | null,
-        tags: (q.tags as string[]) ?? [],
-        isPracticed: practiced.has(q.id as string),
-        isStarred: starred.has(q.id as string),
-      })));
+      setQuestions((qRes.data ?? []).map((q: Record<string, unknown>) => {
+        const co = q.Company as { id: string; name: string; logoUrl: string | null } | { id: string; name: string; logoUrl: string | null }[] | null;
+        const un = q.University as { id: string; name: string; abbreviation: string | null } | { id: string; name: string; abbreviation: string | null }[] | null;
+        return {
+          id: q.id as string,
+          category: q.category as string,
+          difficulty: q.difficulty as string,
+          question: q.question as string,
+          sampleAnswer: q.sampleAnswer as string | null,
+          tags: (q.tags as string[]) ?? [],
+          companyId: (q.companyId as string | null) ?? null,
+          universityId: (q.universityId as string | null) ?? null,
+          Company: Array.isArray(co) ? (co[0] ?? null) : co,
+          University: Array.isArray(un) ? (un[0] ?? null) : un,
+          isPracticed: practiced.has(q.id as string),
+          isStarred: starred.has(q.id as string),
+        };
+      }));
       setLoading(false);
     })();
   }, []);
@@ -233,12 +276,19 @@ export function InterviewQuestionBank() {
   };
 
   const filtered = questions.filter(q => {
-    const matchSearch = !search || q.question.toLowerCase().includes(search.toLowerCase()) || q.tags.some(t => t.toLowerCase().includes(search.toLowerCase()));
+    const matchSearch = !search
+      || q.question.toLowerCase().includes(search.toLowerCase())
+      || q.tags.some(t => t.toLowerCase().includes(search.toLowerCase()))
+      || (q.Company?.name?.toLowerCase().includes(search.toLowerCase()) ?? false);
     const matchCat = !filterCat || q.category === filterCat;
     const matchDiff = !filterDiff || q.difficulty === filterDiff;
     const matchStarred = !showStarred || q.isStarred;
-    return matchSearch && matchCat && matchDiff && matchStarred;
+    const matchCompany = !filterCompany || q.companyId === filterCompany;
+    return matchSearch && matchCat && matchDiff && matchStarred && matchCompany;
   });
+
+  // Companies that actually have at least one question pooled under them.
+  const activeCompanies = companies.filter(c => questions.some(q => q.companyId === c.id));
 
   const categories = [...new Set(questions.map(q => q.category))];
   const practicedCount = questions.filter(q => q.isPracticed).length;
@@ -286,10 +336,24 @@ export function InterviewQuestionBank() {
                   className="h-9 bg-card/40 border border-border/40 rounded-xl text-xs px-2 text-foreground">
                   {['EASY','MEDIUM','HARD'].map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Pool under company</label>
+                  <select value={addForm.companyId} onChange={e => setAddForm(p => ({ ...p, companyId: e.target.value }))}
+                    className="h-9 w-full bg-card/40 border border-border/40 rounded-xl text-xs px-2 text-foreground">
+                    <option value="">— None —</option>
+                    {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Visible to university</label>
+                  <select value={addForm.universityId} onChange={e => setAddForm(p => ({ ...p, universityId: e.target.value }))}
+                    className="h-9 w-full bg-card/40 border border-border/40 rounded-xl text-xs px-2 text-foreground">
+                    <option value="">All universities (global)</option>
+                    {universities.map(u => <option key={u.id} value={u.id}>{u.abbreviation ? `${u.abbreviation} — ${u.name}` : u.name}</option>)}
+                  </select>
+                </div>
                 <Input placeholder="Tags (comma-separated)" value={addForm.tags} onChange={e => setAddForm(p => ({ ...p, tags: e.target.value }))}
-                  className="h-9 bg-card/40 border-border/40 rounded-xl text-xs" />
-                <Input placeholder="Company tags (e.g. Google, Meta)" value={addForm.companyTags} onChange={e => setAddForm(p => ({ ...p, companyTags: e.target.value }))}
-                  className="h-9 bg-card/40 border-border/40 rounded-xl text-xs" />
+                  className="h-9 bg-card/40 border-border/40 rounded-xl text-xs col-span-2" />
               </div>
               <textarea
                 placeholder="Sample answer (optional)"
@@ -371,6 +435,29 @@ export function InterviewQuestionBank() {
         ))}
       </div>
 
+      {/* Company filter — appears once any question is pooled under a company */}
+      {activeCompanies.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 mr-1">Company</span>
+          {activeCompanies.map(c => (
+            <button
+              key={c.id}
+              onClick={() => setFilterCompany(filterCompany === c.id ? null : c.id)}
+              className={cn("flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all",
+                filterCompany === c.id
+                  ? "bg-primary/15 border-primary/40 text-primary"
+                  : "border-border/40 text-muted-foreground hover:border-primary/30 hover:text-primary"
+              )}
+            >
+              {c.logoUrl
+                ? <img src={c.logoUrl} alt="" className="h-3.5 w-3.5 rounded object-cover" />
+                : <span className="h-3.5 w-3.5 rounded bg-muted/50 flex items-center justify-center text-[8px] font-black">{c.name[0]}</span>}
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Question Cards */}
       <AnimatePresence mode="popLayout">
         {filtered.map((q, i) => (
@@ -387,7 +474,7 @@ export function InterviewQuestionBank() {
           >
             <div className="flex items-start gap-2">
               <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap gap-1.5 mb-2">
+                <div className="flex flex-wrap items-center gap-1.5 mb-2">
                   <span className={cn("text-[8px] font-black uppercase tracking-wider border px-2 py-0.5 rounded-full",
                     CATEGORY_COLORS[q.category] ?? 'border-primary/30 text-primary')}>
                     {q.category.replace('_', ' ')}
@@ -395,6 +482,19 @@ export function InterviewQuestionBank() {
                   <span className={cn("text-[8px] font-black", DIFFICULTY_COLORS[q.difficulty])}>
                     {q.difficulty}
                   </span>
+                  {q.Company && (
+                    <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                      {q.Company.logoUrl
+                        ? <img src={q.Company.logoUrl} alt="" className="h-3 w-3 rounded object-cover" />
+                        : <span className="h-3 w-3 rounded bg-primary/20 flex items-center justify-center text-[7px] font-black">{q.Company.name[0]}</span>}
+                      {q.Company.name}
+                    </span>
+                  )}
+                  {q.University && (
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                      {q.University.abbreviation || q.University.name}
+                    </span>
+                  )}
                   {q.isPracticed && (
                     <span className="text-[8px] font-black text-primary flex items-center gap-0.5">
                       <Check className="h-2.5 w-2.5" /> Practiced

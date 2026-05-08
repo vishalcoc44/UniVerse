@@ -167,21 +167,31 @@ export function JobBoard() {
     }
   };
 
-  const handleApply = async (job: Job) => {
+  const handleApply = (job: Job) => {
     if (!userId) return;
-    // Log application
-    const { error } = await supabase.from('JobApplication').insert({
+
+    // Mobile browsers (iOS Safari, Chrome on Android) block window.open calls
+    // that happen after an `await` because the user-gesture context has been
+    // consumed. Open the apply URL synchronously inside the click handler
+    // first, then fire the application log in the background without awaiting.
+    if (job.applyUrl) {
+      window.open(job.applyUrl, '_blank', 'noopener,noreferrer');
+    }
+
+    // Fire-and-forget — don't block navigation on the insert
+    supabase.from('JobApplication').insert({
       userId,
       jobId: job.id,
       status: 'APPLIED',
       companyName: job.company?.name,
       jobTitle: job.title,
       jobUrl: job.applyUrl,
+    }).then(({ error }) => {
+      if (!error) {
+        void import("@/lib/analytics").then(({ track }) => track("apply_to_job", { hasUrl: !!job.applyUrl }));
+      }
     });
-    if (!error) {
-      void import("@/lib/analytics").then(({ track }) => track("apply_to_job", { hasUrl: !!job.applyUrl }));
-      if (job.applyUrl) window.open(job.applyUrl, '_blank');
-    }
+
     setApplyModal({ open: false });
   };
 

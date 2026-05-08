@@ -21,7 +21,9 @@ interface EvaluateRequest {
 }
 
 interface Evaluation {
-  score: number
+  clarity: number          // 1-10
+  starCompliance: number   // 1-10 (Situation/Task/Action/Result structure)
+  confidence: number       // 1-10
   strengths: string[]
   improvements: string[]
   summary: string
@@ -81,14 +83,22 @@ serve(async (req) => {
     let evaluation: Evaluation
 
     if (openAIKey) {
-      const systemPrompt = `You are an expert career coach evaluating mock interview answers.
-Evaluate the following ${category || 'general'} interview answer on a scale of 1-100.
-Return a JSON object with:
-- score: number (0-100)
-- strengths: string[] (2-3 bullet points of what was done well)
-- improvements: string[] (2-3 bullet points of what could be improved)
-- summary: string (1-2 sentence overall assessment)
-Be constructive and specific. Only return valid JSON.`
+      const systemPrompt = `You are an expert career coach evaluating a ${category || 'general'} mock interview answer.
+Score on three independent dimensions, each 1-10 (10 = excellent):
+- clarity: how well-organized and easy to follow the answer is
+- starCompliance: how well it follows the STAR structure (Situation, Task, Action, Result) — for non-behavioral questions, score how complete and structured the response is
+- confidence: language assertiveness and lack of hedging/filler
+
+Return ONLY a valid JSON object with exactly these fields:
+{
+  "clarity": number,
+  "starCompliance": number,
+  "confidence": number,
+  "strengths": string[],     // 2-3 bullets of what was done well
+  "improvements": string[],  // 2-3 bullets of what could be improved
+  "summary": string          // 1-2 sentences of overall assessment
+}
+Be specific and constructive. No prose outside the JSON.`
 
       const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -100,14 +110,29 @@ Be constructive and specific. Only return valid JSON.`
             { role: 'user', content: `Question: ${question.slice(0, 2000)}\n\nAnswer: ${answer.slice(0, 5000)}` },
           ],
           temperature: 0.3,
-          max_tokens: 500,
+          max_tokens: 600,
+          response_format: { type: 'json_object' },
         }),
       })
 
       const json = await res.json()
       const content = json.choices?.[0]?.message?.content ?? ''
       try {
-        evaluation = JSON.parse(content)
+        const parsed = JSON.parse(content)
+        // Defensive: clamp scores to 1-10 and ensure all fields exist so the
+        // frontend never has to deal with undefined values.
+        const clamp = (n: unknown) => {
+          const v = typeof n === 'number' ? n : Number(n)
+          return Number.isFinite(v) ? Math.max(1, Math.min(10, Math.round(v))) : 5
+        }
+        evaluation = {
+          clarity: clamp(parsed.clarity),
+          starCompliance: clamp(parsed.starCompliance),
+          confidence: clamp(parsed.confidence),
+          strengths: Array.isArray(parsed.strengths) ? parsed.strengths.slice(0, 5) : [],
+          improvements: Array.isArray(parsed.improvements) ? parsed.improvements.slice(0, 5) : [],
+          summary: typeof parsed.summary === 'string' ? parsed.summary : '',
+        }
       } catch {
         return new Response(JSON.stringify({ error: 'Failed to parse AI evaluation' }), {
           status: 502,
@@ -115,19 +140,40 @@ Be constructive and specific. Only return valid JSON.`
         })
       }
     } else {
-      const words = answer.trim().split(/\s+/).length
-      const score = Math.min(100, Math.max(20, 40 + words * 0.5))
+      // Heuristic fallback when OPENAI_API_KEY is not configured.
+      // Vary scores based on the actual content so users don't see identical
+      // results for every answer (which is what made it look "mock").
+      const words = answer.trim().split(/\s+/).filter(Boolean).length
+      const lower = answer.toLowerCase()
+      const hasNumbers = /\d/.test(answer)
+      const hasHedging = /(maybe|kind of|sort of|i think|i guess|um|uh)\b/.test(lower)
+      const starHits = ['situation', 'task', 'action', 'result', 'because', 'so that', 'led to', 'resulted in']
+        .filter(k => lower.includes(k)).length
+
+      const clarity = Math.max(2, Math.min(10, Math.round(3 + Math.log2(words + 1) * 0.9)))
+      const starCompliance = Math.max(2, Math.min(10, 3 + starHits + (hasNumbers ? 1 : 0)))
+      const confidence = Math.max(2, Math.min(10, 7 - (hasHedging ? 3 : 0) + (words > 80 ? 1 : 0)))
+
       evaluation = {
-        score: Math.round(score),
+        clarity,
+        starCompliance,
+        confidence,
         strengths: [
-          'Provided a structured response',
-          words > 50 ? 'Good level of detail' : 'Concise answer',
-        ],
+          words > 80 ? 'Detailed, well-developed response' : 'Concise and to the point',
+          hasNumbers ? 'Quantified impact with concrete numbers' : 'Clear narrative structure',
+          starHits >= 2 ? 'Includes situational and outcome context' : 'Stays focused on the question',
+        ].slice(0, 3),
         improvements: [
-          words < 50 ? 'Consider expanding with specific examples' : 'Could be more concise',
-          'Add quantifiable outcomes where possible',
-        ],
-        summary: `Your answer covered the key points. ${score >= 70 ? 'Strong response overall.' : 'Consider adding more specifics.'}`,
+          words < 60 ? 'Expand with a specific example or scenario' : null,
+          !hasNumbers ? 'Add quantifiable outcomes (percentages, time saved, scale)' : null,
+          starHits < 2 ? 'Use STAR structure: Situation → Task → Action → Result' : null,
+          hasHedging ? 'Reduce hedging words ("maybe", "I think") for stronger delivery' : null,
+        ].filter((s): s is string => Boolean(s)).slice(0, 3),
+        summary: words < 30
+          ? 'Answer is too short — interviewers expect a richer narrative with context and outcomes.'
+          : `Solid foundation${hasNumbers ? ' with concrete metrics' : ''}. ${
+              starHits >= 2 ? 'Good use of structure.' : 'Tighten the structure to highlight cause-and-effect.'
+            }`,
       }
     }
 

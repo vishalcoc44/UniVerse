@@ -33,6 +33,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { supabase } from "@/lib/supabase";
+import { getCachedUser } from "@/lib/currentUser";
 import { useTheme } from "next-themes";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
@@ -98,7 +99,7 @@ export function MobileNav({ open, onOpenChange, activeItem, onNavigate }: Mobile
 
   useEffect(() => {
     const fetchUnreadCount = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCachedUser();
       if (!user) return;
 
       const { data: participants } = await supabase
@@ -142,7 +143,7 @@ export function MobileNav({ open, onOpenChange, activeItem, onNavigate }: Mobile
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCachedUser();
       if (user) {
         const { data } = await supabase.from('Profile').select('fullName, username, avatarUrl, role, universityId, University(abbreviation)').eq('id', user.id).single();
         if (data) {

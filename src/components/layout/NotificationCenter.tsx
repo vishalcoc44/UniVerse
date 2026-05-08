@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/lib/supabase";
+import { getCachedUser } from "@/lib/currentUser";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -44,7 +45,7 @@ export function NotificationCenter() {
   const [open, setOpen] = useState(false);
 
   const fetchNotifications = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCachedUser();
     if (!user) return;
 
     const { data } = await supabase
@@ -65,7 +66,7 @@ export function NotificationCenter() {
     fetchNotifications();
 
     const setupRealtime = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCachedUser();
       if (!user) return;
 
       const channel = supabase

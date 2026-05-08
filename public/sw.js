@@ -33,6 +33,14 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
+  // Skip cross-origin requests entirely. The SW would otherwise re-fetch them
+  // via fetch(), which CSP governs under connect-src. Letting the browser
+  // handle them directly means cross-origin fonts/images go through their
+  // proper CSP directives (font-src, img-src) which already allow them.
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
   // Never intercept API, auth, Next.js internal, or navigation requests
   if (
     event.request.url.includes('/api/') ||

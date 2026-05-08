@@ -28,6 +28,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
+import { getCachedUser } from "@/lib/currentUser";
 import { useTheme } from "next-themes";
 
 interface NavItem {
@@ -95,7 +96,7 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
 
   useEffect(() => {
     const fetchUnreadCount = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCachedUser();
       if (!user) return;
 
       // 1. Get all conversations the user is in
@@ -158,7 +159,7 @@ export function Sidebar({ activeItem, onNavigate }: SidebarProps) {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCachedUser();
       if (user) {
         // Capitalize University to match table name if lowercase fails
         const { data } = await supabase.from('Profile').select('fullName, username, avatarUrl, role, universityId, University(abbreviation)').eq('id', user.id).single();

@@ -60,6 +60,18 @@ export function FriendshipButton({ targetUserId, currentUserId, size = "sm", cla
       setStatus('pending_sent');
       void import("@/lib/analytics").then(({ track }) => track("send_friend_request"));
       toast.success("Friend request sent!");
+
+      // Notify the recipient so they see it in their bell + Requests popover
+      const { data: { user } } = await supabase.auth.getUser();
+      const senderName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Someone';
+      await supabase.from('Notification').insert({
+        userId: targetUserId,
+        type: 'FRIEND_REQUEST',
+        title: 'New friend request',
+        body: `${senderName} sent you a friend request.`,
+        link: `/profile/${currentUserId}`,
+        isRead: false,
+      });
     }
     setActing(false);
   };

@@ -252,9 +252,37 @@ export default function Career() {
 			breadcrumb={["UniVerse", "Career"]}
 		>
 			<div className="max-w-7xl mx-auto pb-20 w-full overflow-x-hidden">
+				{/* Mobile-only horizontal nav: a scrollable pill bar so the 12 sub-modules
+				    don't stack vertically and consume the entire viewport before the
+				    main content. Hidden on lg+ where the sidebar takes over. */}
+				<div className="lg:hidden mb-4 -mx-3 px-3 sticky top-12 z-30 bg-background/85 backdrop-blur-md py-2 border-b border-border/30">
+					<div className="flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
+						{NAV_ITEMS.map(item => (
+							<button
+								key={item.id}
+								onClick={() => setActiveTab(item.id)}
+								className={cn(
+									"shrink-0 snap-start flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all whitespace-nowrap",
+									activeTab === item.id
+										? `${COLOR_ACTIVE[item.color]} shadow-md`
+										: `bg-card/40 border border-border/40 text-muted-foreground ${COLOR_HOVER[item.color]}`
+								)}
+							>
+								<item.icon className="h-3.5 w-3.5 shrink-0" />
+								<span className="font-bold tracking-tight italic text-[11px]">{item.label}</span>
+								{item.id === "achieve" && achieveCount > 0 && (
+									<span className="ml-1 text-[8px] font-black bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-1.5 py-0.5 rounded-full">
+										{achieveCount}
+									</span>
+								)}
+							</button>
+						))}
+					</div>
+				</div>
+
 				<div className="flex flex-col lg:flex-row gap-8">
-					{/* Left Sidebar */}
-					<div className="w-full lg:w-[260px] shrink-0 space-y-4">
+					{/* Desktop Left Sidebar — hidden on mobile (replaced by the pill bar above) */}
+					<div className="hidden lg:block lg:w-[260px] shrink-0 space-y-4">
 						<div className="bg-card/40 backdrop-blur-xl border border-border/50 rounded-[2.5rem] p-5 sticky top-6">
 							<p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 mb-3 px-2">Navigation</p>
 							<div className="space-y-1">

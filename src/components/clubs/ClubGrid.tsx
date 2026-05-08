@@ -72,7 +72,6 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 				setJoinedClubIds(new Set());
 			} else {
 				const rows = (data || []) as ClubRow[];
-				setClubs(rows);
 
 				if (rows.length > 0) {
 					const clubIds = rows.map((club) => club.id);
@@ -81,12 +80,12 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 						.select('clubId,userId,role,status')
 						.in('clubId', clubIds);
 
-					if (!membershipError && memberships) {
-						const counts: Record<string, number> = {};
-						const joined = new Set<string>();
-						const pending = new Set<string>();
-						const owned = new Set<string>();
+					const counts: Record<string, number> = {};
+					const joined = new Set<string>();
+					const pending = new Set<string>();
+					const owned = new Set<string>();
 
+					if (!membershipError && memberships) {
 						const { data: authData } = await supabase.auth.getUser();
 						const userId = authData.user?.id;
 
@@ -105,16 +104,23 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 								if (row.role === 'OWNER') owned.add(row.clubId);
 							}
 						}
-						setMemberCounts(counts);
-						setJoinedClubIds(joined);
-						setPendingClubIds(pending);
-						setOwnedClubIds(owned);
 					}
+
+					// Set clubs and membership-derived state together so the cards
+					// never render with a stale joined-set (which would show "INITIATE
+					// CONTACT" on a club the user already owns and trigger a unique
+					// constraint violation on click).
+					setMemberCounts(counts);
+					setJoinedClubIds(joined);
+					setPendingClubIds(pending);
+					setOwnedClubIds(owned);
+					setClubs(rows);
 				} else {
 					setMemberCounts({});
 					setJoinedClubIds(new Set());
 					setPendingClubIds(new Set());
 					setOwnedClubIds(new Set());
+					setClubs(rows);
 				}
 			}
 			setLoading(false);
@@ -187,7 +193,32 @@ export function ClubGrid({ scope = 'campus' }: { scope?: 'campus' | 'universe' }
 						role: 'MEMBER'
 					});
 
-				if (error) throw error;
+				if (error) {
+					// 23505 = unique_violation: the user already has a ClubMember row
+					// for this club (most often because they're the OWNER who just
+					// created it and the UI rendered before memberships loaded).
+					// Recover by reading the existing row and syncing local state.
+					if (error.code === '23505') {
+						const { data: existing } = await supabase
+							.from('ClubMember')
+							.select('role,status')
+							.eq('clubId', clubId)
+							.eq('userId', userId)
+							.maybeSingle();
+						setJoinedClubIds((prev) => new Set(prev).add(clubId));
+						if (existing?.status === 'PENDING') {
+							setPendingClubIds((prev) => new Set(prev).add(clubId));
+						}
+						if (existing?.role === 'OWNER') {
+							setOwnedClubIds((prev) => new Set(prev).add(clubId));
+							toast.info("You own this club — you're already a member.");
+						} else {
+							toast.info("You're already a member of this club.");
+						}
+						return;
+					}
+					throw error;
+				}
 				// Silently try to set PENDING status — only works after migration is applied
 				await supabase.from('ClubMember').update({ status: 'PENDING' }).eq('id', newMemberId);
 				setJoinedClubIds((prev) => new Set(prev).add(clubId));

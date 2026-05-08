@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { Download, Share, X } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
 	prompt: () => Promise<void>;
@@ -77,32 +78,54 @@ export function PWAInstallPrompt() {
 	if (!isVisible) return null;
 
 	return (
-		<div className="fixed inset-x-4 bottom-4 z-50 rounded-lg border border-border bg-background/95 p-3 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/80">
-			<div className="flex items-start justify-between gap-3">
-				<div className="space-y-1">
-					<p className="text-sm font-semibold">Install UniVerse</p>
+		<div
+			className="fixed left-1/2 -translate-x-1/2 bottom-3 sm:bottom-6 z-50 w-[calc(100vw-1rem)] sm:w-auto sm:min-w-[420px] sm:max-w-[520px] rounded-2xl border border-border bg-background/95 p-4 sm:p-5 shadow-2xl backdrop-blur supports-[backdrop-filter]:bg-background/85 max-h-[calc(100vh-1.5rem)] overflow-y-auto"
+			role="dialog"
+			aria-label="Install UniVerse app"
+		>
+			<div className="flex items-start gap-3 sm:gap-4">
+				<div className="shrink-0 h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center">
+					{isIOS ? <Share className="h-5 w-5 sm:h-6 sm:w-6" /> : <Download className="h-5 w-5 sm:h-6 sm:w-6" />}
+				</div>
+
+				<div className="flex-1 min-w-0 space-y-1">
+					<p className="text-base sm:text-lg font-bold leading-tight">Install UniVerse</p>
 					{isIOS ? (
-						<p className="text-xs text-muted-foreground">
-							Tap Share in Safari, then select Add to Home Screen.
+						<p className="text-xs sm:text-sm text-muted-foreground leading-snug">
+							Tap <span className="font-semibold">Share</span> in Safari, then select <span className="font-semibold">Add to Home Screen</span>.
 						</p>
 					) : (
-						<p className="text-xs text-muted-foreground">
-							Install UniVerse for faster access from your home screen.
+						<p className="text-xs sm:text-sm text-muted-foreground leading-snug">
+							Get faster access from your home screen — works offline, no app store needed.
 						</p>
 					)}
 				</div>
-				<Button variant="ghost" size="sm" onClick={dismiss} aria-label="Dismiss install prompt">
-					✕
+
+				<Button
+					variant="ghost"
+					size="icon"
+					onClick={dismiss}
+					aria-label="Dismiss install prompt"
+					className="shrink-0 h-8 w-8 -mt-1 -mr-1 text-muted-foreground hover:text-foreground"
+				>
+					<X className="h-4 w-4" />
 				</Button>
 			</div>
+
 			{!isIOS && deferredPrompt && (
-				<div className="mt-2">
-					<Button size="sm" onClick={install}>Install app</Button>
+				<div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
+					<Button onClick={install} className="flex-1 h-10 sm:h-11 text-sm font-semibold gap-2">
+						<Download className="h-4 w-4" />
+						Install app
+					</Button>
+					<Button variant="outline" onClick={dismiss} className="h-10 sm:h-11 text-sm font-medium sm:w-auto">
+						Not now
+					</Button>
 				</div>
 			)}
 			{!isIOS && !deferredPrompt && (
-				<p className="mt-2 text-xs text-muted-foreground">
-					Open your browser menu and tap Add to Home screen.
+				<p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-snug">
+					Open your browser menu and tap <span className="font-semibold">Add to Home screen</span>.
 				</p>
 			)}
 		</div>

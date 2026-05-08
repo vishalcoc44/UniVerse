@@ -2,6 +2,7 @@
 
 import { Menu, MessageSquare, Search, Command, Home, LogOut, Sun, Moon, LucideIcon } from "lucide-react";
 import { NotificationCenter } from "./NotificationCenter";
+import { FriendRequestsCenter } from "./FriendRequestsCenter";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
+import { getCachedUser } from "@/lib/currentUser";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -28,7 +30,7 @@ export function Header({ title, subtitle, breadcrumb, action, icon: Icon, onMobi
 
   useEffect(() => {
     const fetchUnreadCount = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCachedUser();
       if (!user) {
         setMessageUnreadCount(0);
         return;
@@ -142,6 +144,8 @@ export function Header({ title, subtitle, breadcrumb, action, icon: Icon, onMobi
             <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           </Button>
+
+          <FriendRequestsCenter />
 
           <NotificationCenter />
 
